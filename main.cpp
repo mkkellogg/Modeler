@@ -5,15 +5,15 @@
 #include <QCommandLineOption>
 
 #include "RenderWindow.h"
-#include "ManWindow.h"
+#include "MainWindow.h"
 #include "ModelerApp.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QCoreApplication::setApplicationName("Qt Hello GL 2 Example");
-    QCoreApplication::setOrganizationName("QtProject");
+    QCoreApplication::setApplicationName("Modeler");
+    QCoreApplication::setOrganizationName("GhostTree");
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
     QCommandLineParser parser;
     parser.setApplicationDescription(QCoreApplication::applicationName());
@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
     parser.addOption(coreProfileOption);
     QCommandLineOption transparentOption("transparent", "Transparent window");
     parser.addOption(transparentOption);
-
     parser.process(app);
 
     QSurfaceFormat fmt;

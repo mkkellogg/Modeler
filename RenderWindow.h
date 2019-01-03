@@ -40,15 +40,9 @@ public:
     void onPreRender(LifeCycleEventCallback func);
 
 public slots:
-    void setXRotation(int angle);
-    void setYRotation(int angle);
-    void setZRotation(int angle);
     void cleanup();
 
 signals:
-    void xRotationChanged(int angle);
-    void yRotationChanged(int angle);
-    void zRotationChanged(int angle);
 
 protected:
     void initializeGL() override;

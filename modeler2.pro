@@ -2,14 +2,14 @@ HEADERS       = \
     ModelerApp.h \
     MainContainer.h \
     RenderWindow.h \
-    ManWindow.h \
     OpenGLMouseAdapterWidget.h \
     MouseAdapter.h \
     Settings.h \
     PipedEventAdapter.h \
     CoreSync.h \
     GestureAdapter.h \
-    OrbitControls.h
+    OrbitControls.h \
+    MainWindow.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \

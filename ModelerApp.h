@@ -21,6 +21,7 @@ public:
     void init();
     void setMainContainer(MainContainer* mainContainer);
     void setRenderWindow(RenderWindow* renderWindow);
+    void loadModel(const QString& path, const QString& scaleText, const QString& smoothingThresholdText, const bool zUp);
 
 private:
     void onEngineReady(Core::WeakPointer<Core::Engine> engine);

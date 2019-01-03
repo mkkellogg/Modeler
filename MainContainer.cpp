@@ -1,6 +1,6 @@
 #include "RenderWindow.h"
 #include "MainContainer.h"
-#include "ManWindow.h"
+#include "MainWindow.h"
 #include <QSlider>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -9,54 +9,80 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QMessageBox>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QFileDialog>
 
 MainContainer::MainContainer(MainWindow *mw): mainWindow(mw) {
     this->renderWindow = new RenderWindow;
 
-    xSlider = createSlider();
-    ySlider = createSlider();
-    zSlider = createSlider();
+    QFrame* hFrame = new QFrame(this);
+    hFrame->setObjectName("loadModelFrame");
+    QString hFrameStyle = QString("#loadModelFrame {border: 1px solid #aaa;}");
+    hFrame->setStyleSheet(hFrameStyle);
 
-    connect(xSlider, &QSlider::valueChanged, this->renderWindow, &RenderWindow::setXRotation);
-    connect(this->renderWindow, &RenderWindow::xRotationChanged, xSlider, &QSlider::setValue);
-    connect(ySlider, &QSlider::valueChanged, this->renderWindow, &RenderWindow::setYRotation);
-    connect(this->renderWindow, &RenderWindow::yRotationChanged, ySlider, &QSlider::setValue);
-    connect(zSlider, &QSlider::valueChanged, this->renderWindow, &RenderWindow::setZRotation);
-    connect(this->renderWindow, &RenderWindow::zRotationChanged, zSlider, &QSlider::setValue);
+    this->modelNameEdit = new QLineEdit;
+    QString modelNameEditStyle = QString("QLineEdit {width: 300px;}");
+    this->modelNameEdit->setStyleSheet(modelNameEditStyle);
+
+    this->modelScaleEdit = new QLineEdit;
+    this->modelScaleEdit->setObjectName("modelScaleEdit");
+    QString modelScaleEditStyle = QString("QLineEdit {width: 25px;}");
+    this->modelScaleEdit->setStyleSheet(modelScaleEditStyle);
+
+    this->modelSmoothingThresholdEdit = new QLineEdit;
+    this->modelSmoothingThresholdEdit->setObjectName("modelSmoothingThresholdEdit");
+    QString modelSmoothingThresholdEditStyle = QString("QLineEdit {width: 25px;}");
+    this->modelSmoothingThresholdEdit->setStyleSheet(modelSmoothingThresholdEditStyle);
+
+    QLabel* loadLabel = new QLabel("Load model: ");
+    QLabel* scaleLabel = new QLabel("Model scale: ");
+    QLabel* smoothingLabel = new QLabel("Smoothing threshhold: ");
+    QPushButton *browseButton = new QPushButton(this);
+    connect(browseButton, SIGNAL(clicked()), SLOT(browseForModel()));
+    browseButton->setText(tr("Browse"));
+    QPushButton *loadButton = new QPushButton(this);
+    loadButton->setText(tr("Load"));
+
+    QHBoxLayout *horizontalLayout = new QHBoxLayout;
+    horizontalLayout->addWidget(loadLabel);
+    horizontalLayout->addWidget(this->modelNameEdit);
+    horizontalLayout->addWidget(browseButton);
+    horizontalLayout->addWidget(scaleLabel);
+    horizontalLayout->addWidget(this->modelScaleEdit);
+    horizontalLayout->addWidget(smoothingLabel);
+    horizontalLayout->addWidget(this->modelSmoothingThresholdEdit);
+    horizontalLayout->addWidget(loadButton);
+    hFrame->setLayout(horizontalLayout);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    QHBoxLayout *container = new QHBoxLayout;
-    container->addWidget(this->renderWindow);
-    container->addWidget(xSlider);
-    container->addWidget(ySlider);
-    container->addWidget(zSlider);
-
-    QWidget *w = new QWidget;
-    w->setLayout(container);
-    mainLayout->addWidget(w);
+    mainLayout->addWidget(hFrame);
+    mainLayout->addWidget(this->renderWindow);
     setLayout(mainLayout);
 
-    xSlider->setValue(15 * 16);
-    ySlider->setValue(345 * 16);
-    zSlider->setValue(0 * 16);
+    setWindowTitle(tr("Modeler"));
+    this->setAutoFillBackground(true);
+}
 
-    setWindowTitle(tr("Hello GL"));
+void MainContainer::browseForModel() {
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    QStringList selectedFiles;
+    if (dialog.exec()) {
+        selectedFiles = dialog.selectedFiles();
+    }
 
-    this->setAutoFillBackground(false);
+    if (selectedFiles.size() > 0) {
+        //if (directoryComboBox->findText(directory) == -1)
+        //    directoryComboBox->addItem(directory);
+        //directoryComboBox->setCurrentIndex(directoryComboBox->findText(directory));
+        this->modelNameEdit->setText(selectedFiles.at(0));
+    }
 }
 
 RenderWindow* MainContainer::getRenderWindow() {
     return this->renderWindow;
-}
-
-QSlider *MainContainer::createSlider() {
-    QSlider *slider = new QSlider(Qt::Vertical);
-    slider->setRange(0, 360 * 16);
-    slider->setSingleStep(16);
-    slider->setPageStep(15 * 16);
-    slider->setTickInterval(15 * 16);
-    slider->setTickPosition(QSlider::TicksRight);
-    return slider;
 }
 
 void MainContainer::keyPressEvent(QKeyEvent *e) {

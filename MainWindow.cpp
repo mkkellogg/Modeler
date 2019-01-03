@@ -1,4 +1,4 @@
-#include "ManWindow.h"
+#include "MainWindow.h"
 
 #include <iostream>
 

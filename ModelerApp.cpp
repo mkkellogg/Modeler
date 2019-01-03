@@ -75,6 +75,62 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     }
 }
 
+void ModelerApp::loadModel(const QString& path, const QString& scaleText, const QString& smoothingThresholdText, const bool zUp) {
+   if (this->engineReady) {
+       std::string sPath = path.toStdString();
+       std::string filePrefix("file://");
+       std::string pathPrefix = sPath.substr(0, 7) ;
+       if (pathPrefix == filePrefix) {
+           sPath = sPath.substr(7);
+       }
+
+       std::string _scaleText = scaleText.toStdString();
+       float scale = 1.0f;
+       try {
+           scale = std::stof(_scaleText);
+       }
+       catch (const std::invalid_argument& ia) {
+           scale = 1.0f;
+       }
+
+       std::string _smoothingThresholdText = smoothingThresholdText.toStdString();
+       int smoothingThreshold = 80;
+       try {
+           smoothingThreshold = std::stoi(_smoothingThresholdText);
+       }
+       catch (const std::invalid_argument& ia) {
+           smoothingThreshold = 80;
+       }
+       if (smoothingThreshold < 0 ) smoothingThreshold = 0;
+       if (smoothingThreshold >= 90) smoothingThreshold = 90;
+
+       CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp](Core::WeakPointer<Core::Engine> engine) {
+           Core::ModelLoader& modelLoader = engine->getModelLoader();
+           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true);
+           this->sceneRoot->addChild(rootObject);
+
+           Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
+           scene->visitScene(rootObject, [this, &rootObject](Core::WeakPointer<Core::Object3D> obj){
+               Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer =
+                       Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
+               if (meshContainer) {
+                   std::vector<Core::WeakPointer<Core::Mesh>> meshes = meshContainer->getRenderables();
+                   for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
+                       this->rayCaster.addObject(obj, mesh);
+                       this->meshToObjectMap[mesh->getObjectID()] = obj;
+                   }
+               }
+           });
+
+           if (zUp) {
+               rootObject->getTransform().rotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0);
+           }
+       };
+       this->coreSync->run(runnable);
+   }
+}
+
+
 void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->engineReady = true;
@@ -171,8 +227,7 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
         slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0
     };
 
-    Core::WeakPointer<Core::BasicMaterial> cubeMaterial(engine->createMaterial<Core::BasicMaterial>());
-    cubeMaterial->build();
+    Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = engine->createMaterial<Core::BasicLitMaterial>();
 
 
     // ======= model platform objects ===============
@@ -207,12 +262,12 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
     this->meshToObjectMap[slab->getObjectID()] = bottomSlabObj;
     // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
-    bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -2.0f, 0.0f));
+    bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
 
 
     // ========== lights ============================
-    /*Core::WeakPointer<Core::Object3D> ambientLightObject = engine->createObject3D();
+    Core::WeakPointer<Core::Object3D> ambientLightObject = engine->createObject3D();
     this->sceneRoot->addChild(ambientLightObject);
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
@@ -229,16 +284,16 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));*/
+    directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));
 
-   engine->onUpdate([this]() {
+   engine->onUpdate([this, pointLightObject]() {
 
         static Core::Real rotationAngle = 0.0;
         static Core::Real counter = 0.0;
         counter += 0.01;
         if (counter> 1.0) counter = 0.0;
 
-        /*if (Core::WeakPointer<Core::Object3D>::isValid(pointLightObject)) {
+        if (Core::WeakPointer<Core::Object3D>::isValid(pointLightObject)) {
 
             rotationAngle += 0.6 * Core::Time::getDeltaTime();
             if (rotationAngle >= Core::Math::TwoPI) rotationAngle -= Core::Math::TwoPI;
@@ -262,11 +317,41 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
             Core::WeakPointer<Core::Object3D> lightObjectPtr = pointLightObject;
             lightObjectPtr->getTransform().getLocalMatrix().copy(worldMatrix);
 
-        }*/
+        }
 
         auto vp = Core::Engine::instance()->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
         this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
     }, true);
+
+   this->highlightMaterial = engine->createMaterial<Core::BasicColoredMaterial>();
+       this->highlightMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
+       this->highlightMaterial->setSourceBlendingMethod(Core::RenderState::BlendingMethod::SrcAlpha);
+       this->highlightMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
+       this->highlightMaterial->setLit(false);
+       engine->onRender([this]() {
+            Core::Color highlightColor(1.0, 0.65, 0.0, 0.5);
+            Core::Color highlightLineColor(1.0, 0.65, 0.0, 1.0);
+            if (this->selectedObject) {
+                 //  std::cerr << "rendering..." << this->selectedObject->getObjectID() << std::endl;
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+
+                   this->highlightMaterial->setZOffset(-.00005f);
+                   this->highlightMaterial->setColor(highlightColor);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->selectedObject, this->renderCamera, this->highlightMaterial);
+                   this->highlightMaterial->setRenderStyle(Core::RenderStyle::Line);
+                   this->highlightMaterial->setZOffset(-.0001f);
+                   this->highlightMaterial->setColor(highlightLineColor);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->selectedObject, this->renderCamera, this->highlightMaterial);
+                   this->highlightMaterial->setRenderStyle(Core::RenderStyle::Fill);
+                   this->highlightMaterial->setColor(highlightColor);
+
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+           }
+       }, true);
+
+    //loadModel("/home/mark/Development/GTE/resources/models/toonlevel/mushroom/MushRoom_01.fbx", "0.05", "80", true);
 
 }
 
@@ -315,14 +400,14 @@ void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UI
                     std::vector<Core::Hit> hits;
                     Core::Bool hit = this->rayCaster.castRay(ray, hits);
 
-                   // std::cerr << "Hit count: " << hits.size() << std::endl;
+                    //std::cerr << "Hit count: " << hits.size() << std::endl;
                     if (hits.size() > 0) {
                         Core::Hit& hit = hits[0];
                         Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
                         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
                         this->selectedObject = rootObject;
                         if (this->selectedObject) {
-                            // std::cerr << "Selected: " << this->selectedObject->getObjectID() << std::endl;
+                           //  std::cerr << "Selected: " << this->selectedObject->getObjectID() << std::endl;
                         }
                     }
 

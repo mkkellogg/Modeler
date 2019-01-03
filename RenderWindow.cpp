@@ -38,45 +38,7 @@ QSize RenderWindow::minimumSizeHint() const
 
 QSize RenderWindow::sizeHint() const
 {
-    return QSize(1024, 1024);
-}
-
-static void qNormalizeAngle(int &angle)
-{
-    while (angle < 0)
-        angle += 360 * 16;
-    while (angle > 360 * 16)
-        angle -= 360 * 16;
-}
-
-void RenderWindow::setXRotation(int angle)
-{
-    qNormalizeAngle(angle);
-    if (angle != m_xRot) {
-        m_xRot = angle;
-        emit xRotationChanged(angle);
-        QOpenGLWidget::update();
-    }
-}
-
-void RenderWindow::setYRotation(int angle)
-{
-    qNormalizeAngle(angle);
-    if (angle != m_yRot) {
-        m_yRot = angle;
-        emit yRotationChanged(angle);
-        QOpenGLWidget::update();
-    }
-}
-
-void RenderWindow::setZRotation(int angle)
-{
-    qNormalizeAngle(angle);
-    if (angle != m_zRot) {
-        m_zRot = angle;
-        emit zRotationChanged(angle);
-        QOpenGLWidget::update();
-    }
+    return QSize(768, 768);
 }
 
 void RenderWindow::cleanup()
@@ -112,6 +74,11 @@ void RenderWindow::initializeGL()
 void RenderWindow::paintGL()
 {
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+    static bool _inited = false;
+    if (!_inited) {
+        this->engine->setDefaultRenderTargetToCurrent();
+        _inited = true;
+    }
     this->update();
     this->resolveOnUpdates();
     this->resolveOnPreRenders();
@@ -119,8 +86,7 @@ void RenderWindow::paintGL()
 
 }
 
-void RenderWindow::resizeGL(int w, int h)
-{
+void RenderWindow::resizeGL(int w, int h) {
     engine->setRenderSize(w, h, true);
 }
 

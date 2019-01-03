@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QLineEdit>
 
 class QSlider;
 class QPushButton;
@@ -16,6 +17,9 @@ public:
     MainContainer(MainWindow *mw);
     RenderWindow* getRenderWindow();
 
+protected slots:
+    void browseForModel();
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 
@@ -23,9 +27,10 @@ private:
     QSlider *createSlider();
 
     RenderWindow *renderWindow;
-    QSlider *xSlider;
-    QSlider *ySlider;
-    QSlider *zSlider;
     QPushButton *dockBtn;
     MainWindow *mainWindow;
+
+    QLineEdit* modelNameEdit;
+    QLineEdit* modelScaleEdit;
+    QLineEdit* modelSmoothingThresholdEdit;
 };
