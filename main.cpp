@@ -39,14 +39,13 @@ int main(int argc, char *argv[])
 
     MainWindow mainWindow;
 
-    ModelerApp modelerApp;
-    modelerApp.init();
+    ModelerApp* modelerApp = new ModelerApp;
+    modelerApp->init();
 
     MainContainer * mainContainer = mainWindow.getMainContainer();
-    modelerApp.setMainContainer(mainContainer);
-
+    mainContainer->setApp(modelerApp);
     RenderWindow * renderWindow = mainContainer->getRenderWindow();
-    modelerApp.setRenderWindow(renderWindow);
+    modelerApp->setRenderWindow(renderWindow);
 
     RenderWindow::setTransparent(parser.isSet(transparentOption) && false);
     if (RenderWindow::isTransparent()) {

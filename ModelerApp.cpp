@@ -53,19 +53,6 @@ void ModelerApp::init() {
 
 }
 
-void ModelerApp::setMainContainer(MainContainer* mainContainer) {
-    if(this->mainContainer != mainContainer) {
-        this->mainContainer = mainContainer;
-        MainContainer::LoadModelClickedCallback callback = [this](const std::string& path, const std::string& scale, const std::string&smoothing, bool zUp){
-            this->onLoadModelClicked(path, scale, smoothing, zUp);
-        };
-        this->mainContainer->setModelScaleEditText(0.05);
-        this->mainContainer->setModelSmoothingThresholdEditText(80);
-        this->mainContainer->setModelZUpCheck(true);
-        this->mainContainer->onLoadModelClicked(callback);
-    }
-}
-
 void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     if (this->renderWindow != renderWindow) {
         this->renderWindow = renderWindow;
@@ -85,7 +72,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     }
 }
 
-void ModelerApp::loadModel(const std::string& path, const std::string& scaleText, const std::string& smoothingText, const bool zUp) {
+void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp) {
    if (this->engineReady) {
        std::string sPath = path;
        std::string filePrefix("file://");
@@ -94,21 +81,6 @@ void ModelerApp::loadModel(const std::string& path, const std::string& scaleText
            sPath = sPath.substr(7);
        }
 
-       float scale = 1.0f;
-       try {
-           scale = std::stof(scaleText);
-       }
-       catch (const std::invalid_argument& ia) {
-           scale = 1.0f;
-       }
-
-       int smoothingThreshold = 80;
-       try {
-           smoothingThreshold = std::stoi(smoothingText);
-       }
-       catch (const std::invalid_argument& ia) {
-           smoothingThreshold = 80;
-       }
        if (smoothingThreshold < 0 ) smoothingThreshold = 0;
        if (smoothingThreshold >= 90) smoothingThreshold = 90;
 
@@ -428,8 +400,4 @@ void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UI
             break;
         }
     }
-}
-
-void ModelerApp::onLoadModelClicked(const std::string& path, const std::string& scale, const std::string& smoothing, bool zUp)  {
-    this->loadModel(path, scale, smoothing, zUp);
 }

@@ -11,6 +11,7 @@ class QPushButton;
 
 class RenderWindow;
 class MainWindow;
+class ModelerApp;
 
 class MainContainer : public QWidget
 {
@@ -20,13 +21,12 @@ public:
     using LoadModelClickedCallback = std::function<void(const std::string&, const std::string&, const std::string&, bool)>;
 
     MainContainer(MainWindow *mw);
+    void setApp(ModelerApp* app);
     RenderWindow* getRenderWindow();
 
     void setModelScaleEditText(float scale);
     void setModelSmoothingThresholdEditText(float angle);
     void setModelZUpCheck(bool checked);
-
-    void onLoadModelClicked(LoadModelClickedCallback callback);
 
 protected slots:
     void browseForModel();
@@ -38,6 +38,7 @@ protected:
 private:
     QSlider *createSlider();
 
+    ModelerApp* app;
     RenderWindow *renderWindow;
     QPushButton *dockBtn;
     MainWindow *mainWindow;
@@ -47,5 +48,4 @@ private:
     QLineEdit* modelSmoothingThresholdEdit;
     QCheckBox* modelZUpCheckBox;
 
-    LoadModelClickedCallback loadModelClickedCallback;
 };

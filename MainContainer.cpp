@@ -3,6 +3,7 @@
 #include "RenderWindow.h"
 #include "MainContainer.h"
 #include "MainWindow.h"
+#include "ModelerApp.h"
 
 #include <QSlider>
 #include <QVBoxLayout>
@@ -17,7 +18,7 @@
 #include <QLineEdit>
 #include <QFileDialog>
 
-MainContainer::MainContainer(MainWindow *mw): mainWindow(mw) {
+MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw) {
     this->renderWindow = new RenderWindow;
 
     QFrame* hFrame = new QFrame(this);
@@ -76,6 +77,14 @@ MainContainer::MainContainer(MainWindow *mw): mainWindow(mw) {
 
     setWindowTitle(tr("Modeler"));
     this->setAutoFillBackground(true);
+
+    this->setModelScaleEditText(0.05);
+    this->setModelSmoothingThresholdEditText(80);
+    this->setModelZUpCheck(true);
+}
+
+void MainContainer::setApp(ModelerApp* app) {
+    this->app = app;
 }
 
 void MainContainer::browseForModel() {
@@ -96,9 +105,24 @@ void MainContainer::loadModel() {
     QString scaleQStr = this->modelScaleEdit->text();
     QString smoothingThresholdQStr = this->modelSmoothingThresholdEdit->text();
     bool zUp = this->modelZUpCheckBox->isChecked();
-    if (this->loadModelClickedCallback) {
-        this->loadModelClickedCallback(nameQStr.toStdString(), scaleQStr.toStdString(), smoothingThresholdQStr.toStdString(), zUp);
+
+    float scale = 1.0f;
+    try {
+        scale = std::stof(scaleQStr.toStdString());
     }
+    catch (const std::invalid_argument& ia) {
+        scale = 1.0f;
+    }
+
+    float smoothingThreshold = 80;
+    try {
+        smoothingThreshold = std::stof(smoothingThresholdQStr.toStdString());
+    }
+    catch (const std::invalid_argument& ia) {
+        smoothingThreshold = 80;
+    }
+
+    this->app->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, zUp);
 }
 
 RenderWindow* MainContainer::getRenderWindow() {
@@ -121,10 +145,6 @@ void MainContainer::setModelSmoothingThresholdEditText(float angle) {
 
 void MainContainer::setModelZUpCheck(bool checked) {
     this->modelZUpCheckBox->setChecked(checked);
-}
-
-void MainContainer::onLoadModelClicked(LoadModelClickedCallback callback) {
-   this->loadModelClickedCallback = callback;
 }
 
 void MainContainer::keyPressEvent(QKeyEvent *e) {
