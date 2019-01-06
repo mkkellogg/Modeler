@@ -22,9 +22,9 @@ public:
     MainContainer(MainWindow *mw);
     RenderWindow* getRenderWindow();
 
-    void setScaleEditText(float scale);
-    void setSmoothingThresholdEditText(float angle);
-    void setZUpCheck(bool checked);
+    void setModelScaleEditText(float scale);
+    void setModelSmoothingThresholdEditText(float angle);
+    void setModelZUpCheck(bool checked);
 
     void onLoadModelClicked(LoadModelClickedCallback callback);
 

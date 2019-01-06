@@ -59,9 +59,9 @@ void ModelerApp::setMainContainer(MainContainer* mainContainer) {
         MainContainer::LoadModelClickedCallback callback = [this](const std::string& path, const std::string& scale, const std::string&smoothing, bool zUp){
             this->onLoadModelClicked(path, scale, smoothing, zUp);
         };
-        this->mainContainer->setScaleEditText(0.05);
-        this->mainContainer->setSmoothingThresholdEditText(80);
-        this->mainContainer->setZUpCheck(true);
+        this->mainContainer->setModelScaleEditText(0.05);
+        this->mainContainer->setModelSmoothingThresholdEditText(80);
+        this->mainContainer->setModelZUpCheck(true);
         this->mainContainer->onLoadModelClicked(callback);
     }
 }

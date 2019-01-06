@@ -105,21 +105,21 @@ RenderWindow* MainContainer::getRenderWindow() {
     return this->renderWindow;
 }
 
-void MainContainer::setScaleEditText(float scale) {
+void MainContainer::setModelScaleEditText(float scale) {
     std::ostringstream ss;
     ss << scale;
     std::string scaleText(ss.str());
     this->modelScaleEdit->setText(QString::fromStdString(scaleText));
 }
 
-void MainContainer::setSmoothingThresholdEditText(float angle) {
+void MainContainer::setModelSmoothingThresholdEditText(float angle) {
     std::ostringstream ss;
     ss << angle;
     std::string scaleAngle(ss.str());
     this->modelSmoothingThresholdEdit->setText(QString::fromStdString(scaleAngle));
 }
 
-void MainContainer::setZUpCheck(bool checked) {
+void MainContainer::setModelZUpCheck(bool checked) {
     this->modelZUpCheckBox->setChecked(checked);
 }
 
