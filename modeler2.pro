@@ -43,7 +43,6 @@ else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../.
 else:unix: PRE_TARGETDEPS += $$PWD/../../Core/build/libcore.a
 
 
-unix|win32: LIBS += -lpng
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../assimp_dynamic/build/code/release/ -lassimp
@@ -52,5 +51,13 @@ else:unix: LIBS += -L/home/mark/Development/assimp_dynamic/build/code/ -lassimp
 
 INCLUDEPATH += $$PWD/../../assimp_dynamic/include
 DEPENDPATH += $$PWD/../../assimp_dynamic/include
+
+
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../DevIL/DevIL/build/lib/x64/ -lIL
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../DevIL/DevIL/build/lib/x64/ -lIL
+else:unix: LIBS += -L/home/mark/Development//DevIL/DevIL/build/lib/x64/ -lIL
+
 
 
