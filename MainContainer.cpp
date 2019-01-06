@@ -20,11 +20,32 @@
 
 MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw) {
     this->renderWindow = new RenderWindow;
+    setWindowTitle(tr("Modeler"));
+    this->setAutoFillBackground(true);
+    this->setUpGUI();
+}
 
-    QFrame* hFrame = new QFrame(this);
-    hFrame->setObjectName("loadModelFrame");
+void MainContainer::setApp(ModelerApp* app) {
+    this->app = app;
+}
+
+void MainContainer::setUpGUI() {
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QFrame *loadModelFrame = this->buildLoadModelGUI();
+    mainLayout->addWidget(loadModelFrame);
+    mainLayout->addWidget(this->renderWindow);
+    setLayout(mainLayout);
+
+    this->setModelScaleEditText(0.05);
+    this->setModelSmoothingThresholdEditText(80);
+    this->setModelZUpCheck(true);
+}
+
+QFrame* MainContainer::buildLoadModelGUI() {
+    QFrame* loadModelFrame = new QFrame(this);
+    loadModelFrame->setObjectName("loadModelFrame");
     QString hFrameStyle = QString("#loadModelFrame {border: 1px solid #aaa;}");
-    hFrame->setStyleSheet(hFrameStyle);
+    loadModelFrame->setStyleSheet(hFrameStyle);
 
     this->modelNameEdit = new QLineEdit;
     QString modelNameEditStyle = QString("QLineEdit {width: 300px;}");
@@ -68,23 +89,8 @@ MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw) {
     horizontalLayout->addWidget(zUpLabel);
     horizontalLayout->addWidget(this->modelZUpCheckBox);
     horizontalLayout->addWidget(loadButton);
-    hFrame->setLayout(horizontalLayout);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(hFrame);
-    mainLayout->addWidget(this->renderWindow);
-    setLayout(mainLayout);
-
-    setWindowTitle(tr("Modeler"));
-    this->setAutoFillBackground(true);
-
-    this->setModelScaleEditText(0.05);
-    this->setModelSmoothingThresholdEditText(80);
-    this->setModelZUpCheck(true);
-}
-
-void MainContainer::setApp(ModelerApp* app) {
-    this->app = app;
+    loadModelFrame->setLayout(horizontalLayout);
+    return loadModelFrame;
 }
 
 void MainContainer::browseForModel() {

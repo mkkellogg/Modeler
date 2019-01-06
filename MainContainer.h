@@ -36,7 +36,8 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
-    QSlider *createSlider();
+    void setUpGUI();
+    QFrame* buildLoadModelGUI();
 
     ModelerApp* app;
     RenderWindow *renderWindow;
