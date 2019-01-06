@@ -9,7 +9,8 @@ HEADERS       = \
     CoreSync.h \
     GestureAdapter.h \
     OrbitControls.h \
-    MainWindow.h
+    MainWindow.h \
+    CoreScene.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -21,7 +22,8 @@ SOURCES       = \
     Settings.cpp \
     CoreSync.cpp \
     GestureAdapter.cpp \
-    OrbitControls.cpp
+    OrbitControls.cpp \
+    CoreScene.cpp
 
 QT           += widgets
 

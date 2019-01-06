@@ -17,8 +17,10 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QFileDialog>
+#include <QTreeWidget>
 
-MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw) {
+MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw), sceneTree(nullptr),
+  modelNameEdit(nullptr), modelScaleEdit(nullptr), modelSmoothingThresholdEdit(nullptr), modelZUpCheckBox(nullptr) {
     this->renderWindow = new RenderWindow;
     setWindowTitle(tr("Modeler"));
     this->setAutoFillBackground(true);
@@ -27,13 +29,24 @@ MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw) {
 
 void MainContainer::setApp(ModelerApp* app) {
     this->app = app;
+    this->app->getCoreScene().onSceneUpdated([this](Core::WeakPointer<Core::Object3D> object){
+        this->refreshSceneTree();
+    });
 }
 
 void MainContainer::setUpGUI() {
     QVBoxLayout *mainLayout = new QVBoxLayout;
     QFrame *loadModelFrame = this->buildLoadModelGUI();
+    QHBoxLayout *lowerLayout = new QHBoxLayout;
     mainLayout->addWidget(loadModelFrame);
-    mainLayout->addWidget(this->renderWindow);
+
+    this->sceneTree = new QTreeWidget;
+    sceneTree->setColumnCount(1);
+    sceneTree->setHeaderHidden(true);
+
+    lowerLayout->addWidget(sceneTree);
+    lowerLayout->addWidget(this->renderWindow);
+    mainLayout->addLayout(lowerLayout);
     setLayout(mainLayout);
 
     this->setModelScaleEditText(0.05);
@@ -78,18 +91,18 @@ QFrame* MainContainer::buildLoadModelGUI() {
 
     this->modelZUpCheckBox = new QCheckBox;
 
-    QHBoxLayout *horizontalLayout = new QHBoxLayout;
-    horizontalLayout->addWidget(loadLabel);
-    horizontalLayout->addWidget(this->modelNameEdit);
-    horizontalLayout->addWidget(browseButton);
-    horizontalLayout->addWidget(scaleLabel);
-    horizontalLayout->addWidget(this->modelScaleEdit);
-    horizontalLayout->addWidget(smoothingLabel);
-    horizontalLayout->addWidget(this->modelSmoothingThresholdEdit);
-    horizontalLayout->addWidget(zUpLabel);
-    horizontalLayout->addWidget(this->modelZUpCheckBox);
-    horizontalLayout->addWidget(loadButton);
-    loadModelFrame->setLayout(horizontalLayout);
+    QHBoxLayout *loadModelHLayout = new QHBoxLayout;
+    loadModelHLayout->addWidget(loadLabel);
+    loadModelHLayout->addWidget(this->modelNameEdit);
+    loadModelHLayout->addWidget(browseButton);
+    loadModelHLayout->addWidget(scaleLabel);
+    loadModelHLayout->addWidget(this->modelScaleEdit);
+    loadModelHLayout->addWidget(smoothingLabel);
+    loadModelHLayout->addWidget(this->modelSmoothingThresholdEdit);
+    loadModelHLayout->addWidget(zUpLabel);
+    loadModelHLayout->addWidget(this->modelZUpCheckBox);
+    loadModelHLayout->addWidget(loadButton);
+    loadModelFrame->setLayout(loadModelHLayout);
     return loadModelFrame;
 }
 
@@ -158,4 +171,31 @@ void MainContainer::keyPressEvent(QKeyEvent *e) {
         close();
     else
         QWidget::keyPressEvent(e);
+}
+
+void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
+
+    QTreeWidgetItem* childItem = new QTreeWidgetItem();
+    childItem->setText(0, QString::fromStdString(object->getName()));
+
+    if (parentItem == nullptr) {
+        sceneTree->addTopLevelItem(childItem);
+    }
+    else {
+        parentItem->addChild(childItem);
+    }
+
+    for (Core::SceneObjectIterator<Core::Object3D> itr = object->beginIterateChildren(); itr != object->endIterateChildren(); ++itr) {
+        Core::WeakPointer<Core::Object3D> childObject = *itr;
+        this->populateSceneTree(sceneTree, childItem, childObject);
+    }
+}
+
+void MainContainer::refreshSceneTree() {
+    Core::WeakPointer<Core::Object3D> sceneRoot = this->app->getCoreScene().getSceneRoot();
+    this->sceneTree->clear();
+    for (Core::SceneObjectIterator<Core::Object3D> itr = sceneRoot->beginIterateChildren(); itr != sceneRoot->endIterateChildren(); ++itr) {
+        Core::WeakPointer<Core::Object3D> childObject = *itr;
+        this->populateSceneTree(this->sceneTree, nullptr, childObject);
+    }
 }

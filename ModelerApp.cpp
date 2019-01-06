@@ -2,7 +2,6 @@
 
 #include "ModelerApp.h"
 #include "RenderWindow.h"
-#include "MainContainer.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -41,7 +40,7 @@
 
 using MeshContainer = Core::RenderableContainer<Core::Mesh>;
 
-ModelerApp::ModelerApp(): mainContainer(nullptr), renderWindow(nullptr) {
+ModelerApp::ModelerApp(): renderWindow(nullptr) {
 
 }
 
@@ -50,7 +49,6 @@ void ModelerApp::init() {
             std::make_shared<PipedEventAdapter<GestureAdapter::GestureEvent>>(std::bind(&ModelerApp::onGesture, this, std::placeholders::_1));
     this->gestureAdapter = std::make_shared<GestureAdapter>();
     this->gestureAdapter->setPipedEventAdapter(this->pipedGestureAdapter);
-
 }
 
 void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
@@ -87,7 +85,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
        CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
            Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true);
-           this->sceneRoot->addChild(rootObject);
+           this->coreScene.addObjectToScene(rootObject);
 
            Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
            scene->visitScene(rootObject, [this, &rootObject](Core::WeakPointer<Core::Object3D> obj){
@@ -110,6 +108,9 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
    }
 }
 
+CoreScene& ModelerApp::getCoreScene() {
+    return this->coreScene;
+}
 
 void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
 
@@ -117,14 +118,15 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
 
     Core::WeakPointer<Core::Scene> scene(engine->createScene());
     engine->setActiveScene(scene);
-    this->sceneRoot = scene->getRoot();
+    this->coreScene.setSceneRoot(scene->getRoot());
 
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
 
     // ====== initial camera setup ====================
     Core::WeakPointer<Core::Object3D> cameraObj = engine->createObject3D<Core::Object3D>();
+    cameraObj->setName("Main camera");
     this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
-    this->sceneRoot->addChild(cameraObj);
+    this->coreScene.addObjectToScene(cameraObj);
 
     Core::Quaternion qA;
     qA.fromAngleAxis(0.0, 0, 1, 0);
@@ -235,9 +237,10 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
     slab->calculateNormals(75.0f);
 
     Core::WeakPointer<MeshContainer> bottomSlabObj(engine->createObject3D<MeshContainer>());
+    bottomSlabObj->setName("Base platform");
     Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
-    sceneRoot->addChild(bottomSlabObj);
+    this->coreScene.addObjectToScene(bottomSlabObj);
     this->rayCaster.addObject(bottomSlabObj, slab);
     this->meshToObjectMap[slab->getObjectID()] = bottomSlabObj;
     // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
@@ -248,19 +251,22 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
 
     // ========== lights ============================
     Core::WeakPointer<Core::Object3D> ambientLightObject = engine->createObject3D();
-    this->sceneRoot->addChild(ambientLightObject);
+    ambientLightObject->setName("Ambient light");
+    this->coreScene.addObjectToScene(ambientLightObject);
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
     Core::WeakPointer<Core::Object3D> pointLightObject = engine->createObject3D();
-    this->sceneRoot->addChild(pointLightObject);
+    pointLightObject->setName("Point light");
+    this->coreScene.addObjectToScene(pointLightObject);
     Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
     pointLight->setColor(1.0f, 1.0f, 1.0f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     pointLight->setRadius(10.0f);
 
     Core::WeakPointer<Core::Object3D> directionalLightObject = engine->createObject3D();
-    this->sceneRoot->addChild(directionalLightObject);
+    directionalLightObject->setName("Directonal light");
+    this->coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
@@ -330,9 +336,6 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
            }
        }, true);
-
-    //loadModel("/home/mark/Development/GTE/resources/models/toonlevel/mushroom/MushRoom_01.fbx", "0.05", "80", true);
-
 }
 
 void ModelerApp::onGesture(GestureAdapter::GestureEvent event) {

@@ -6,8 +6,12 @@
 #include <QLineEdit>
 #include <QCheckBox>
 
+#include "Core/Engine.h"
+
 class QSlider;
 class QPushButton;
+class QTreeWidgetItem;
+class QTreeWidget;
 
 class RenderWindow;
 class MainWindow;
@@ -38,12 +42,14 @@ protected:
 private:
     void setUpGUI();
     QFrame* buildLoadModelGUI();
+    void populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
+    void refreshSceneTree();
 
     ModelerApp* app;
     RenderWindow *renderWindow;
     QPushButton *dockBtn;
     MainWindow *mainWindow;
-
+    QTreeWidget* sceneTree;
     QLineEdit* modelNameEdit;
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
