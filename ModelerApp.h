@@ -21,12 +21,13 @@ public:
     void init();
     void setMainContainer(MainContainer* mainContainer);
     void setRenderWindow(RenderWindow* renderWindow);
-    void loadModel(const QString& path, const QString& scaleText, const QString& smoothingThresholdText, const bool zUp);
+    void loadModel(const std::string& path, const std::string& scaleText, const std::string& smoothingText, const bool zUp);
 
 private:
     void onEngineReady(Core::WeakPointer<Core::Engine> engine);
     void onGesture(GestureAdapter::GestureEvent event);
     void onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
+    void onLoadModelClicked(const std::string& path, const std::string& scale, const std::string& smoothing, bool zUp);
 
     MainContainer* mainContainer;
     RenderWindow* renderWindow;

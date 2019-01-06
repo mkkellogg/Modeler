@@ -1,7 +1,10 @@
 #pragma once
 
+#include <functional>
+
 #include <QWidget>
 #include <QLineEdit>
+#include <QCheckBox>
 
 class QSlider;
 class QPushButton;
@@ -14,11 +17,20 @@ class MainContainer : public QWidget
     Q_OBJECT
 
 public:
+    using LoadModelClickedCallback = std::function<void(const std::string&, const std::string&, const std::string&, bool)>;
+
     MainContainer(MainWindow *mw);
     RenderWindow* getRenderWindow();
 
+    void setScaleEditText(float scale);
+    void setSmoothingThresholdEditText(float angle);
+    void setZUpCheck(bool checked);
+
+    void onLoadModelClicked(LoadModelClickedCallback callback);
+
 protected slots:
     void browseForModel();
+    void loadModel();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -33,4 +45,7 @@ private:
     QLineEdit* modelNameEdit;
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
+    QCheckBox* modelZUpCheckBox;
+
+    LoadModelClickedCallback loadModelClickedCallback;
 };

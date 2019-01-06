@@ -1,6 +1,9 @@
+#include <sstream>
+
 #include "RenderWindow.h"
 #include "MainContainer.h"
 #include "MainWindow.h"
+
 #include <QSlider>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -28,22 +31,30 @@ MainContainer::MainContainer(MainWindow *mw): mainWindow(mw) {
 
     this->modelScaleEdit = new QLineEdit;
     this->modelScaleEdit->setObjectName("modelScaleEdit");
-    QString modelScaleEditStyle = QString("QLineEdit {width: 25px;}");
+    QString modelScaleEditStyle = QString("QLineEdit {width: 35px;}");
     this->modelScaleEdit->setStyleSheet(modelScaleEditStyle);
+    this->modelScaleEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     this->modelSmoothingThresholdEdit = new QLineEdit;
     this->modelSmoothingThresholdEdit->setObjectName("modelSmoothingThresholdEdit");
     QString modelSmoothingThresholdEditStyle = QString("QLineEdit {width: 25px;}");
     this->modelSmoothingThresholdEdit->setStyleSheet(modelSmoothingThresholdEditStyle);
+    this->modelSmoothingThresholdEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    QLabel* loadLabel = new QLabel("Load model: ");
-    QLabel* scaleLabel = new QLabel("Model scale: ");
-    QLabel* smoothingLabel = new QLabel("Smoothing threshhold: ");
+    QLabel* loadLabel = new QLabel("Path: ");
+    QLabel* scaleLabel = new QLabel(" Scale: ");
+    QLabel* smoothingLabel = new QLabel(" Smoothing angle: ");
+    QLabel* zUpLabel = new QLabel(" Z-up: ");
+
     QPushButton *browseButton = new QPushButton(this);
     connect(browseButton, SIGNAL(clicked()), SLOT(browseForModel()));
     browseButton->setText(tr("Browse"));
+
     QPushButton *loadButton = new QPushButton(this);
+    connect(loadButton, SIGNAL(clicked()), SLOT(loadModel()));
     loadButton->setText(tr("Load"));
+
+    this->modelZUpCheckBox = new QCheckBox;
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout;
     horizontalLayout->addWidget(loadLabel);
@@ -53,6 +64,8 @@ MainContainer::MainContainer(MainWindow *mw): mainWindow(mw) {
     horizontalLayout->addWidget(this->modelScaleEdit);
     horizontalLayout->addWidget(smoothingLabel);
     horizontalLayout->addWidget(this->modelSmoothingThresholdEdit);
+    horizontalLayout->addWidget(zUpLabel);
+    horizontalLayout->addWidget(this->modelZUpCheckBox);
     horizontalLayout->addWidget(loadButton);
     hFrame->setLayout(horizontalLayout);
 
@@ -74,15 +87,44 @@ void MainContainer::browseForModel() {
     }
 
     if (selectedFiles.size() > 0) {
-        //if (directoryComboBox->findText(directory) == -1)
-        //    directoryComboBox->addItem(directory);
-        //directoryComboBox->setCurrentIndex(directoryComboBox->findText(directory));
         this->modelNameEdit->setText(selectedFiles.at(0));
+    }
+}
+
+void MainContainer::loadModel() {
+    QString nameQStr = this->modelNameEdit->text();
+    QString scaleQStr = this->modelScaleEdit->text();
+    QString smoothingThresholdQStr = this->modelSmoothingThresholdEdit->text();
+    bool zUp = this->modelZUpCheckBox->isChecked();
+    if (this->loadModelClickedCallback) {
+        this->loadModelClickedCallback(nameQStr.toStdString(), scaleQStr.toStdString(), smoothingThresholdQStr.toStdString(), zUp);
     }
 }
 
 RenderWindow* MainContainer::getRenderWindow() {
     return this->renderWindow;
+}
+
+void MainContainer::setScaleEditText(float scale) {
+    std::ostringstream ss;
+    ss << scale;
+    std::string scaleText(ss.str());
+    this->modelScaleEdit->setText(QString::fromStdString(scaleText));
+}
+
+void MainContainer::setSmoothingThresholdEditText(float angle) {
+    std::ostringstream ss;
+    ss << angle;
+    std::string scaleAngle(ss.str());
+    this->modelSmoothingThresholdEdit->setText(QString::fromStdString(scaleAngle));
+}
+
+void MainContainer::setZUpCheck(bool checked) {
+    this->modelZUpCheckBox->setChecked(checked);
+}
+
+void MainContainer::onLoadModelClicked(LoadModelClickedCallback callback) {
+   this->loadModelClickedCallback = callback;
 }
 
 void MainContainer::keyPressEvent(QKeyEvent *e) {
