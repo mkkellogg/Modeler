@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QTreeWidget>
+#include <QItemSelection>
 
 #include "Core/Engine.h"
 
@@ -34,7 +35,7 @@ public:
     void setModelZUpCheck(bool checked);
 
 protected slots:
-    void onSceneTreeClicked(QTreeWidgetItem* item, int column);
+    void sceneTreeSelectionChanged(const QItemSelection& oldItem,const QItemSelection& newItem);
     void browseForModel();
     void loadModel();
 

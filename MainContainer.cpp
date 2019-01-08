@@ -49,7 +49,7 @@ void MainContainer::setUpGUI() {
     this->sceneTree->header()->setStretchLastSection(false);
     this->sceneTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    connect(this->sceneTree, SIGNAL( itemClicked( QTreeWidgetItem*, int )), SLOT(onSceneTreeClicked( QTreeWidgetItem*, int)));
+    connect(this->sceneTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(sceneTreeSelectionChanged(const QItemSelection&,const QItemSelection&)));
 
     lowerLayout->addWidget(sceneTree);
     lowerLayout->addWidget(this->renderWindow);
@@ -113,9 +113,32 @@ QFrame* MainContainer::buildLoadModelGUI() {
     return loadModelFrame;
 }
 
-void MainContainer::onSceneTreeClicked( QTreeWidgetItem* item, int column) {
-    SceneTreeWidgetItem* sceneTreeItem = dynamic_cast<SceneTreeWidgetItem*>(item);
-    this->app->setSelectedObject(sceneTreeItem->sceneObject);
+void MainContainer::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
+
+    /*QModelIndexList indexes = selected.indexes();
+    foreach(const QModelIndex &index, indexes) {
+        QTreeWidgetItem *item = this->sceneTree->i //itemAt(index.row());
+        // ...
+    }*/
+
+   /* QModelIndexList selection = this->sceneTree->selectionModel()->selectedRows();
+
+    // Multiple rows can be selected
+    for(int i=0; i< selection.count(); i++)
+    {
+        QModelIndex index = selection.at(i);
+        qDebug() << index.row() << ", " << index.column();
+    }
+*/
+
+    QList<QTreeWidgetItem*> selectedItems = this->sceneTree->selectedItems();
+    for (const QTreeWidgetItem* item : selectedItems) {
+        SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
+        this->app->setSelectedObject(sceneTreeItem->sceneObject);
+    }
+
+   // SceneTreeWidgetItem* sceneTreeItem = dynamic_cast<SceneTreeWidgetItem*>(item);
+   // this->app->setSelectedObject(sceneTreeItem->sceneObject);
 }
 
 void MainContainer::browseForModel() {
@@ -188,6 +211,7 @@ void MainContainer::keyPressEvent(QKeyEvent *e) {
 void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
 
     SceneTreeWidgetItem* childItem = new SceneTreeWidgetItem();
+    childItem->sceneObject = object;
     childItem->setText(0, QString::fromStdString(object->getName()));
 
     if (parentItem == nullptr) {
