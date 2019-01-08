@@ -18,6 +18,7 @@
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QTreeWidget>
+#include <QHeaderView>
 
 MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw), sceneTree(nullptr),
   modelNameEdit(nullptr), modelScaleEdit(nullptr), modelSmoothingThresholdEdit(nullptr), modelZUpCheckBox(nullptr) {
@@ -41,8 +42,12 @@ void MainContainer::setUpGUI() {
     mainLayout->addWidget(loadModelFrame);
 
     this->sceneTree = new QTreeWidget;
-    sceneTree->setColumnCount(1);
-    sceneTree->setHeaderHidden(true);
+    this->sceneTree->setColumnCount(1);
+    this-> sceneTree->setHeaderHidden(true);
+    this->sceneTree->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    this->sceneTree->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->sceneTree->header()->setStretchLastSection(false);
+    this->sceneTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     lowerLayout->addWidget(sceneTree);
     lowerLayout->addWidget(this->renderWindow);
