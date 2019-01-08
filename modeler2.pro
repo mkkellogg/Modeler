@@ -30,6 +30,7 @@ QT           += widgets
 
 DEFINES += GL_GLEXT_PROTOTYPES
 
+CONFIG += c++11
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../Core/build/release/ -lcore
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../Core/build/debug/ -lcore
