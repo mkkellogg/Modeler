@@ -404,3 +404,7 @@ void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UI
         }
     }
 }
+
+void ModelerApp::setSelectedObject(Core::WeakPointer<Core::Object3D> selectedObject) {
+    this->selectedObject = selectedObject;
+}

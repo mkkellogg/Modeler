@@ -23,6 +23,7 @@ public:
     void setRenderWindow(RenderWindow* renderWindow);
     void loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp);
     CoreScene& getCoreScene();
+    void setSelectedObject(Core::WeakPointer<Core::Object3D> selectedObject);
 
 private:
     void onEngineReady(Core::WeakPointer<Core::Engine> engine);

@@ -49,6 +49,8 @@ void MainContainer::setUpGUI() {
     this->sceneTree->header()->setStretchLastSection(false);
     this->sceneTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
+    connect(this->sceneTree, SIGNAL( itemClicked( QTreeWidgetItem*, int )), SLOT(onSceneTreeClicked( QTreeWidgetItem*, int)));
+
     lowerLayout->addWidget(sceneTree);
     lowerLayout->addWidget(this->renderWindow);
     mainLayout->addLayout(lowerLayout);
@@ -109,6 +111,11 @@ QFrame* MainContainer::buildLoadModelGUI() {
     loadModelHLayout->addWidget(loadButton);
     loadModelFrame->setLayout(loadModelHLayout);
     return loadModelFrame;
+}
+
+void MainContainer::onSceneTreeClicked( QTreeWidgetItem* item, int column) {
+    SceneTreeWidgetItem* sceneTreeItem = dynamic_cast<SceneTreeWidgetItem*>(item);
+    this->app->setSelectedObject(sceneTreeItem->sceneObject);
 }
 
 void MainContainer::browseForModel() {
@@ -180,7 +187,7 @@ void MainContainer::keyPressEvent(QKeyEvent *e) {
 
 void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
 
-    QTreeWidgetItem* childItem = new QTreeWidgetItem();
+    SceneTreeWidgetItem* childItem = new SceneTreeWidgetItem();
     childItem->setText(0, QString::fromStdString(object->getName()));
 
     if (parentItem == nullptr) {

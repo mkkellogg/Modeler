@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QCheckBox>
+#include <QTreeWidget>
 
 #include "Core/Engine.h"
 
@@ -33,6 +34,7 @@ public:
     void setModelZUpCheck(bool checked);
 
 protected slots:
+    void onSceneTreeClicked(QTreeWidgetItem* item, int column);
     void browseForModel();
     void loadModel();
 
@@ -54,5 +56,10 @@ private:
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
     QCheckBox* modelZUpCheckBox;
+
+    class SceneTreeWidgetItem: public QTreeWidgetItem {
+    public:
+        Core::WeakPointer<Core::Object3D> sceneObject;
+    };
 
 };
