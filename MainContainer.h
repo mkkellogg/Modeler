@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <unordered_map>
 
 #include <QWidget>
 #include <QLineEdit>
@@ -39,28 +40,27 @@ protected slots:
     void browseForModel();
     void loadModel();
 
-protected:
-    void keyPressEvent(QKeyEvent *event) override;
-
 private:
-    void setUpGUI();
-    QFrame* buildLoadModelGUI();
-    void populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
-    void refreshSceneTree();
-
-    ModelerApp* app;
-    RenderWindow *renderWindow;
-    QPushButton *dockBtn;
-    MainWindow *mainWindow;
-    QTreeWidget* sceneTree;
-    QLineEdit* modelNameEdit;
-    QLineEdit* modelScaleEdit;
-    QLineEdit* modelSmoothingThresholdEdit;
-    QCheckBox* modelZUpCheckBox;
-
     class SceneTreeWidgetItem: public QTreeWidgetItem {
     public:
         Core::WeakPointer<Core::Object3D> sceneObject;
     };
 
+    void setUpGUI();
+    QFrame* buildLoadModelGUI();
+    void selecScenetObject(Core::WeakPointer<Core::Object3D> object);
+    void populateSceneTree(QTreeWidget* sceneObjectTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
+    void refreshSceneTree();
+    void expandAllAbove(SceneTreeWidgetItem* item);
+
+    ModelerApp* app;
+    RenderWindow *renderWindow;
+    QPushButton *dockBtn;
+    MainWindow *mainWindow;
+    QTreeWidget* sceneObjectTree;
+    QLineEdit* modelNameEdit;
+    QLineEdit* modelScaleEdit;
+    QLineEdit* modelSmoothingThresholdEdit;
+    QCheckBox* modelZUpCheckBox;
+    std::unordered_map<Core::UInt64, SceneTreeWidgetItem*> sceneObjectTreeMap;
 };

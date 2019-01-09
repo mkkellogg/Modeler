@@ -10,7 +10,8 @@ HEADERS       = \
     GestureAdapter.h \
     OrbitControls.h \
     MainWindow.h \
-    CoreScene.h
+    CoreScene.h \
+    Exception.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -23,7 +24,8 @@ SOURCES       = \
     CoreSync.cpp \
     GestureAdapter.cpp \
     OrbitControls.cpp \
-    CoreScene.cpp
+    CoreScene.cpp \
+    Exception.cpp
 
 QT           += widgets
 

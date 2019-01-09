@@ -1,6 +1,9 @@
 #pragma once
 
+#include <functional>
+
 #include "Core/Engine.h"
+#include "Core/scene/Object3D.h"
 #include "Core/material/BasicTexturedMaterial.h"
 #include "Core/material/BasicColoredMaterial.h"
 #include "Core/material/Shader.h"
@@ -18,12 +21,12 @@ class MainContainer;
 
 class ModelerApp {
 public:
+
     ModelerApp();
     void init();
     void setRenderWindow(RenderWindow* renderWindow);
     void loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp);
     CoreScene& getCoreScene();
-    void setSelectedObject(Core::WeakPointer<Core::Object3D> selectedObject);
 
 private:
     void onEngineReady(Core::WeakPointer<Core::Engine> engine);
@@ -37,7 +40,6 @@ private:
     Core::WeakPointer<Core::Engine> engine;
     Core::RayCaster rayCaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
-    Core::WeakPointer<Core::Object3D> selectedObject;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;

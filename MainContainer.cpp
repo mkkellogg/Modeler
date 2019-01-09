@@ -4,6 +4,7 @@
 #include "MainContainer.h"
 #include "MainWindow.h"
 #include "ModelerApp.h"
+#include "Exception.h"
 
 #include <QSlider>
 #include <QVBoxLayout>
@@ -20,7 +21,7 @@
 #include <QTreeWidget>
 #include <QHeaderView>
 
-MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw), sceneTree(nullptr),
+MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
   modelNameEdit(nullptr), modelScaleEdit(nullptr), modelSmoothingThresholdEdit(nullptr), modelZUpCheckBox(nullptr) {
     this->renderWindow = new RenderWindow;
     setWindowTitle(tr("Modeler"));
@@ -29,10 +30,18 @@ MainContainer::MainContainer(MainWindow *mw): app(nullptr), mainWindow(mw), scen
 }
 
 void MainContainer::setApp(ModelerApp* app) {
-    this->app = app;
-    this->app->getCoreScene().onSceneUpdated([this](Core::WeakPointer<Core::Object3D> object){
-        this->refreshSceneTree();
-    });
+    if (this->app == nullptr) {
+        this->app = app;
+        this->app->getCoreScene().onSceneUpdated([this](Core::WeakPointer<Core::Object3D> object){
+            this->refreshSceneTree();
+        });
+        this->app->getCoreScene().onObjectSelected([this](Core::WeakPointer<Core::Object3D> object){
+            this->selecScenetObject(object);
+        });
+    }
+    else {
+        throw Exception("MainContainer::setApp() -> Tried to set 'app' multiple times!");
+    }
 }
 
 void MainContainer::setUpGUI() {
@@ -41,17 +50,17 @@ void MainContainer::setUpGUI() {
     QHBoxLayout *lowerLayout = new QHBoxLayout;
     mainLayout->addWidget(loadModelFrame);
 
-    this->sceneTree = new QTreeWidget;
-    this->sceneTree->setColumnCount(1);
-    this-> sceneTree->setHeaderHidden(true);
-    this->sceneTree->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-    this->sceneTree->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    this->sceneTree->header()->setStretchLastSection(false);
-    this->sceneTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    this->sceneObjectTree = new QTreeWidget;
+    this->sceneObjectTree->setColumnCount(1);
+    this-> sceneObjectTree->setHeaderHidden(true);
+    this->sceneObjectTree->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    this->sceneObjectTree->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    this->sceneObjectTree->header()->setStretchLastSection(false);
+    this->sceneObjectTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    connect(this->sceneTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(sceneTreeSelectionChanged(const QItemSelection&,const QItemSelection&)));
+    connect(this->sceneObjectTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(sceneTreeSelectionChanged(const QItemSelection&,const QItemSelection&)));
 
-    lowerLayout->addWidget(sceneTree);
+    lowerLayout->addWidget(sceneObjectTree);
     lowerLayout->addWidget(this->renderWindow);
     mainLayout->addLayout(lowerLayout);
     setLayout(mainLayout);
@@ -114,31 +123,11 @@ QFrame* MainContainer::buildLoadModelGUI() {
 }
 
 void MainContainer::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
-
-    /*QModelIndexList indexes = selected.indexes();
-    foreach(const QModelIndex &index, indexes) {
-        QTreeWidgetItem *item = this->sceneTree->i //itemAt(index.row());
-        // ...
-    }*/
-
-   /* QModelIndexList selection = this->sceneTree->selectionModel()->selectedRows();
-
-    // Multiple rows can be selected
-    for(int i=0; i< selection.count(); i++)
-    {
-        QModelIndex index = selection.at(i);
-        qDebug() << index.row() << ", " << index.column();
-    }
-*/
-
-    QList<QTreeWidgetItem*> selectedItems = this->sceneTree->selectedItems();
+    QList<QTreeWidgetItem*> selectedItems = this->sceneObjectTree->selectedItems();
     for (const QTreeWidgetItem* item : selectedItems) {
         SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
-        this->app->setSelectedObject(sceneTreeItem->sceneObject);
+        this->app->getCoreScene().setSelectedObject(sceneTreeItem->sceneObject);
     }
-
-   // SceneTreeWidgetItem* sceneTreeItem = dynamic_cast<SceneTreeWidgetItem*>(item);
-   // this->app->setSelectedObject(sceneTreeItem->sceneObject);
 }
 
 void MainContainer::browseForModel() {
@@ -190,6 +179,16 @@ void MainContainer::setModelScaleEditText(float scale) {
     this->modelScaleEdit->setText(QString::fromStdString(scaleText));
 }
 
+void MainContainer::selecScenetObject(Core::WeakPointer<Core::Object3D> object) {
+    Core::UInt64 objectID = object->getID();
+    if (this->sceneObjectTreeMap.find(objectID) != this->sceneObjectTreeMap.end()) {
+        this->sceneObjectTree->clearSelection();
+        SceneTreeWidgetItem* mappedItem = this->sceneObjectTreeMap[objectID];
+        this->expandAllAbove(mappedItem);
+        mappedItem->setSelected(true);
+    }
+}
+
 void MainContainer::setModelSmoothingThresholdEditText(float angle) {
     std::ostringstream ss;
     ss << angle;
@@ -201,18 +200,11 @@ void MainContainer::setModelZUpCheck(bool checked) {
     this->modelZUpCheckBox->setChecked(checked);
 }
 
-void MainContainer::keyPressEvent(QKeyEvent *e) {
-    if (e->key() == Qt::Key_Escape)
-        close();
-    else
-        QWidget::keyPressEvent(e);
-}
-
 void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
-
     SceneTreeWidgetItem* childItem = new SceneTreeWidgetItem();
     childItem->sceneObject = object;
     childItem->setText(0, QString::fromStdString(object->getName()));
+    this->sceneObjectTreeMap[object->getID()] = childItem;
 
     if (parentItem == nullptr) {
         sceneTree->addTopLevelItem(childItem);
@@ -229,9 +221,18 @@ void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* p
 
 void MainContainer::refreshSceneTree() {
     Core::WeakPointer<Core::Object3D> sceneRoot = this->app->getCoreScene().getSceneRoot();
-    this->sceneTree->clear();
+    this->sceneObjectTree->clear();
+    this->sceneObjectTreeMap.clear();
     for (Core::SceneObjectIterator<Core::Object3D> itr = sceneRoot->beginIterateChildren(); itr != sceneRoot->endIterateChildren(); ++itr) {
         Core::WeakPointer<Core::Object3D> childObject = *itr;
-        this->populateSceneTree(this->sceneTree, nullptr, childObject);
+        this->populateSceneTree(this->sceneObjectTree, nullptr, childObject);
+    }
+}
+
+void MainContainer::expandAllAbove(SceneTreeWidgetItem* item) {
+    QTreeWidgetItem* curItem = item;
+    while(curItem != nullptr) {
+        curItem->setExpanded(true);
+        curItem = curItem->parent();
     }
 }

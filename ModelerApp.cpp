@@ -1,5 +1,3 @@
-#include <functional>
-
 #include "ModelerApp.h"
 #include "RenderWindow.h"
 
@@ -317,18 +315,18 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
        engine->onRender([this]() {
             Core::Color highlightColor(1.0, 0.65, 0.0, 0.5);
             Core::Color highlightLineColor(1.0, 0.65, 0.0, 1.0);
-            if (this->selectedObject) {
-                 //  std::cerr << "rendering..." << this->selectedObject->getObjectID() << std::endl;
+            if (this->coreScene.getSelectedObject()) {
+                   Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
 
                    this->highlightMaterial->setZOffset(-.00005f);
                    this->highlightMaterial->setColor(highlightColor);
-                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->selectedObject, this->renderCamera, this->highlightMaterial);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
                    this->highlightMaterial->setRenderStyle(Core::RenderStyle::Line);
                    this->highlightMaterial->setZOffset(-.0001f);
                    this->highlightMaterial->setColor(highlightLineColor);
-                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->selectedObject, this->renderCamera, this->highlightMaterial);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
                    this->highlightMaterial->setRenderStyle(Core::RenderStyle::Fill);
                    this->highlightMaterial->setColor(highlightColor);
 
@@ -383,15 +381,11 @@ void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UI
                     std::vector<Core::Hit> hits;
                     Core::Bool hit = this->rayCaster.castRay(ray, hits);
 
-                    //std::cerr << "Hit count: " << hits.size() << std::endl;
                     if (hits.size() > 0) {
                         Core::Hit& hit = hits[0];
                         Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
                         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
-                        this->selectedObject = rootObject;
-                        if (this->selectedObject) {
-                           //  std::cerr << "Selected: " << this->selectedObject->getObjectID() << std::endl;
-                        }
+                        this->getCoreScene().setSelectedObject(rootObject);
                     }
 
                 };
@@ -403,8 +397,4 @@ void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UI
             break;
         }
     }
-}
-
-void ModelerApp::setSelectedObject(Core::WeakPointer<Core::Object3D> selectedObject) {
-    this->selectedObject = selectedObject;
 }
