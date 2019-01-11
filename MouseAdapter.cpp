@@ -19,7 +19,7 @@ bool MouseAdapter::setPipedEventAdapter(Core::WeakPointer<PipedEventAdapter<Mous
 }
 
 void MouseAdapter::onMouseMoved(MoveEventCallback callback) {
-    this->moveEventCallbacks.push(callback);
+    this->moveEventCallbacks.push_back(callback);
 }
 
 void MouseAdapter::onMouseButtonPressed(ButtonEventCallback callback) {

@@ -31,7 +31,7 @@ public:
 private:
     void onEngineReady(Core::WeakPointer<Core::Engine> engine);
     void onGesture(GestureAdapter::GestureEvent event);
-    void onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
+    void onMouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
     void rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject = true);
 
     RenderWindow* renderWindow;

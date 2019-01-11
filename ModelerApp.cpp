@@ -43,28 +43,30 @@ ModelerApp::ModelerApp(): renderWindow(nullptr) {
 }
 
 void ModelerApp::init() {
-    this->pipedGestureAdapter =
-            std::make_shared<PipedEventAdapter<GestureAdapter::GestureEvent>>(std::bind(&ModelerApp::onGesture, this, std::placeholders::_1));
-    this->gestureAdapter = std::make_shared<GestureAdapter>();
-    this->gestureAdapter->setPipedEventAdapter(this->pipedGestureAdapter);
+
 }
 
 void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     if (this->renderWindow != renderWindow) {
         this->renderWindow = renderWindow;
 
-        RenderWindow::LifeCycleEventCallback initer = [this](RenderWindow* renderWindow) {
+        RenderWindow::LifeCycleEventCallback onRenderWindowInit = [this](RenderWindow* renderWindow) {
             this->engine = renderWindow->getEngine();
             this->coreSync = std::make_shared<CoreSync>(renderWindow);
             this->onEngineReady(engine);
             this->orbitControls = std::make_shared<OrbitControls>(this->engine, this->renderCamera, this->coreSync);
 
             std::shared_ptr<MouseAdapter> mouseAdapter = std::make_shared<MouseAdapter>();
-            this->gestureAdapter->setMouseAdapter(*(mouseAdapter.get()));
             this->renderWindow->setMouseAdapter(mouseAdapter);
-            mouseAdapter->onMouseButtonPressed(std::bind(&ModelerApp::onMouseButtonAction, this, std::placeholders::_1,  std::placeholders::_2,  std::placeholders::_3, std::placeholders::_4));
+            mouseAdapter->onMouseButtonPressed(std::bind(&ModelerApp::onMouseButton, this, std::placeholders::_1,  std::placeholders::_2,  std::placeholders::_3, std::placeholders::_4));
+
+            this->pipedGestureAdapter = std::make_shared<PipedEventAdapter<GestureAdapter::GestureEvent>>(std::bind(&ModelerApp::onGesture, this, std::placeholders::_1));
+            this->gestureAdapter = std::make_shared<GestureAdapter>();
+            this->gestureAdapter->setPipedEventAdapter(this->pipedGestureAdapter);
+            this->gestureAdapter->setMouseAdapter(*(mouseAdapter.get()));
+
         };
-        renderWindow->onInit(initer);
+        renderWindow->onInit(onRenderWindowInit);
     }
 }
 
@@ -351,12 +353,11 @@ void ModelerApp::onGesture(GestureAdapter::GestureEvent event) {
     }
 }
 
-void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y) {
+void ModelerApp::onMouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y) {
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
         {
             if (button == 1) this->rayCastForObjectSelection(x, y, true);
-
         }
         break;
     }
