@@ -36,12 +36,14 @@ public:
     };
 
     using ButtonEventCallback = std::function<void(MouseEventType, Core::UInt32, Core::UInt32, Core::UInt32)>;
+    using MoveEventCallback = std::function<void(Core::UInt32, Core::UInt32)>;
 
     MouseAdapter();
 
     bool processEvent(QObject* obj, QEvent* event);
     bool setPipedEventAdapter(Core::WeakPointer<PipedEventAdapter<MouseEvent>> adapter);
 
+    void onMouseMoved(MoveEventCallback callback);
     void onMouseButtonPressed(ButtonEventCallback callback);
     void onMouseButtonReleased(ButtonEventCallback callback);
     void onMouseButtonClicked(ButtonEventCallback callback);
@@ -60,5 +62,6 @@ private:
 
     Core::WeakPointer<PipedEventAdapter<MouseEvent>> pipedEventAdapter;
     std::unordered_map<Core::UInt32, std::vector<ButtonEventCallback>> buttonEventCallbacks;
+    std::vector<MoveEventCallback> moveEventCallbacks;
 };
 

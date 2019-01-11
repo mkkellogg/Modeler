@@ -9,8 +9,9 @@ class GestureAdapter {
 public:
 
     enum class GestureEventType {
-        Drag = 0,
-        Scroll = 1,
+        Move = 0,
+        Drag = 1,
+        Scroll = 2,
     };
 
     enum class GesturePointer {
@@ -22,8 +23,10 @@ public:
 
     class GestureEvent {
     public:
+        GestureEvent() {}
         GestureEvent(GestureEventType type): type(type) {}
         GestureEventType getType() {return  type;}
+        void setType(GestureEventType type) {this->type = type;}
         GesturePointer pointer;
         Core::Vector2i start;
         Core::Vector2i end;

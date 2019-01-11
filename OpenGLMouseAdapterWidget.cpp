@@ -2,7 +2,7 @@
 
 OpenGLMouseAdapterWidget::OpenGLMouseAdapterWidget(QWidget *parent): QOpenGLWidget(parent)
 {
-
+    this->setMouseTracking(true);
 }
 
 void OpenGLMouseAdapterWidget::setMouseAdapter(std::shared_ptr<MouseAdapter> adapter) {

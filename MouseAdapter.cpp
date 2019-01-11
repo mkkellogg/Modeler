@@ -18,6 +18,10 @@ bool MouseAdapter::setPipedEventAdapter(Core::WeakPointer<PipedEventAdapter<Mous
     }
 }
 
+void MouseAdapter::onMouseMoved(MoveEventCallback callback) {
+    this->moveEventCallbacks.push(callback);
+}
+
 void MouseAdapter::onMouseButtonPressed(ButtonEventCallback callback) {
     this->buttonEventCallbacks[(Core::UInt32)MouseEventType::ButtonPress].push_back(callback);
 }
@@ -70,6 +74,9 @@ bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {
             }
             case QEvent::MouseMove:
                 mouseEventType = MouseEventType::MouseMove;
+                for (MoveEventCallback callback : this->moveEventCallbacks) {
+                    callback(mousePos.x, mousePos.y);
+                }
                 break;
             default: break;
         }

@@ -6,7 +6,7 @@
 
 
 GestureAdapter::GestureAdapter() {
-    mouseEventAdapter = std::make_shared<PipedEventAdapter<MouseAdapter::MouseEvent>>(std::bind(&GestureAdapter::onMouseEvent, this, std::placeholders::_1));
+    this->mouseEventAdapter = std::make_shared<PipedEventAdapter<MouseAdapter::MouseEvent>>(std::bind(&GestureAdapter::onMouseEvent, this, std::placeholders::_1));
 }
 
 void GestureAdapter::setMouseAdapter(MouseAdapter& mouseAdapter) {
@@ -41,23 +41,31 @@ void GestureAdapter::onMouseEvent(MouseAdapter::MouseEvent event) {
                 pointerState.position = event.position;
         break;
         case MouseAdapter::MouseEventType::MouseMove:
+        {
+            GestureEvent gestureEvent;
+            gestureEvent.start = pointerState.position;
+            gestureEvent.end = event.position;
+            pointerState.position = event.position;
             if (pointerState.active) {
-                GestureEvent gestureEvent(GestureEventType::Drag);
-                gestureEvent.start = pointerState.position;
-                gestureEvent.end = event.position;
+                gestureEvent.setType(GestureEventType::Drag);
                 gestureEvent.pointer = (GesturePointer)pointerIndex;
-                if (this->pipedEventAdapter) {
-                    this->pipedEventAdapter->accept(gestureEvent);
-                }
-                pointerState.position = event.position;
             }
+            else {
+                gestureEvent.setType(GestureEventType::Move);
+            }
+            if (this->pipedEventAdapter) {
+                this->pipedEventAdapter->accept(gestureEvent);
+            }
+        }
         break;
         case MouseAdapter::MouseEventType::WheelScroll:
+        {
             GestureEvent gestureEvent(GestureEventType::Scroll);
             gestureEvent.scrollDistance = event.scrollDelta;
             if (this->pipedEventAdapter) {
                 this->pipedEventAdapter->accept(gestureEvent);
             }
+        }
         break;
     }
 }

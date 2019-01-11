@@ -340,6 +340,9 @@ void ModelerApp::onGesture(GestureAdapter::GestureEvent event) {
     if (this->engineReady) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
+            case GestureAdapter::GestureEventType::Move:
+                this->rayCastForObjectSelection(event.end.x, event.end.y, false);
+            break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:
                 this->orbitControls->handleGesture((event));
@@ -352,49 +355,52 @@ void ModelerApp::onMouseButtonAction(MouseAdapter::MouseEventType type, Core::UI
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
         {
-            Core::Point3r pos((Core::Real)x, (Core::Real)y, (Core::Real)-1.0f);
-            if (button == 1) {
-                CoreSync::Runnable runnable = [this, pos](Core::WeakPointer<Core::Engine> engine) {
+            if (button == 1) this->rayCastForObjectSelection(x, y, true);
 
-                    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-                    Core::WeakPointer<Core::Renderer> rendererPtr = graphics->getRenderer();
-                    Core::Vector4u viewport = graphics->getViewport();
-
-                    Core::Real ndcX = (Core::Real)pos.x / (Core::Real)viewport.z * 2.0f - 1.0f;
-                    Core::Real ndcY = -((Core::Real)pos.y / (Core::Real)viewport.w * 2.0f - 1.0f);
-                    Core::Point3r ndcPos(ndcX, ndcY, -1.0);
-                    this->renderCamera->unProject(ndcPos);
-                    Core::Transform& camTransform = this->renderCamera->getOwner()->getTransform();
-                    camTransform.updateWorldMatrix();
-                    Core::Matrix4x4 camMat = camTransform.getWorldMatrix();
-                    Core::Matrix4x4 camMatInverse = camMat;
-                    camMatInverse.invert();
-
-                    Core::Point3r worldPos = ndcPos;
-                    camMat.transform(worldPos);
-                    Core::Point3r origin;
-                    camMat.transform(origin);
-                    Core::Vector3r rayDir = worldPos - origin;
-                    rayDir.normalize();
-                    Core::Ray ray(origin, rayDir);
-
-                    std::vector<Core::Hit> hits;
-                    Core::Bool hit = this->rayCaster.castRay(ray, hits);
-
-                    if (hits.size() > 0) {
-                        Core::Hit& hit = hits[0];
-                        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
-                        Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
-                        this->getCoreScene().setSelectedObject(rootObject);
-                    }
-
-                };
-                if (this->coreSync) {
-                    this->coreSync->run(runnable);
-                }
-            }
-
-            break;
         }
+        break;
+    }
+}
+
+void ModelerApp::rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject) {
+    Core::Point3r pos((Core::Real)x, (Core::Real)y, (Core::Real)-1.0f);
+    CoreSync::Runnable runnable = [this, pos, setSelectedObject](Core::WeakPointer<Core::Engine> engine) {
+
+        Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
+        Core::WeakPointer<Core::Renderer> rendererPtr = graphics->getRenderer();
+        Core::Vector4u viewport = graphics->getViewport();
+
+        Core::Real ndcX = (Core::Real)pos.x / (Core::Real)viewport.z * 2.0f - 1.0f;
+        Core::Real ndcY = -((Core::Real)pos.y / (Core::Real)viewport.w * 2.0f - 1.0f);
+        Core::Point3r ndcPos(ndcX, ndcY, -1.0);
+        this->renderCamera->unProject(ndcPos);
+        Core::Transform& camTransform = this->renderCamera->getOwner()->getTransform();
+        camTransform.updateWorldMatrix();
+        Core::Matrix4x4 camMat = camTransform.getWorldMatrix();
+        Core::Matrix4x4 camMatInverse = camMat;
+        camMatInverse.invert();
+
+        Core::Point3r worldPos = ndcPos;
+        camMat.transform(worldPos);
+        Core::Point3r origin;
+        camMat.transform(origin);
+        Core::Vector3r rayDir = worldPos - origin;
+        rayDir.normalize();
+        Core::Ray ray(origin, rayDir);
+
+        std::vector<Core::Hit> hits;
+        Core::Bool hit = this->rayCaster.castRay(ray, hits);
+
+        if (hits.size() > 0) {
+            Core::Hit& hit = hits[0];
+            Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+            Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
+
+            if (setSelectedObject) this->getCoreScene().setSelectedObject(rootObject);
+        }
+
+    };
+    if (this->coreSync) {
+        this->coreSync->run(runnable);
     }
 }
