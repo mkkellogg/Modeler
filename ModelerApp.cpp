@@ -315,11 +315,73 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
        this->highlightMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
        this->highlightMaterial->setLit(false);
        engine->onRender([this]() {
-            Core::Color highlightColor(1.0, 0.65, 0.0, 0.5);
+            Core::Color highlightColor(1.0, 0.65, 0.0, 0.35);
             Core::Color highlightLineColor(1.0, 0.65, 0.0, 1.0);
             if (this->coreScene.getSelectedObject()) {
                    Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
+
+
+                    /*
+                    glEnable(GL_DEPTH_TEST);
+                    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+                    glStencilMask(0x00); // make sure we don't update the stencil buffer while drawing the floor
+                    normalShader.use();
+                    DrawFloor()
+
+                    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+                    glStencilMask(0xFF);
+                    DrawTwoContainers();
+
+                    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+                    glStencilMask(0x00);
+                    glDisable(GL_DEPTH_TEST);
+                    shaderSingleColor.use();
+                    DrawTwoScaledUpContainers();
+                    glStencilMask(0xFF);
+                    glEnable(GL_DEPTH_TEST);
+                    */
+
+
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+
+                   Core::Engine::instance()->getGraphicsSystem()->setStencilTestEnabled(true);
+                   Core::Engine::instance()->getGraphicsSystem()->setStencilOperation(Core::RenderState::StencilAction::Keep,
+                                                                                      Core::RenderState::StencilAction::Keep,
+                                                                                      Core::RenderState::StencilAction::Replace);
+
+                   Core::Engine::instance()->getGraphicsSystem()->clearActiveRenderTarget(false, false, true);
+                   Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::Always, 1, 0xFF);
+                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
+                   this->highlightMaterial->setZOffset(-.00005f);
+                   this->highlightMaterial->setColor(highlightColor);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
+
+                   Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
+                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(false);
+                   Core::Engine::instance()->getGraphicsSystem()->setRenderLineSize(10.0);
+                   this->highlightMaterial->setRenderStyle(Core::RenderStyle::Line);
+                   this->highlightMaterial->setZOffset(-.0001f);
+                   this->highlightMaterial->setColor(highlightLineColor);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
+
+
+                   this->highlightMaterial->setColor(highlightColor);
+                   this->highlightMaterial->setRenderStyle(Core::RenderStyle::Fill);
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(true);
+                   Core::Engine::instance()->getGraphicsSystem()->setStencilTestEnabled(false);
+                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+
+
+                   /*this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
 
                    this->highlightMaterial->setZOffset(-.00005f);
@@ -333,7 +395,7 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    this->highlightMaterial->setColor(highlightColor);
 
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
-                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);*/
            }
        }, true);
 }

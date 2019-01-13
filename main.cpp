@@ -28,7 +28,8 @@ int main(int argc, char *argv[])
     parser.process(app);
 
     QSurfaceFormat fmt;
-    fmt.setDepthBufferSize(32);
+    fmt.setStencilBufferSize(8);
+    fmt.setDepthBufferSize(24);
     if (parser.isSet(multipleSampleOption))
         fmt.setSamples(4);
     //if (parser.isSet(coreProfileOption)) {
