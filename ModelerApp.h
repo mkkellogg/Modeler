@@ -6,6 +6,7 @@
 #include "Core/scene/Object3D.h"
 #include "Core/material/BasicTexturedMaterial.h"
 #include "Core/material/BasicColoredMaterial.h"
+#include "Core/material/BasicExtrusionMaterial.h"
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
 
@@ -42,6 +43,7 @@ private:
     Core::RayCaster rayCaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
+    Core::WeakPointer<Core::BasicExtrusionMaterial> outlineMaterial;
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;
     std::shared_ptr<PipedEventAdapter<GestureAdapter::GestureEvent>> pipedGestureAdapter;
