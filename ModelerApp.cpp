@@ -320,11 +320,11 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
     this->highlightMaterial->setZOffset(-.00005f);
     this->highlightMaterial->setColor(highlightColor);
 
-    this->outlineMaterial = engine->createMaterial<Core::BasicExtrusionMaterial>();
+    this->outlineMaterial = engine->createMaterial<Core::OutlineMaterial>();
     this->outlineMaterial->setLit(false);
     this->outlineMaterial->setZOffset(-.0001f);
     this->outlineMaterial->setColor(outlineColor);
-    this->outlineMaterial->setExtrusionFactor(0.1);
+   // this->outlineMaterial->setExtrusionFactor(0.1);
 
     engine->onRender([this]() {
             if (this->coreScene.getSelectedObject()) {
@@ -372,9 +372,9 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Depth, false);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, false);
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(false);
                    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(false);
                    Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, true);
