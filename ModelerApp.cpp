@@ -374,7 +374,7 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
                    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
-                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(false);
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(true);
                    Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, true);
