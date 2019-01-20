@@ -240,8 +240,8 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
     bottomSlabObj->setName("Base platform");
     Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
-    this->coreScene.addObjectToScene(bottomSlabObj);
-    this->rayCaster.addObject(bottomSlabObj, slab);
+   // this->coreScene.addObjectToScene(bottomSlabObj);
+    //this->rayCaster.addObject(bottomSlabObj, slab);
     this->meshToObjectMap[slab->getObjectID()] = bottomSlabObj;
     // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
@@ -366,11 +366,11 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                                                                                       Core::RenderState::StencilAction::Keep,
                                                                                       Core::RenderState::StencilAction::Replace);
 
-
-                   Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::Always, 1, 0xFF);
-                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Depth, false);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, false);
+                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(false);
+                   Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::Always, 1, 0xFF);
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
                    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
@@ -378,7 +378,13 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, true);
+                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Depth, true);
+                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
                    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
+
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
+                   Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
+                   Core::Engine::instance()->getGraphicsSystem()->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
 
 
                    Core::Engine::instance()->getGraphicsSystem()->setDepthTestEnabled(true);
