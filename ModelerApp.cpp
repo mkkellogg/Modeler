@@ -361,20 +361,14 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Depth, false);
                    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
 
-
                    Core::Engine::instance()->getGraphicsSystem()->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
                    this->outlineMaterial->setColor(this->darkOutlineColor);
                    Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
-                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
-                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, true);
-                   this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Depth, false);
-                   this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
                    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
                    Core::Engine::instance()->getGraphicsSystem()->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
-                   Core::Engine::instance()->getGraphicsSystem()->setFaceCulling(Core::RenderState::CullFace::Back);
 
                    Core::Engine::instance()->getGraphicsSystem()->setStencilTestEnabled(false);
-
+                   Core::Engine::instance()->getGraphicsSystem()->setFaceCulling(Core::RenderState::CullFace::Back);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Depth, true);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Color, true);
                    this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
