@@ -10,6 +10,7 @@
 #include "Core/material/OutlineMaterial.h"
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
+#include "Core/color/Color.h"
 
 #include "CoreScene.h"
 #include "CoreSync.h"
@@ -49,4 +50,8 @@ private:
     std::shared_ptr<GestureAdapter> gestureAdapter;
     std::shared_ptr<PipedEventAdapter<GestureAdapter::GestureEvent>> pipedGestureAdapter;
     std::shared_ptr<OrbitControls> orbitControls;
+
+    Core::Color highlightColor;
+    Core::Color outlineColor;
+    Core::Color darkOutlineColor;
 };

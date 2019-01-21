@@ -80,6 +80,9 @@ QFrame* MainContainer::buildLoadModelGUI() {
     QString modelNameEditStyle = QString("QLineEdit {width: 300px;}");
     this->modelNameEdit->setStyleSheet(modelNameEditStyle);
 
+    //TODO: Remove this debug code
+    this->modelNameEdit->setText("/home/mark/Development/GTE/resources/models/toonwarrior/character/warrior.fbx");
+
     this->modelScaleEdit = new QLineEdit;
     this->modelScaleEdit->setObjectName("modelScaleEdit");
     QString modelScaleEditStyle = QString("QLineEdit {width: 35px;}");
