@@ -13,6 +13,6 @@ void CoreSync::run(Runnable runnable) {
     RenderWindow::LifeCycleEventCallback temp = [this, runnable](RenderWindow* renderWindow) {
         runnable(this->renderWindow->getEngine());
     };
-    renderWindow->onUpdate(temp);
+    renderWindow->onUpdate(temp, true);
 }
 

@@ -36,8 +36,8 @@ public:
 
     Core::WeakPointer<Core::Engine> getEngine();
     void onInit(LifeCycleEventCallback func);
-    void onUpdate(LifeCycleEventCallback func);
-    void onPreRender(LifeCycleEventCallback func);
+    void onUpdate(LifeCycleEventCallback func, bool oneTime = false);
+    void onPreRender(LifeCycleEventCallback func, bool oneTime = false);
 
 public slots:
     void cleanup();
@@ -57,8 +57,6 @@ private:
     int m_zRot;
     QPoint m_lastPos;
     QOpenGLVertexArrayObject m_vao;
-    QOpenGLBuffer m_logoVbo;
-    QOpenGLShaderProgram *m_program;
     int m_projMatrixLoc;
     int m_mvMatrixLoc;
     int m_normalMatrixLoc;
@@ -67,8 +65,6 @@ private:
     QMatrix4x4 m_camera;
     QMatrix4x4 m_world;
     static bool m_transparent;
-
-
 
     void init();
     void update();
@@ -86,4 +82,6 @@ private:
     std::vector<LifeCycleEventCallback> onInits;
     std::vector<LifeCycleEventCallback> onUpdates;
     std::vector<LifeCycleEventCallback> onPreRenders;
+    std::vector<LifeCycleEventCallback> onSingleUpdates;
+    std::vector<LifeCycleEventCallback> onSinglePreRenders;
 };

@@ -113,6 +113,7 @@ CoreScene& ModelerApp::getCoreScene() {
 }
 
 void ModelerApp::onUpdate(ModelerAppLifecycleEventCallback callback) {
+    QMutexLocker ml(&this->updateMutex);
     this->onUpdates.push_back(callback);
 }
 
@@ -457,6 +458,7 @@ void ModelerApp::rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool 
 
 
 void ModelerApp::resolveOnUpdateCallbacks() {
+    QMutexLocker ml(&this->updateMutex);
     for (ModelerAppLifecycleEventCallback callback : this->onUpdates) {
         callback();
     }

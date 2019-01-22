@@ -279,7 +279,10 @@ void MainGUI::updateObjectProperties(Core::WeakPointer<Core::Object3D> object) {
     Core::Vector3r translation;
     Core::Quaternion rotation;
     Core::Vector3r scale;
+    Core::Vector3r euler;
+
     worldTransformation.decompose(translation, rotation, scale);
+    euler = rotation.euler();
 
     std::ostringstream ss;
 
@@ -292,6 +295,25 @@ void MainGUI::updateObjectProperties(Core::WeakPointer<Core::Object3D> object) {
     ss << translation.z;
     this->positionZ->setText(QString::fromStdString(ss.str()));
 
+    ss.str("");
+    ss << euler.x;
+    this->rotationX->setText(QString::fromStdString(ss.str()));
+    ss.str("");
+    ss << euler.y;
+    this->rotationY->setText(QString::fromStdString(ss.str()));
+    ss.str("");
+    ss << euler.z;
+    this->rotationZ->setText(QString::fromStdString(ss.str()));
+
+    ss.str("");
+    ss << scale.x;
+    this->scaleX->setText(QString::fromStdString(ss.str()));
+    ss.str("");
+    ss << scale.y;
+    this->scaleY->setText(QString::fromStdString(ss.str()));
+    ss.str("");
+    ss << scale.z;
+    this->scaleZ->setText(QString::fromStdString(ss.str()));
 }
 
 void MainGUI::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {

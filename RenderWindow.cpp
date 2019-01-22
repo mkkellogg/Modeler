@@ -10,7 +10,7 @@
 bool RenderWindow::m_transparent = false;
 
 RenderWindow::RenderWindow(QWidget *parent): OpenGLMouseAdapterWidget(parent), m_xRot(0), m_yRot(0), m_zRot(0),
-                         m_program(0), initialized(false), engineInitialized(false), engine(nullptr)
+                           initialized(false), engineInitialized(false), engine(nullptr)
 {
     m_core = QSurfaceFormat::defaultFormat().profile() == QSurfaceFormat::CoreProfile;
     // --transparent causes the clear color to be transparent. Therefore, on systems that
@@ -115,14 +115,16 @@ void RenderWindow::onInit(LifeCycleEventCallback func) {
     }
 }
 
-void RenderWindow::onPreRender(LifeCycleEventCallback func) {
+void RenderWindow::onPreRender(LifeCycleEventCallback func, bool oneTime) {
     QMutexLocker ml(&this->preRenderMutex);
-    onPreRenders.push_back(func);
+    if (oneTime) this->onSingleUpdates.push_back(func);
+    else this->onPreRenders.push_back(func);
 }
 
-void RenderWindow::onUpdate(LifeCycleEventCallback func) {
+void RenderWindow::onUpdate(LifeCycleEventCallback func, bool oneTime) {
     QMutexLocker ml(&this->updateMutex);
-    onUpdates.push_back(func);
+    if (oneTime) this->onSingleUpdates.push_back(func);
+    else this->onUpdates.push_back(func);
 }
 
 void RenderWindow::resolveOnInits() {
@@ -137,23 +139,27 @@ void RenderWindow::resolveOnInit(LifeCycleEventCallback callback) {
 }
 
 void RenderWindow::resolveOnUpdates() {
-    if (onUpdates.size() > 0) {
+    std::vector<LifeCycleEventCallback> arrays[] = {this->onSingleUpdates, this->onUpdates};
+    for (unsigned int i = 0; i < 2; i++) {
+        std::vector<LifeCycleEventCallback>& array = arrays[i];
         QMutexLocker ml(&this->updateMutex);
-        for(std::vector<LifeCycleEventCallback>::iterator itr = onUpdates.begin(); itr != onUpdates.end(); ++itr) {
+        for(std::vector<LifeCycleEventCallback>::iterator itr = array.begin(); itr != array.end(); ++itr) {
             LifeCycleEventCallback func = *itr;
             func(this);
         }
-        onUpdates.clear();
     }
+    this->onSingleUpdates.clear();
 }
 
 void RenderWindow::resolveOnPreRenders() {
-    if (onPreRenders.size() > 0) {
+    std::vector<LifeCycleEventCallback> arrays[] = {this->onSinglePreRenders, this->onPreRenders};
+    for (unsigned int i = 0; i < 2; i++) {
+        std::vector<LifeCycleEventCallback>& array = arrays[i];
         QMutexLocker ml(&this->preRenderMutex);
-        for(std::vector<LifeCycleEventCallback>::iterator itr = onPreRenders.begin(); itr != onPreRenders.end(); ++itr) {
+        for(std::vector<LifeCycleEventCallback>::iterator itr = array.begin(); itr != array.end(); ++itr) {
             LifeCycleEventCallback func = *itr;
             func(this);
         }
-        onPreRenders.clear();
     }
+    this->onSingleUpdates.clear();
 }

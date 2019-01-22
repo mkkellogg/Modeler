@@ -60,5 +60,6 @@ private:
     Core::Color outlineColor;
     Core::Color darkOutlineColor;
 
+    QMutex updateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
 };
