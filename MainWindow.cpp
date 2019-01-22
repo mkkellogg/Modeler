@@ -6,17 +6,17 @@
 #include <QMenu>
 #include <QMessageBox>
 
-MainWindow::MainWindow(): mainContainer(nullptr) {
-    setupMainContainer();
+MainWindow::MainWindow(): mainGUI(nullptr) {
+    setupMainGUI();
 }
 
-void MainWindow::setupMainContainer() {
+void MainWindow::setupMainGUI() {
     if (!centralWidget()) {
-        this->mainContainer = new MainContainer(this);
-        setCentralWidget(mainContainer);
+        this->mainGUI = new MainGUI(this);
+        setCentralWidget(mainGUI);
     }
 }
 
-MainContainer* MainWindow::getMainContainer() {
-    return this->mainContainer;
+MainGUI* MainWindow::getMainGUI() {
+    return this->mainGUI;
 }

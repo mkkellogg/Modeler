@@ -20,7 +20,7 @@
 #include "OrbitControls.h"
 
 class RenderWindow;
-class MainContainer;
+class MainGUI;
 
 class ModelerApp {
 public:

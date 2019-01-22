@@ -329,7 +329,6 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
             if (this->coreScene.getSelectedObject()) {
                    Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
 
-
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);

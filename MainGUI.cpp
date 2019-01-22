@@ -1,7 +1,7 @@
 #include <sstream>
 
 #include "RenderWindow.h"
-#include "MainContainer.h"
+#include "MainGUI.h"
 #include "MainWindow.h"
 #include "ModelerApp.h"
 #include "Exception.h"
@@ -22,16 +22,17 @@
 #include <QHeaderView>
 #include <QCheckBox>
 
-MainContainer::MainContainer(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
+MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
   modelNameEdit(nullptr), modelScaleEdit(nullptr), modelSmoothingThresholdEdit(nullptr), modelZUpCheckBox(nullptr) {
     this->renderWindow = new RenderWindow;
+    this->renderWindow->setObjectName("renderWindow");
     setWindowTitle(tr("Modeler"));
     this->setupStyles();
     this->setAutoFillBackground(true);
     this->setUpGUI();
 }
 
-void MainContainer::setModelerApp(ModelerApp* modelerApp) {
+void MainGUI::setModelerApp(ModelerApp* modelerApp) {
     if (this->modelerApp == nullptr) {
         this->modelerApp = modelerApp;
         this->modelerApp->getCoreScene().onSceneUpdated([this](Core::WeakPointer<Core::Object3D> object){
@@ -42,21 +43,20 @@ void MainContainer::setModelerApp(ModelerApp* modelerApp) {
         });
     }
     else {
-        throw Exception("MainContainer::setModelerApp() -> Tried to set 'modelerApp' multiple times!");
+        throw Exception("MainGUI::setModelerApp() -> Tried to set 'modelerApp' multiple times!");
     }
 }
 
-void MainContainer::setQtApp(QApplication* qtApp) {
+void MainGUI::setQtApp(QApplication* qtApp) {
     if (this->qtApp == nullptr) {
         this->qtApp = qtApp;
-
     }
     else {
-        throw Exception("MainContainer::setQtApp() -> Tried to set 'qtApp' multiple times!");
+        throw Exception("MainGUI::setQtApp() -> Tried to set 'qtApp' multiple times!");
     }
 }
 
-void MainContainer::setupStyles() {
+void MainGUI::setupStyles() {
     this->appStyle = QString(
         "QLabel {"
         "   font-weight:none; font-size: 10pt;"
@@ -71,7 +71,13 @@ void MainContainer::setupStyles() {
         "   font-weight:none; font-size: 10pt;"
         "}"
         "QGroupBox {"
-        "   font-weight:bold; padding-top:5px; margin-top: 10px; border: 1px solid #aaa;"
+        "   font-weight:bold; padding-top:0px; margin-top: 10px; border: 1px solid #aaa;"
+        "}"
+        "QGroupBox::title {"
+        "   subcontrol-origin: margin;"
+        "   subcontrol-position: top left;"
+        "   top:0px;"
+        "   left: 10px;"
         "}"
     );
 
@@ -84,15 +90,17 @@ void MainContainer::setupStyles() {
     this->qtApp->setStyleSheet(this->appStyle);
 }
 
-void MainContainer::setUpGUI() {
+void MainGUI::setUpGUI() {
 
     QGroupBox *loadModelFrame = this->buildLoadModelGUI();
 
     QHBoxLayout * lowerLayout = new QHBoxLayout;
     QVBoxLayout * leftLayout = this->buildLeftLayout();
     QVBoxLayout * rightLayout = this->buildRightLayout();
+    QVBoxLayout * centerLayout = new QVBoxLayout;
+    centerLayout->addWidget(this->renderWindow);
     lowerLayout->addLayout(leftLayout);
-    lowerLayout->addWidget(this->renderWindow);
+    lowerLayout->addLayout(centerLayout);
     lowerLayout->addLayout(rightLayout);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -105,7 +113,7 @@ void MainContainer::setUpGUI() {
     this->setModelZUpCheck(true);
 }
 
-QGroupBox* MainContainer::buildLoadModelGUI() {
+QGroupBox* MainGUI::buildLoadModelGUI() {
     QGroupBox* loadModelFrame = new QGroupBox(" Quick load ", this);
     loadModelFrame->setObjectName("loadModelFrame");
     QString hFrameStyle = QString("#loadModelFrame {border: 1px solid #aaa;}");
@@ -160,7 +168,7 @@ QGroupBox* MainContainer::buildLoadModelGUI() {
     return loadModelFrame;
 }
 
-QVBoxLayout* MainContainer::buildLeftLayout() {
+QVBoxLayout* MainGUI::buildLeftLayout() {
 
     this->sceneObjectTree = new QTreeWidget;
     this->sceneObjectTree->setStyleSheet("QTreeWidget {margin: 0px; border:none; background-color: transparent;}");
@@ -171,7 +179,6 @@ QVBoxLayout* MainContainer::buildLeftLayout() {
     this->sceneObjectTree->header()->setStretchLastSection(false);
     this->sceneObjectTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     connect(this->sceneObjectTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(sceneTreeSelectionChanged(const QItemSelection&,const QItemSelection&)));
-
 
     QGroupBox* sceneObjectTreeFrame = new QGroupBox(" Scene Tree ", this);
     sceneObjectTreeFrame->setStyleSheet("QGroupBox {background-color: #ffffff;}");
@@ -185,7 +192,7 @@ QVBoxLayout* MainContainer::buildLeftLayout() {
     return leftLayout;
 }
 
-QVBoxLayout* MainContainer::buildRightLayout() {
+QVBoxLayout* MainGUI::buildRightLayout() {
     QGroupBox * transformFrame = new QGroupBox (" Transform ", this);
     transformFrame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     transformFrame->setObjectName("transformFrame");
@@ -257,7 +264,7 @@ QVBoxLayout* MainContainer::buildRightLayout() {
     return rightLayout;
 }
 
-void MainContainer::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
+void MainGUI::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
     QList<QTreeWidgetItem*> selectedItems = this->sceneObjectTree->selectedItems();
     for (const QTreeWidgetItem* item : selectedItems) {
         SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
@@ -265,7 +272,7 @@ void MainContainer::sceneTreeSelectionChanged(const QItemSelection& selected, co
     }
 }
 
-void MainContainer::browseForModel() {
+void MainGUI::browseForModel() {
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFiles);
     QStringList selectedFiles;
@@ -278,7 +285,7 @@ void MainContainer::browseForModel() {
     }
 }
 
-void MainContainer::loadModel() {
+void MainGUI::loadModel() {
     QString nameQStr = this->modelNameEdit->text();
     QString scaleQStr = this->modelScaleEdit->text();
     QString smoothingThresholdQStr = this->modelSmoothingThresholdEdit->text();
@@ -303,18 +310,18 @@ void MainContainer::loadModel() {
     this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, zUp);
 }
 
-RenderWindow* MainContainer::getRenderWindow() {
+RenderWindow* MainGUI::getRenderWindow() {
     return this->renderWindow;
 }
 
-void MainContainer::setModelScaleEditText(float scale) {
+void MainGUI::setModelScaleEditText(float scale) {
     std::ostringstream ss;
     ss << scale;
     std::string scaleText(ss.str());
     this->modelScaleEdit->setText(QString::fromStdString(scaleText));
 }
 
-void MainContainer::selectSceneObject(Core::WeakPointer<Core::Object3D> object) {
+void MainGUI::selectSceneObject(Core::WeakPointer<Core::Object3D> object) {
     Core::UInt64 objectID = object->getID();
     if (this->sceneObjectTreeMap.find(objectID) != this->sceneObjectTreeMap.end()) {
         this->sceneObjectTree->clearSelection();
@@ -324,18 +331,18 @@ void MainContainer::selectSceneObject(Core::WeakPointer<Core::Object3D> object) 
     }
 }
 
-void MainContainer::setModelSmoothingThresholdEditText(float angle) {
+void MainGUI::setModelSmoothingThresholdEditText(float angle) {
     std::ostringstream ss;
     ss << angle;
     std::string scaleAngle(ss.str());
     this->modelSmoothingThresholdEdit->setText(QString::fromStdString(scaleAngle));
 }
 
-void MainContainer::setModelZUpCheck(bool checked) {
+void MainGUI::setModelZUpCheck(bool checked) {
     this->modelZUpCheckBox->setChecked(checked);
 }
 
-void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
+void MainGUI::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
     SceneTreeWidgetItem* childItem = new SceneTreeWidgetItem();
     childItem->sceneObject = object;
     childItem->setText(0, QString::fromStdString(object->getName()));
@@ -354,7 +361,7 @@ void MainContainer::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* p
     }
 }
 
-void MainContainer::refreshSceneTree() {
+void MainGUI::refreshSceneTree() {
     Core::WeakPointer<Core::Object3D> sceneRoot = this->modelerApp->getCoreScene().getSceneRoot();
     this->sceneObjectTree->clear();
     this->sceneObjectTreeMap.clear();
@@ -364,7 +371,7 @@ void MainContainer::refreshSceneTree() {
     }
 }
 
-void MainContainer::expandAllAbove(SceneTreeWidgetItem* item) {
+void MainGUI::expandAllAbove(SceneTreeWidgetItem* item) {
     QTreeWidgetItem* curItem = item;
     while(curItem != nullptr) {
         curItem->setExpanded(true);

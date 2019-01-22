@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
-#include "MainContainer.h"
+#include "MainGUI.h"
 
 class MainWindow : public QMainWindow
 {
@@ -9,9 +9,9 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow();
-    MainContainer* getMainContainer();
+    MainGUI* getMainGUI();
 private:
-    void setupMainContainer();
+    void setupMainGUI();
 
-    MainContainer * mainContainer;
+    MainGUI * mainGUI;
 };

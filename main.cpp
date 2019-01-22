@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
     ModelerApp* modelerApp = new ModelerApp;
     modelerApp->init();
 
-    MainContainer * mainContainer = mainWindow.getMainContainer();
-    mainContainer->setModelerApp(modelerApp);
-    mainContainer->setQtApp(&app);
-    RenderWindow * renderWindow = mainContainer->getRenderWindow();
+    MainGUI * mainGUI = mainWindow.getMainGUI();
+    mainGUI->setModelerApp(modelerApp);
+    mainGUI->setQtApp(&app);
+    RenderWindow * renderWindow = mainGUI->getRenderWindow();
     modelerApp->setRenderWindow(renderWindow);
 
     RenderWindow::setTransparent(parser.isSet(transparentOption) && false);

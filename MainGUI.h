@@ -20,14 +20,14 @@ class RenderWindow;
 class MainWindow;
 class ModelerApp;
 
-class MainContainer : public QWidget
+class MainGUI : public QWidget
 {
     Q_OBJECT
 
 public:
     using LoadModelClickedCallback = std::function<void(const std::string&, const std::string&, const std::string&, bool)>;
 
-    MainContainer(MainWindow *mw);
+    MainGUI(MainWindow *mw);
     void setModelerApp(ModelerApp* modelerApp);
     void setQtApp(QApplication* qtApp);
     RenderWindow* getRenderWindow();

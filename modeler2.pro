@@ -1,6 +1,5 @@
 HEADERS       = \
     ModelerApp.h \
-    MainContainer.h \
     RenderWindow.h \
     OpenGLMouseAdapterWidget.h \
     MouseAdapter.h \
@@ -11,11 +10,11 @@ HEADERS       = \
     OrbitControls.h \
     MainWindow.h \
     CoreScene.h \
-    Exception.h
+    Exception.h \
+    MainGUI.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
-    MainContainer.cpp \
     RenderWindow.cpp \
     MainWindow.cpp \
     OpenGLMouseAdapterWidget.cpp \
@@ -25,7 +24,8 @@ SOURCES       = \
     GestureAdapter.cpp \
     OrbitControls.cpp \
     CoreScene.cpp \
-    Exception.cpp
+    Exception.cpp \
+    MainGUI.cpp
 
 QT           += widgets
 
