@@ -22,6 +22,8 @@
 #include <QHeaderView>
 #include <QCheckBox>
 
+#include "Core/math/Quaternion.h"
+
 MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
   modelNameEdit(nullptr), modelScaleEdit(nullptr), modelSmoothingThresholdEdit(nullptr), modelZUpCheckBox(nullptr) {
     this->renderWindow = new RenderWindow;
@@ -40,6 +42,13 @@ void MainGUI::setModelerApp(ModelerApp* modelerApp) {
         });
         this->modelerApp->getCoreScene().onObjectSelected([this](Core::WeakPointer<Core::Object3D> object){
             this->selectSceneObject(object);
+            this->updateObjectProperties(object);
+        });
+        this->modelerApp->onUpdate([this]() {
+            Core::WeakPointer<Core::Object3D> selectedObject = this->modelerApp->getCoreScene().getSelectedObject();
+            if (selectedObject) {
+                this->updateObjectProperties(selectedObject);
+            }
         });
     }
     else {
@@ -202,46 +211,46 @@ QVBoxLayout* MainGUI::buildRightLayout() {
     QString transformComponentStyle = QString("QLineEdit {width: 55px;}");
 
     QLabel* positionLabel = new QLabel("Position: ");
-    QLineEdit* positionX = new QLineEdit;
-    positionX->setObjectName("positionX");
-    positionX->setStyleSheet(transformComponentStyle);
-    positionX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QLineEdit* positionY = new QLineEdit;
-    positionX->setObjectName("positionY");
-    positionY->setStyleSheet(transformComponentStyle);
-    positionY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QLineEdit* positionZ = new QLineEdit;
-    positionZ->setObjectName("positionZ");
-    positionZ->setStyleSheet(transformComponentStyle);
-    positionZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->positionX = new QLineEdit;
+    this->positionX->setObjectName("positionX");
+    this->positionX->setStyleSheet(transformComponentStyle);
+    this->positionX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->positionY = new QLineEdit;
+    this->positionX->setObjectName("positionY");
+    this->positionY->setStyleSheet(transformComponentStyle);
+    this->positionY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->positionZ = new QLineEdit;
+    this->positionZ->setObjectName("positionZ");
+    this->positionZ->setStyleSheet(transformComponentStyle);
+    this->positionZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QLabel* rotationLabel = new QLabel("Rotation: ");
-    QLineEdit* rotationX = new QLineEdit;
-    rotationX->setObjectName("rotationX");
-    rotationX->setStyleSheet(transformComponentStyle);
-    rotationX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QLineEdit* rotationY = new QLineEdit;
-    rotationY->setObjectName("rotationY");
-    rotationY->setStyleSheet(transformComponentStyle);
-    rotationY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QLineEdit* rotationZ = new QLineEdit;
-    rotationZ->setObjectName("rotationZ");
-    rotationZ->setStyleSheet(transformComponentStyle);
-    rotationZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->rotationX = new QLineEdit;
+    this->rotationX->setObjectName("rotationX");
+    this->rotationX->setStyleSheet(transformComponentStyle);
+    this->rotationX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->rotationY = new QLineEdit;
+    this->rotationY->setObjectName("rotationY");
+    this->rotationY->setStyleSheet(transformComponentStyle);
+    this->rotationY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->rotationZ = new QLineEdit;
+    this->rotationZ->setObjectName("rotationZ");
+    this->rotationZ->setStyleSheet(transformComponentStyle);
+    this->rotationZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QLabel* scaleLabel = new QLabel("Scale: ");
-    QLineEdit* scaleX = new QLineEdit;
-    scaleX->setObjectName("scaleX");
-    scaleX->setStyleSheet(transformComponentStyle);
-    scaleX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QLineEdit* scaleY = new QLineEdit;
-    scaleY->setObjectName("scaleY");
-    scaleY->setStyleSheet(transformComponentStyle);
-    scaleY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    QLineEdit* scaleZ = new QLineEdit;
-    scaleZ->setObjectName("scaleZ");
-    scaleZ->setStyleSheet(transformComponentStyle);
-    scaleZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->scaleX = new QLineEdit;
+    this->scaleX->setObjectName("scaleX");
+    this->scaleX->setStyleSheet(transformComponentStyle);
+    this->scaleX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->scaleY = new QLineEdit;
+    this->scaleY->setObjectName("scaleY");
+    this->scaleY->setStyleSheet(transformComponentStyle);
+    this->scaleY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->scaleZ = new QLineEdit;
+    this->scaleZ->setObjectName("scaleZ");
+    this->scaleZ->setStyleSheet(transformComponentStyle);
+    this->scaleZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     transformFrameLayout->addWidget (positionLabel, 0, 0);
     transformFrameLayout->addWidget (positionX, 0, 1);
@@ -262,6 +271,27 @@ QVBoxLayout* MainGUI::buildRightLayout() {
     rightLayout->setAlignment(Qt::AlignTop);
     rightLayout->addWidget(transformFrame);
     return rightLayout;
+}
+
+void MainGUI::updateObjectProperties(Core::WeakPointer<Core::Object3D> object) {
+    Core::Matrix4x4 worldTransformation;
+    object->getTransform().getWorldTransformation(worldTransformation);
+    Core::Vector3r translation;
+    Core::Quaternion rotation;
+    Core::Vector3r scale;
+    worldTransformation.decompose(translation, rotation, scale);
+
+    std::ostringstream ss;
+
+    ss << translation.x;
+    this->positionX->setText(QString::fromStdString(ss.str()));
+    ss.str("");
+    ss << translation.y;
+    this->positionY->setText(QString::fromStdString(ss.str()));
+    ss.str("");
+    ss << translation.z;
+    this->positionZ->setText(QString::fromStdString(ss.str()));
+
 }
 
 void MainGUI::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {

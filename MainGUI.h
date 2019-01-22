@@ -53,6 +53,7 @@ private:
     QVBoxLayout* buildLeftLayout();
     QVBoxLayout* buildRightLayout();
     void selectSceneObject(Core::WeakPointer<Core::Object3D> object);
+    void updateObjectProperties(Core::WeakPointer<Core::Object3D> object);
     void populateSceneTree(QTreeWidget* sceneObjectTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
     void refreshSceneTree();
     void expandAllAbove(SceneTreeWidgetItem* item);
@@ -68,6 +69,16 @@ private:
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
     QCheckBox* modelZUpCheckBox;
+    QLineEdit* positionX;
+    QLineEdit* positionY;
+    QLineEdit* positionZ;
+    QLineEdit* rotationX;
+    QLineEdit* rotationY;
+    QLineEdit* rotationZ;
+    QLineEdit* scaleX;
+    QLineEdit* scaleY;
+    QLineEdit* scaleZ;
+
     std::unordered_map<Core::UInt64, SceneTreeWidgetItem*> sceneObjectTreeMap;
 
     QString appStyle;

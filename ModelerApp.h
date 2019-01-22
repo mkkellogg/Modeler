@@ -25,20 +25,25 @@ class MainGUI;
 class ModelerApp {
 public:
 
+    using ModelerAppLifecycleEventCallback = std::function<void()>;
+
     ModelerApp();
     void init();
     void setRenderWindow(RenderWindow* renderWindow);
     void loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp);
     CoreScene& getCoreScene();
+    void onUpdate(ModelerAppLifecycleEventCallback callback);
 
 private:
-    void onEngineReady(Core::WeakPointer<Core::Engine> engine);
-    void onGesture(GestureAdapter::GestureEvent event);
-    void onMouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
+    void engineReady(Core::WeakPointer<Core::Engine> engine);
+    void gesture(GestureAdapter::GestureEvent event);
+    void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
     void rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject = true);
 
+    void resolveOnUpdateCallbacks();
+
     RenderWindow* renderWindow;
-    bool engineReady = false;
+    bool engineIsReady = false;
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
     Core::WeakPointer<Core::Engine> engine;
@@ -54,4 +59,6 @@ private:
     Core::Color highlightColor;
     Core::Color outlineColor;
     Core::Color darkOutlineColor;
+
+    std::vector<ModelerAppLifecycleEventCallback> onUpdates;
 };

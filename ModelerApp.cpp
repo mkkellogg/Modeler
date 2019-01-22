@@ -53,14 +53,14 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
         RenderWindow::LifeCycleEventCallback onRenderWindowInit = [this](RenderWindow* renderWindow) {
             this->engine = renderWindow->getEngine();
             this->coreSync = std::make_shared<CoreSync>(renderWindow);
-            this->onEngineReady(engine);
+            this->engineReady(engine);
             this->orbitControls = std::make_shared<OrbitControls>(this->engine, this->renderCamera, this->coreSync);
 
             std::shared_ptr<MouseAdapter> mouseAdapter = std::make_shared<MouseAdapter>();
             this->renderWindow->setMouseAdapter(mouseAdapter);
-            mouseAdapter->onMouseButtonPressed(std::bind(&ModelerApp::onMouseButton, this, std::placeholders::_1,  std::placeholders::_2,  std::placeholders::_3, std::placeholders::_4));
+            mouseAdapter->onMouseButtonPressed(std::bind(&ModelerApp::mouseButton, this, std::placeholders::_1,  std::placeholders::_2,  std::placeholders::_3, std::placeholders::_4));
 
-            this->pipedGestureAdapter = std::make_shared<PipedEventAdapter<GestureAdapter::GestureEvent>>(std::bind(&ModelerApp::onGesture, this, std::placeholders::_1));
+            this->pipedGestureAdapter = std::make_shared<PipedEventAdapter<GestureAdapter::GestureEvent>>(std::bind(&ModelerApp::gesture, this, std::placeholders::_1));
             this->gestureAdapter = std::make_shared<GestureAdapter>();
             this->gestureAdapter->setPipedEventAdapter(this->pipedGestureAdapter);
             this->gestureAdapter->setMouseAdapter(*(mouseAdapter.get()));
@@ -71,7 +71,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
 }
 
 void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp) {
-   if (this->engineReady) {
+   if (this->engineIsReady) {
        std::string sPath = path;
        std::string filePrefix("file://");
        std::string pathPrefix = sPath.substr(0, 7) ;
@@ -112,9 +112,13 @@ CoreScene& ModelerApp::getCoreScene() {
     return this->coreScene;
 }
 
-void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
+void ModelerApp::onUpdate(ModelerAppLifecycleEventCallback callback) {
+    this->onUpdates.push_back(callback);
+}
 
-    this->engineReady = true;
+void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
+
+    this->engineIsReady = true;
 
     Core::WeakPointer<Core::Scene> scene(engine->createScene());
     engine->setActiveScene(scene);
@@ -377,10 +381,14 @@ void ModelerApp::onEngineReady(Core::WeakPointer<Core::Engine> engine) {
                    this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
            }
        }, true);
+
+    this->renderWindow->onUpdate([this](Core::WeakPointer<Core::Engine> engine){
+        this->resolveOnUpdateCallbacks();
+    });
 }
 
-void ModelerApp::onGesture(GestureAdapter::GestureEvent event) {
-    if (this->engineReady) {
+void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
+    if (this->engineIsReady) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
             case GestureAdapter::GestureEventType::Move:
@@ -394,7 +402,7 @@ void ModelerApp::onGesture(GestureAdapter::GestureEvent event) {
     }
 }
 
-void ModelerApp::onMouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y) {
+void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y) {
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
         {
@@ -444,5 +452,12 @@ void ModelerApp::rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool 
     };
     if (this->coreSync) {
         this->coreSync->run(runnable);
+    }
+}
+
+
+void ModelerApp::resolveOnUpdateCallbacks() {
+    for (ModelerAppLifecycleEventCallback callback : this->onUpdates) {
+        callback();
     }
 }
