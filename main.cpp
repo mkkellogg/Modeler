@@ -44,7 +44,8 @@ int main(int argc, char *argv[])
     modelerApp->init();
 
     MainContainer * mainContainer = mainWindow.getMainContainer();
-    mainContainer->setApp(modelerApp);
+    mainContainer->setModelerApp(modelerApp);
+    mainContainer->setQtApp(&app);
     RenderWindow * renderWindow = mainContainer->getRenderWindow();
     modelerApp->setRenderWindow(renderWindow);
 
