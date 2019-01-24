@@ -49,7 +49,6 @@ void ModelerApp::init() {
 void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     if (this->renderWindow != renderWindow) {
         this->renderWindow = renderWindow;
-
         RenderWindow::LifeCycleEventCallback onRenderWindowInit = [this](RenderWindow* renderWindow) {
             this->engine = renderWindow->getEngine();
             this->coreSync = std::make_shared<CoreSync>(renderWindow);
@@ -64,7 +63,6 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
             this->gestureAdapter = std::make_shared<GestureAdapter>();
             this->gestureAdapter->setPipedEventAdapter(this->pipedGestureAdapter);
             this->gestureAdapter->setMouseAdapter(*(mouseAdapter.get()));
-
         };
         renderWindow->onInit(onRenderWindowInit);
     }
