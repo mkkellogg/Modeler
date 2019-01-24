@@ -38,6 +38,7 @@ public:
     void onInit(LifeCycleEventCallback func);
     void onUpdate(LifeCycleEventCallback func, bool oneTime = false);
     void onPreRender(LifeCycleEventCallback func, bool oneTime = false);
+    QMutex& getUpdateMutex();
 
 public slots:
     void cleanup();
@@ -74,7 +75,8 @@ private:
     void resolveOnUpdates();
     void resolveOnPreRenders();
 
-    QMutex preRenderMutex;
+    QMutex onPreRenderMutex;
+    QMutex onUpdateMutex;
     QMutex updateMutex;
     bool initialized;
     bool engineInitialized;

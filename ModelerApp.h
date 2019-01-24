@@ -33,6 +33,7 @@ public:
     void loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp);
     CoreScene& getCoreScene();
     void onUpdate(ModelerAppLifecycleEventCallback callback);
+    std::shared_ptr<CoreSync> getCoreSync();
 
 private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);
@@ -60,6 +61,6 @@ private:
     Core::Color outlineColor;
     Core::Color darkOutlineColor;
 
-    QMutex updateMutex;
+    QMutex onUpdateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
 };

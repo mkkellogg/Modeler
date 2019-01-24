@@ -16,3 +16,6 @@ void CoreSync::run(Runnable runnable) {
     renderWindow->onUpdate(temp, true);
 }
 
+QMutex& CoreSync::getSyncMutex() {
+    return renderWindow->getUpdateMutex();
+}

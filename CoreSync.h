@@ -18,6 +18,7 @@ public:
     CoreSync(RenderWindow* renderSurface);
     ~CoreSync();
     void run(Runnable runnable);
+    QMutex& getSyncMutex();
 
 private:
     RenderWindow* renderWindow;
