@@ -53,18 +53,7 @@ protected:
 private:
 
     bool m_core;
-    int m_xRot;
-    int m_yRot;
-    int m_zRot;
-    QPoint m_lastPos;
     QOpenGLVertexArrayObject m_vao;
-    int m_projMatrixLoc;
-    int m_mvMatrixLoc;
-    int m_normalMatrixLoc;
-    int m_lightPosLoc;
-    QMatrix4x4 m_proj;
-    QMatrix4x4 m_camera;
-    QMatrix4x4 m_world;
     static bool m_transparent;
 
     void init();
