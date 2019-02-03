@@ -339,6 +339,10 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+
+
+            this->highlightMaterial->setStencilTestEnabled(false);
+            this->highlightMaterial->setStencilWriteMask(0x00);
             this->highlightMaterial->setFaceCullingEnabled(true);
             this->highlightMaterial->setColorWriteEnabled(true);
             this->highlightMaterial->setDepthTestEnabled(true);
@@ -346,23 +350,31 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
             Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
 \
-            this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-            Core::Engine::instance()->getGraphicsSystem()->setStencilTestEnabled(true);
-            Core::Engine::instance()->getGraphicsSystem()->setStencilOperation(Core::RenderState::StencilAction::Keep,
-                                                                              Core::RenderState::StencilAction::Keep,
-                                                                              Core::RenderState::StencilAction::Replace);
+            this->highlightMaterial->setStencilWriteMask(0xFF);
+            this->highlightMaterial->setStencilReadMask(0xFF);
+            this->highlightMaterial->setStencilRef(1);
+            this->highlightMaterial->setStencilTestEnabled(true);
+            this->highlightMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
+            this->highlightMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+            this->highlightMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+            this->highlightMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
             this->highlightMaterial->setFaceCullingEnabled(false);
             this->highlightMaterial->setColorWriteEnabled(false);
             this->highlightMaterial->setDepthTestEnabled(false);
             this->highlightMaterial->setDepthWriteEnabled(false);
-            Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::Always, 1, 0xFF);
             Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
 
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
-            this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
-            Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
+            this->outlineMaterial->setStencilWriteMask(0x00);
+            this->outlineMaterial->setStencilReadMask(0xFF);
+            this->outlineMaterial->setStencilRef(1);
+            this->outlineMaterial->setStencilTestEnabled(true);
+            this->outlineMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::NotEqual);
+            this->outlineMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+            this->outlineMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+            this->outlineMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
             this->outlineMaterial->setFaceCullingEnabled(false);
             this->outlineMaterial->setColor(this->outlineColor);
             this->outlineMaterial->setColorWriteEnabled(true);
@@ -374,12 +386,8 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
             this->outlineMaterial->setColor(this->darkOutlineColor);
             this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
-            Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
             Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
 
-
-            Core::Engine::instance()->getGraphicsSystem()->setStencilTestEnabled(false);
-            this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
 
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
