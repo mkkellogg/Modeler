@@ -417,47 +417,39 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
 
 void ModelerApp::rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject) {
     Core::Point3r pos((Core::Real)x, (Core::Real)y, (Core::Real)-1.0f);
-    CoreSync::Runnable runnable = [this, pos, setSelectedObject](Core::WeakPointer<Core::Engine> engine) {
+    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
+    Core::WeakPointer<Core::Renderer> rendererPtr = graphics->getRenderer();
+    Core::Vector4u viewport = graphics->getViewport();
 
-        Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-        Core::WeakPointer<Core::Renderer> rendererPtr = graphics->getRenderer();
-        Core::Vector4u viewport = graphics->getViewport();
+    Core::Real ndcX = (Core::Real)pos.x / (Core::Real)viewport.z * 2.0f - 1.0f;
+    Core::Real ndcY = -((Core::Real)pos.y / (Core::Real)viewport.w * 2.0f - 1.0f);
+    Core::Point3r ndcPos(ndcX, ndcY, -1.0);
+    this->renderCamera->unProject(ndcPos);
+    Core::Transform& camTransform = this->renderCamera->getOwner()->getTransform();
+    camTransform.updateWorldMatrix();
+    Core::Matrix4x4 camMat = camTransform.getWorldMatrix();
+    Core::Matrix4x4 camMatInverse = camMat;
+    camMatInverse.invert();
 
-        Core::Real ndcX = (Core::Real)pos.x / (Core::Real)viewport.z * 2.0f - 1.0f;
-        Core::Real ndcY = -((Core::Real)pos.y / (Core::Real)viewport.w * 2.0f - 1.0f);
-        Core::Point3r ndcPos(ndcX, ndcY, -1.0);
-        this->renderCamera->unProject(ndcPos);
-        Core::Transform& camTransform = this->renderCamera->getOwner()->getTransform();
-        camTransform.updateWorldMatrix();
-        Core::Matrix4x4 camMat = camTransform.getWorldMatrix();
-        Core::Matrix4x4 camMatInverse = camMat;
-        camMatInverse.invert();
+    Core::Point3r worldPos = ndcPos;
+    camMat.transform(worldPos);
+    Core::Point3r origin;
+    camMat.transform(origin);
+    Core::Vector3r rayDir = worldPos - origin;
+    rayDir.normalize();
+    Core::Ray ray(origin, rayDir);
 
-        Core::Point3r worldPos = ndcPos;
-        camMat.transform(worldPos);
-        Core::Point3r origin;
-        camMat.transform(origin);
-        Core::Vector3r rayDir = worldPos - origin;
-        rayDir.normalize();
-        Core::Ray ray(origin, rayDir);
+    std::vector<Core::Hit> hits;
+    Core::Bool hit = this->rayCaster.castRay(ray, hits);
 
-        std::vector<Core::Hit> hits;
-        Core::Bool hit = this->rayCaster.castRay(ray, hits);
+    if (hits.size() > 0) {
+        Core::Hit& hit = hits[0];
+        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+        Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
 
-        if (hits.size() > 0) {
-            Core::Hit& hit = hits[0];
-            Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
-            Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
-
-            if (setSelectedObject) this->getCoreScene().setSelectedObject(rootObject);
-        }
-
-    };
-    if (this->coreSync) {
-        this->coreSync->run(runnable);
+        if (setSelectedObject) this->getCoreScene().setSelectedObject(rootObject);
     }
 }
-
 
 void ModelerApp::resolveOnUpdateCallbacks() {
     QMutexLocker ml(&this->onUpdateMutex);

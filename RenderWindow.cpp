@@ -9,7 +9,7 @@
 
 bool RenderWindow::m_transparent = false;
 
-RenderWindow::RenderWindow(QWidget *parent): OpenGLMouseAdapterWidget(parent), m_xRot(0), m_yRot(0), m_zRot(0),
+RenderWindow::RenderWindow(QWidget *parent): OpenGLMouseAdapterWidget(parent),
                            initialized(false), engineInitialized(false), engine(nullptr)
 {
     m_core = QSurfaceFormat::defaultFormat().profile() == QSurfaceFormat::CoreProfile;
