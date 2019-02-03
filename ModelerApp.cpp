@@ -339,6 +339,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+            this->highlightMaterial->setFaceCullingEnabled(true);
             this->highlightMaterial->setColorWriteEnabled(true);
             this->highlightMaterial->setDepthTestEnabled(true);
             this->highlightMaterial->setDepthWriteEnabled(true);
@@ -351,7 +352,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
             Core::Engine::instance()->getGraphicsSystem()->setStencilOperation(Core::RenderState::StencilAction::Keep,
                                                                               Core::RenderState::StencilAction::Keep,
                                                                               Core::RenderState::StencilAction::Replace);
-            Core::Engine::instance()->getGraphicsSystem()->setFaceCulling(Core::RenderState::CullFace::None);
+            this->highlightMaterial->setFaceCullingEnabled(false);
             this->highlightMaterial->setColorWriteEnabled(false);
             this->highlightMaterial->setDepthTestEnabled(false);
             this->highlightMaterial->setDepthWriteEnabled(false);
@@ -361,8 +362,8 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
             this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, false);
-            Core::Engine::instance()->getGraphicsSystem()->setFaceCulling(Core::RenderState::CullFace::None);
             Core::Engine::instance()->getGraphicsSystem()->setStencilFunction(Core::RenderState::StencilFunction::NotEqual, 1, 0xFF);
+            this->outlineMaterial->setFaceCullingEnabled(false);
             this->outlineMaterial->setColor(this->outlineColor);
             this->outlineMaterial->setColorWriteEnabled(true);
             this->outlineMaterial->setDepthWriteEnabled(false);
@@ -378,7 +379,6 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
 
             Core::Engine::instance()->getGraphicsSystem()->setStencilTestEnabled(false);
-            Core::Engine::instance()->getGraphicsSystem()->setFaceCulling(Core::RenderState::CullFace::Back);
             this->renderCamera->setRenderBufferEnabled(Core::RenderBufferType::Stencil, true);
 
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
