@@ -27,12 +27,12 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
     Core::Real lastBaseY = 0.0f;
     Core::Real lastConeX = 0.0f;
     Core::Real lastConeY = 0.0f;
-    for (Core::UInt32 s = 0; s < subdivisions; s++) {
+    for (Core::UInt32 s = 0; s <= subdivisions; s++) {
         Core::Real t = static_cast<Core::Real>(s) / static_cast<Core::Real>(subdivisions);
         float angle = t * Core::Math::TwoPI;
         Core::Real x = Core::Math::cos(angle);
         Core::Real y = Core::Math::sin(angle);
-        if (s == subdivisions - 1) {
+        if (s == subdivisions) {
             x = 1.0f;
             y = 0.0;
         }
@@ -44,7 +44,7 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
 
 
         if (s >= 1) {
-            Core::UInt32 index = s * componentsPerSide;
+            Core::UInt32 index = (s - 1) * componentsPerSide;
 
             // bottom of base
             // Core::Vector3r botA(baseX, 0.0, baseY);
@@ -149,7 +149,7 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
             vertices[index + 71] = 1.0;
         }
 
-        for (Core::UInt32 v = 0; v< vertexCount; v++) {
+        for (Core::UInt32 v = 0; v < vertexCount; v++) {
             Core::UInt32 index = v * 4;
             colors[index] = color.r;
             colors[index + 1] = color.g;

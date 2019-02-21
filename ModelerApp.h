@@ -48,7 +48,8 @@ private:
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
     Core::WeakPointer<Core::Engine> engine;
-    Core::RayCaster rayCaster;
+    Core::RayCaster sceneRaycaster;
+    Core::RayCaster transformationWidgetRaycaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
     Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;

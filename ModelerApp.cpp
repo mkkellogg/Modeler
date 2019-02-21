@@ -93,7 +93,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
                if (meshContainer) {
                    std::vector<Core::WeakPointer<Core::Mesh>> meshes = meshContainer->getRenderables();
                    for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
-                       this->rayCaster.addObject(obj, mesh);
+                       this->sceneRaycaster.addObject(obj, mesh);
                        this->meshToObjectMap[mesh->getObjectID()] = obj;
                    }
                }
@@ -249,7 +249,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
     this->coreScene.addObjectToScene(bottomSlabObj);
-    this->rayCaster.addObject(bottomSlabObj, slab);
+    this->sceneRaycaster.addObject(bottomSlabObj, slab);
     this->meshToObjectMap[slab->getObjectID()] = bottomSlabObj;
     // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
@@ -257,9 +257,26 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
 
 
-    Core::Color arrowColor(1.0f, 0.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> arrowObj = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, arrowColor);
-    this->coreScene.addObjectToScene(arrowObj);
+    Core::WeakPointer<Core::Object3D> transformationWidgetRoot = engine->createObject3D();
+    transformationWidgetRoot->setName("TransformWidget");
+
+    Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
+    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, xArrowColor);
+    xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
+
+    Core::Color yArrowColor(0.0f, 1.0f, 0.0f, 1.0f);
+    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, yArrowColor);
+
+    Core::Color zArrowColor(0.0f, 0.0f, 1.0f, 1.0f);
+    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, zArrowColor);
+    zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
+
+
+    transformationWidgetRoot->addChild(xArrow);
+    transformationWidgetRoot->addChild(yArrow);
+    transformationWidgetRoot->addChild(zArrow);
+    this->coreScene.addObjectToScene(transformationWidgetRoot);
+
 
 
 
@@ -296,6 +313,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
         if (Core::WeakPointer<Core::Object3D>::isValid(pointLightObject)) {
 
             rotationAngle += 0.6 * Core::Time::getDeltaTime();
+            rotationAngle = 0.0f;
             if (rotationAngle >= Core::Math::TwoPI) rotationAngle -= Core::Math::TwoPI;
 
             Core::Quaternion qA;
@@ -433,31 +451,11 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
 }
 
 void ModelerApp::rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject) {
-    Core::Point3r pos((Core::Real)x, (Core::Real)y, (Core::Real)-1.0f);
     Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::WeakPointer<Core::Renderer> rendererPtr = graphics->getRenderer();
     Core::Vector4u viewport = graphics->getViewport();
-
-    Core::Real ndcX = (Core::Real)pos.x / (Core::Real)viewport.z * 2.0f - 1.0f;
-    Core::Real ndcY = -((Core::Real)pos.y / (Core::Real)viewport.w * 2.0f - 1.0f);
-    Core::Point3r ndcPos(ndcX, ndcY, -1.0);
-    this->renderCamera->unProject(ndcPos);
-    Core::Transform& camTransform = this->renderCamera->getOwner()->getTransform();
-    camTransform.updateWorldMatrix();
-    Core::Matrix4x4 camMat = camTransform.getWorldMatrix();
-    Core::Matrix4x4 camMatInverse = camMat;
-    camMatInverse.invert();
-
-    Core::Point3r worldPos = ndcPos;
-    camMat.transform(worldPos);
-    Core::Point3r origin;
-    camMat.transform(origin);
-    Core::Vector3r rayDir = worldPos - origin;
-    rayDir.normalize();
-    Core::Ray ray(origin, rayDir);
-
+    Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
     std::vector<Core::Hit> hits;
-    Core::Bool hit = this->rayCaster.castRay(ray, hits);
+    Core::Bool hit = this->sceneRaycaster.castRay(ray, hits);
 
     if (hits.size() > 0) {
         Core::Hit& hit = hits[0];

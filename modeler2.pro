@@ -11,7 +11,8 @@ HEADERS       = \
     MainWindow.h \
     CoreScene.h \
     Exception.h \
-    MainGUI.h
+    MainGUI.h \
+    GeometryUtils.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -25,7 +26,8 @@ SOURCES       = \
     OrbitControls.cpp \
     CoreScene.cpp \
     Exception.cpp \
-    MainGUI.cpp
+    MainGUI.cpp \
+    GeometryUtils.cpp
 
 QT           += widgets
 
