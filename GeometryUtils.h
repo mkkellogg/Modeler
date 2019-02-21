@@ -10,7 +10,7 @@ class GeometryUtils
 {
 public:
     GeometryUtils();
-    Core::WeakPointer<Mesh> buildArrowMesh(Core::Real baseLength, Core::Real baseRadius,
+    static Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> buildArrowMesh(Core::Real baseLength, Core::Real baseRadius,
                                                Core::Real coneLength, Core::Real coneRadius,
                                                Core::UInt32 subdivisions, Core::Color color);
 };

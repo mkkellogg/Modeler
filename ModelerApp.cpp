@@ -1,5 +1,6 @@
 #include "ModelerApp.h"
 #include "RenderWindow.h"
+#include "GeometryUtils.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -254,6 +255,12 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
+
+
+    Core::Color arrowColor(1.0f, 0.0f, 0.0f, 1.0f);
+    Core::WeakPointer<MeshContainer> arrowObj = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, arrowColor);
+    this->coreScene.addObjectToScene(arrowObj);
+
 
 
     // ========== lights ============================
