@@ -258,14 +258,18 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
 
 
+
+
+
+
     Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialX = engine->createMaterial<BasicRimShadowMaterial>();
     arrowMaterialX->setHighlightLowerBound(0.6f);
     arrowMaterialX->setHighlightScale(1.25f);
     Core::WeakPointer<Core::Material> arrowMaterialY = arrowMaterialX->clone();
     Core::WeakPointer<Core::Material> arrowMaterialZ = arrowMaterialX->clone();
 
-    Core::WeakPointer<Core::Object3D> transformationWidgetRoot = engine->createObject3D();
-    transformationWidgetRoot->setName("TransformWidget");
+    this->transformWidgetRoot = engine->createObject3D();
+    this->transformWidgetRoot->setName("TransformWidget");
 
     Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
     Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, xArrowColor, arrowMaterialX);
@@ -279,10 +283,16 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
 
 
-    transformationWidgetRoot->addChild(xArrow);
-    transformationWidgetRoot->addChild(yArrow);
-    transformationWidgetRoot->addChild(zArrow);
-    this->coreScene.addObjectToScene(transformationWidgetRoot);
+    this->transformWidgetRoot->addChild(xArrow);
+    this->transformWidgetRoot->addChild(yArrow);
+    this->transformWidgetRoot->addChild(zArrow);
+
+    this->transformWidgetCameraObj = engine->createObject3D();
+    this->transformWidgetCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
+    //this->coreScene.addObjectToScene(this->transformationWidgetRoot);
+
+
+
 
 
 
@@ -424,6 +434,32 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
             this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+
+
+
+            this->transformWidgetCamera->copyFrom(this->renderCamera);
+            Core::Point3r transformWidgetPosition;
+            Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
+            transformWidgetTransform.transform(transformWidgetPosition);
+
+            Core::Point3r renderCameraPosition;
+            Core::Transform& renderCameraTransform = this->renderCamera->getOwner()->getTransform();
+
+            Core::Vector3r toTransformWidget = transformWidgetPosition - renderCameraPosition;
+            toTransformWidget.normalize();
+            toTransformWidget.invert();
+
+            Core::Point3r newTransformWidgetCameraPosition = transformWidgetPosition + toTransformWidget;
+            Core::WeakPointer<Core::Object3D> transformWidgetCameraObj = this->transformWidgetCamera->getOwner();
+            Core::Point3r transformWidgetCameraPosition;
+            transformWidgetCameraObj->getTransform().transform(transformWidgetCameraPosition);
+            Core::Vector3r translation = newTransformWidgetCameraPosition - transformWidgetCameraPosition;
+            transformWidgetCameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
+
+            this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+            this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+            this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->transformWidgetRoot, this->transformWidgetCamera);
         }
     }, true);
 

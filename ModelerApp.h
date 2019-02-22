@@ -49,7 +49,6 @@ private:
     Core::WeakPointer<Core::Camera> renderCamera;
     Core::WeakPointer<Core::Engine> engine;
     Core::RayCaster sceneRaycaster;
-    Core::RayCaster transformationWidgetRaycaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
     Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;
@@ -64,4 +63,9 @@ private:
 
     QMutex onUpdateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
+
+    Core::RayCaster transformWidgetRaycaster;
+    Core::WeakPointer<Core::Object3D> transformWidgetCameraObj;
+    Core::WeakPointer<Core::Camera> transformWidgetCamera;
+    Core::WeakPointer<Core::Object3D> transformWidgetRoot;
 };
