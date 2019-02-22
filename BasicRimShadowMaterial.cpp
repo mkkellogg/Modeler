@@ -35,17 +35,19 @@ std::string fragmentShader =
    "precision highp float;\n"
    "uniform float highlightLowerBound;\n"
    "uniform float highlightScale;\n"
+   "uniform vec4 highlightColor;\n"
    "in vec4 vColor;\n"
    "in vec3 vNormal;\n"
    "in vec3 vViewWorld;\n"
    "out vec4 out_color;\n"
    "void main() {\n"
-   "    out_color = vColor * clamp(dot(normalize(vNormal), vViewWorld) * highlightScale, highlightLowerBound, 1.0);\n"
+   "    out_color = (highlightColor * vColor) * clamp(dot(normalize(vNormal), vViewWorld) * highlightScale, highlightLowerBound, 1.0);\n"
    "}\n";
 
 BasicRimShadowMaterial::BasicRimShadowMaterial(Core::WeakPointer<Core::Graphics> graphics) : Core::Material(graphics) {
     this->highlightScale = 1.0f;
     this->highlightLowerBound = 0.0f;
+    this->highlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 Core::Bool BasicRimShadowMaterial::build() {
@@ -97,6 +99,7 @@ Core::Int32 BasicRimShadowMaterial::getShaderLocation(Core::StandardUniform unif
 void BasicRimShadowMaterial::sendCustomUniformsToShader() {
     this->shader->setUniform1f(this->highlightLowerBoundLocation, this->highlightLowerBound);
     this->shader->setUniform1f(this->highlightScaleLocation, this->highlightScale);
+    this->shader->setUniform4f(this->highlightColorLocation, this->highlightColor.r, this->highlightColor.g, this->highlightColor.b, this->highlightColor.a);
 }
 
 Core::WeakPointer<Core::Material> BasicRimShadowMaterial::clone() {
@@ -112,6 +115,7 @@ Core::WeakPointer<Core::Material> BasicRimShadowMaterial::clone() {
     newMaterial->modelInverseTransposeMatrixLocation = this->modelInverseTransposeMatrixLocation;
     newMaterial->highlightLowerBoundLocation = this->highlightLowerBoundLocation;
     newMaterial->highlightScaleLocation = this->highlightScaleLocation;
+    newMaterial->highlightColorLocation = this->highlightColorLocation;
     return newMaterial;
 }
 
@@ -123,6 +127,10 @@ void BasicRimShadowMaterial::setHighlightScale(Core::Real scale) {
     this->highlightScale = scale;
 }
 
+void BasicRimShadowMaterial::setHighlightColor(Core::Color color) {
+    this->highlightColor = color;
+}
+
 void BasicRimShadowMaterial::bindShaderVarLocations() {
     this->positionLocation = this->shader->getAttributeLocation(Core::StandardAttribute::Position);
     this->normalLocation = this->shader->getAttributeLocation(Core::StandardAttribute::Normal);
@@ -132,6 +140,7 @@ void BasicRimShadowMaterial::bindShaderVarLocations() {
     this->viewMatrixLocation = this->shader->getUniformLocation(Core::StandardUniform::ViewMatrix);
     this->modelMatrixLocation = this->shader->getUniformLocation(Core::StandardUniform::ModelMatrix);
     this->modelInverseTransposeMatrixLocation = this->shader->getUniformLocation(Core::StandardUniform::ModelInverseTransposeMatrix);
+    this->highlightColorLocation = this->shader->getUniformLocation("highlightColor");
     this->highlightLowerBoundLocation = this->shader->getUniformLocation("highlightLowerBound");
     this->highlightScaleLocation = this->shader->getUniformLocation("highlightScale");
 }

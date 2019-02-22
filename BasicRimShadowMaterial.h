@@ -16,6 +16,7 @@ public:
 
     void setHighlightLowerBound(Core::Real lowerBound);
     void setHighlightScale(Core::Real scale);
+    void setHighlightColor(Core::Color color);
 
 private:
     BasicRimShadowMaterial(Core::WeakPointer<Core::Graphics> graphics);
@@ -30,9 +31,11 @@ private:
     Core::Int32 viewMatrixLocation;
     Core::Int32 modelMatrixLocation;
     Core::Int32 modelInverseTransposeMatrixLocation;
+    Core::Int32 highlightColorLocation;
     Core::Int32 highlightScaleLocation;
     Core::Int32 highlightLowerBoundLocation;
 
+    Core::Color highlightColor;
     Core::Real highlightScale;
     Core::Real highlightLowerBound;
 };

@@ -200,8 +200,8 @@ void ModelerApp::setupTransformWidget() {
     arrowMaterialX->setHighlightLowerBound(0.6f);
     arrowMaterialX->setHighlightScale(1.25f);
     arrowMaterialX->setDepthTestEnabled(true);
-    Core::WeakPointer<Core::Material> arrowMaterialY = arrowMaterialX->clone();
-    Core::WeakPointer<Core::Material> arrowMaterialZ = arrowMaterialX->clone();
+    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialY = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(arrowMaterialX->clone());
+    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialZ = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(arrowMaterialX->clone());
 
     this->transformWidgetRoot = engine->createObject3D();
     this->transformWidgetRoot->setName("TransformWidget");
@@ -210,13 +210,16 @@ void ModelerApp::setupTransformWidget() {
     Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, baseColor);
 
     Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
+    arrowMaterialX->setHighlightColor(xArrowColor);
     Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialX, "XArrow");
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
 
     Core::Color yArrowColor(0.0f, 1.0f, 0.0f, 1.0f);
+    arrowMaterialY->setHighlightColor(yArrowColor);
     Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialY, "YArrow");
 
     Core::Color zArrowColor(0.0f, 0.0f, 1.0f, 1.0f);
+    arrowMaterialZ->setHighlightColor(zArrowColor);
     Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialZ, "ZArrow");
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
 
