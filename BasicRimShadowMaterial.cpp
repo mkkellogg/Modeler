@@ -101,7 +101,7 @@ void BasicRimShadowMaterial::sendCustomUniformsToShader() {
 
 Core::WeakPointer<Core::Material> BasicRimShadowMaterial::clone() {
     Core::WeakPointer<BasicRimShadowMaterial> newMaterial = Core::Engine::instance()->createMaterial<BasicRimShadowMaterial>(false);
-    newMaterial->setShader(this->getShader());
+    this->copyTo(newMaterial);
     newMaterial->positionLocation = this->positionLocation;
     newMaterial->normalLocation = this->normalLocation;
     newMaterial->faceNormalLocation = this->faceNormalLocation;
