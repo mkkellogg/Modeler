@@ -174,96 +174,9 @@ void ModelerApp::setupDefaultObjects() {
 
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
-    // ====== model platform vertex attributes ====================
-    Core::Real cubeVertexPositions[] = {
-        // back
-        -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0,
-        -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
-        // left
-        -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0,
-        -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0,
-        // right
-        1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-        // top
-        -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
-        // bottom
-        -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
-        -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0,
-        // front
-        1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0
-    };
-
-    Core::Real cubeVertexNormals[] = {
-        // back
-        0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,
-        0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,
-        // left
-        -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0,
-        // right
-        1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-        1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-        // top
-        0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-        // bottom
-        0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0,
-        0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0,
-        // front
-        0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,
-    };
-
-    Core::Color slabColor(0.0f, 0.53f, 0.16f, 1.0f);
-    Core::Real cubeVertexColors[] = {
-        // back
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        // left
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        // right
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        // top
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        // bottom
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        // front
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0,
-        slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0, slabColor.r, slabColor.g, slabColor.b, 1.0
-    };
-
     Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = engine->createMaterial<Core::BasicLitMaterial>();
-
-
-    // ======= model platform objects ===============
-    Core::WeakPointer<Core::Mesh> slab(engine->createMesh(36, false));
-    slab->init();
-    slab->enableAttribute(Core::StandardAttribute::Position);
-    Core::Bool positionInited = slab->initVertexPositions();
-    ASSERT(positionInited, "Unable to initialize slab mesh vertex positions.");
-    slab->getVertexPositions()->store(cubeVertexPositions);
-
-    slab->enableAttribute(Core::StandardAttribute::Color);
-    Core::Bool colorInited = slab->initVertexColors();
-    ASSERT(colorInited, "Unable to initialize slab mesh vertex colors.");
-    slab->getVertexColors()->store(cubeVertexColors);
-
-    slab->enableAttribute(Core::StandardAttribute::Normal);
-    Core::Bool normalInited = slab->initVertexNormals();
-    ASSERT(normalInited, "Unable to initialize slab mesh vertex normals.");
-    slab->getVertexNormals()->store(cubeVertexNormals);
-
-    slab->enableAttribute(Core::StandardAttribute::FaceNormal);
-    Core::Bool faceNormalInited = slab->initVertexFaceNormals();
-
-    slab->calculateBoundingBox();
+    Core::Color slabColor(0.0f, 0.53f, 0.16f, 1.0f);
+    Core::WeakPointer<Core::Mesh> slab = GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
     slab->calculateNormals(75.0f);
 
     Core::WeakPointer<MeshContainer> bottomSlabObj(engine->createObject3D<MeshContainer>());
@@ -293,15 +206,18 @@ void ModelerApp::setupTransformWidget() {
     this->transformWidgetRoot = engine->createObject3D();
     this->transformWidgetRoot->setName("TransformWidget");
 
+    Core::Color baseColor(1.0f, 1.0f, 1.0f, 1.0f);
+    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, baseColor);
+
     Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, xArrowColor, arrowMaterialX);
+    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialX, "XArrow");
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
 
     Core::Color yArrowColor(0.0f, 1.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, yArrowColor, arrowMaterialY);
+    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialY, "YArrow");
 
     Core::Color zArrowColor(0.0f, 0.0f, 1.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, zArrowColor, arrowMaterialZ);
+    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialZ, "ZArrow");
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
 
 

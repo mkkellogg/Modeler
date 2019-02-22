@@ -9,10 +9,105 @@ GeometryUtils::GeometryUtils() {
 
 }
 
-Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLength, Core::Real baseRadius,
-                                                          Core::Real coneLength, Core::Real coneRadius,
-                                                          Core::UInt32 subdivisions, Core::Color color,
-                                                          Core::WeakPointer<Core::Material> material) {
+Core::WeakPointer<Core::Mesh> GeometryUtils::buildBoxMesh(Core::Real length, Core::Real height, Core::Real depth, Core::Color color) {
+
+    Core::Real halfLength = length / 2.0f;
+    Core::Real halfHeight = height / 2.0f;
+    Core::Real halfDepth = depth / 2.0f;
+
+    Core::Real vertexPositions[] = {
+        // back
+        -halfLength, -halfHeight, -halfDepth, 1.0, halfLength, halfHeight, -halfDepth, 1.0, -halfLength, halfHeight, -halfDepth, 1.0,
+        -halfLength, -halfHeight, -halfDepth, 1.0, halfLength, -halfHeight, -halfDepth, 1.0, halfLength, halfHeight, -halfDepth, 1.0,
+        // left
+        -halfLength, -halfHeight, -halfDepth, 1.0, -halfLength, halfHeight, -halfDepth, 1.0, -halfLength, -halfHeight, halfDepth, 1.0,
+        -halfLength, halfHeight, -halfDepth, 1.0, -halfLength, halfHeight, halfDepth, 1.0, -halfLength, -halfHeight, halfDepth, 1.0,
+        // right
+        halfLength, -halfHeight, -halfDepth, 1.0, halfLength, -halfHeight, halfDepth, 1.0, halfLength, halfHeight, -halfDepth, 1.0,
+        halfLength, halfHeight, -halfDepth, 1.0, halfLength, -halfHeight, halfDepth, 1.0, halfLength, halfHeight, halfDepth, 1.0,
+        // top
+        -halfLength, halfHeight, -halfDepth, 1.0, halfLength, halfHeight, -halfDepth, 1.0, -halfLength, halfHeight, halfDepth, 1.0,
+        halfLength, halfHeight, -halfDepth, 1.0, halfLength, halfHeight, halfDepth, 1.0, -halfLength, halfHeight, halfDepth, 1.0,
+        // bottom
+        -halfLength, -halfHeight, -halfDepth, 1.0, -halfLength, -halfHeight, halfDepth, 1.0, halfLength, -halfHeight, halfDepth, 1.0,
+        -halfLength, -halfHeight, -halfDepth, 1.0, halfLength, -halfHeight, halfDepth, 1.0, halfLength, -halfHeight, -halfDepth, 1.0,
+        // front
+        halfLength, halfHeight, halfDepth, 1.0, -halfLength, -halfHeight, halfDepth, 1.0, -halfLength, halfHeight, halfDepth, 1.0,
+        halfLength, halfHeight, halfDepth, 1.0, halfLength, -halfHeight, halfDepth, 1.0, -halfLength, -halfHeight, halfDepth, 1.0
+    };
+
+    Core::Real vertexNormals[] = {
+        // back
+        0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,
+        0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,  0.0, 0.0, -1.0, 0.0,
+        // left
+        -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0,
+        -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0,
+        // right
+        1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+        // top
+        0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+        // bottom
+        0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0,
+        0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0,
+        // front
+        0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,  0.0, 0.0, 1.0, 0.0,
+    };
+
+    Core::Real vertexColors[] = {
+        // back
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        // left
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        // right
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        // top
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        // bottom
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        // front
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a,
+        color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a, color.r, color.g, color.b, color.a
+    };
+
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
+
+    Core::WeakPointer<Core::Mesh> boxMesh(engine->createMesh(36, false));
+    boxMesh->init();
+    boxMesh->enableAttribute(Core::StandardAttribute::Position);
+    Core::Bool positionInited = boxMesh->initVertexPositions();
+    ASSERT(positionInited, "Unable to initializebox mesh vertex positions.");
+    boxMesh->getVertexPositions()->store(vertexPositions);
+
+    boxMesh->enableAttribute(Core::StandardAttribute::Color);
+    Core::Bool colorInited = boxMesh->initVertexColors();
+    ASSERT(colorInited, "Unable to initialize box mesh colors.");
+    boxMesh->getVertexColors()->store(vertexColors);
+
+    boxMesh->enableAttribute(Core::StandardAttribute::Normal);
+    Core::Bool normalInited = boxMesh->initVertexNormals();
+    ASSERT(normalInited, "Unable to initialize box vertex normals.");
+    boxMesh->getVertexNormals()->store(vertexNormals);
+
+    boxMesh->enableAttribute(Core::StandardAttribute::FaceNormal);
+    Core::Bool faceNormalInited = boxMesh->initVertexFaceNormals();
+
+    boxMesh->calculateBoundingBox();
+
+    return boxMesh;
+}
+
+Core::WeakPointer<Core::Mesh> GeometryUtils::buildArrowMesh(Core::Real baseLength, Core::Real baseRadius,
+                                                               Core::Real coneLength, Core::Real coneRadius,
+                                                               Core::UInt32 subdivisions, Core::Color color) {
 
     Core::UInt32 facesPerSide = 6;
     Core::UInt32 faceCount = subdivisions * facesPerSide;
@@ -165,23 +260,21 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
 
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
-    // ======= model platform objects ===============
     Core::WeakPointer<Core::Mesh> arrowMesh(engine->createMesh(vertexCount, false));
     arrowMesh->init();
     arrowMesh->enableAttribute(Core::StandardAttribute::Position);
     Core::Bool positionInited = arrowMesh->initVertexPositions();
-    ASSERT(positionInited, "Unable to initialize slab arrow mesh vertex positions.");
+    ASSERT(positionInited, "Unable to initialize arrow mesh vertex positions.");
     arrowMesh->getVertexPositions()->store(vertices);
 
     arrowMesh->enableAttribute(Core::StandardAttribute::Color);
     Core::Bool colorInited = arrowMesh->initVertexColors();
-    ASSERT(colorInited, "Unable to initialize slab arrow mesh colors.");
+    ASSERT(colorInited, "Unable to initialize arrow mesh colors.");
     arrowMesh->getVertexColors()->store(colors);
 
     arrowMesh->enableAttribute(Core::StandardAttribute::Normal);
     Core::Bool normalInited = arrowMesh->initVertexNormals();
     ASSERT(normalInited, "Unable to initialize arrow vertex normals.");
-    //slab->getVertexNormals()->store(cubeVertexNormals);
 
     arrowMesh->enableAttribute(Core::StandardAttribute::FaceNormal);
     Core::Bool faceNormalInited = arrowMesh->initVertexFaceNormals();
@@ -189,10 +282,16 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
     arrowMesh->calculateBoundingBox();
     arrowMesh->calculateNormals(75.0f);
 
-    Core::WeakPointer<MeshContainer> arrowObj(engine->createObject3D<MeshContainer>());
-    arrowObj->setName("Arrow");
-    Core::WeakPointer<Core::MeshRenderer> arrowRenderer(engine->createRenderer<Core::MeshRenderer>(material, arrowObj));
-    arrowObj->addRenderable(arrowMesh);
+    return arrowMesh;
+}
 
-    return arrowObj;
+Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> GeometryUtils::buildMeshContainer(Core::WeakPointer<Core::Mesh> mesh,
+                                                                       Core::WeakPointer<Core::Material> material,
+                                                                       const std::string& name) {
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
+    Core::WeakPointer<MeshContainer> obj(engine->createObject3D<MeshContainer>());
+    obj->setName(name);
+    Core::WeakPointer<Core::MeshRenderer> renderer(engine->createRenderer<Core::MeshRenderer>(material, obj));
+    obj->addRenderable(mesh);
+    return obj;
 }
