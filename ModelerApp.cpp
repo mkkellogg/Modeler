@@ -1,7 +1,6 @@
 #include "ModelerApp.h"
 #include "RenderWindow.h"
 #include "GeometryUtils.h"
-#include "BasicRimShadowMaterial.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -196,32 +195,42 @@ void ModelerApp::setupDefaultObjects() {
 void ModelerApp::setupTransformWidget() {
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
-    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialX = engine->createMaterial<BasicRimShadowMaterial>();
-    arrowMaterialX->setHighlightLowerBound(0.6f);
-    arrowMaterialX->setHighlightScale(1.25f);
-    arrowMaterialX->setDepthTestEnabled(true);
-    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialY = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(arrowMaterialX->clone());
-    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialZ = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(arrowMaterialX->clone());
+    transformWidgetXMaterial = engine->createMaterial<BasicRimShadowMaterial>();
+    transformWidgetXMaterial->setHighlightLowerBound(0.6f);
+    transformWidgetXMaterial->setHighlightScale(1.25f);
+    transformWidgetXMaterial->setDepthTestEnabled(true);
+    transformWidgetYMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
+    transformWidgetZMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
 
     this->transformWidgetRoot = engine->createObject3D();
     this->transformWidgetRoot->setName("TransformWidget");
 
-    Core::Color baseColor(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, baseColor);
+    transformWidgetHighlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
+    Core::Real baseLength = 2.0f;
+    Core::Real coneLength = 0.4f;
+    Core::Real halfLength = (baseLength + coneLength) / 2.0f;
+    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, transformWidgetHighlightColor);
+    Core::WeakPointer<Core::Mesh> arrowColliderMesh = GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, transformWidgetHighlightColor);
 
-    Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
-    arrowMaterialX->setHighlightColor(xArrowColor);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialX, "XArrow");
+    transformWidgetXColor.set(1.0f, 0.0f, 0.0f, 1.0f);
+    transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
+    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetXMaterial, "XArrow");
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
+    xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
+    this->transformWidgetXID = this->transformWidgetRaycaster.addObject(xArrow, arrowColliderMesh);
 
-    Core::Color yArrowColor(0.0f, 1.0f, 0.0f, 1.0f);
-    arrowMaterialY->setHighlightColor(yArrowColor);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialY, "YArrow");
+    transformWidgetYColor.set(0.0f, 1.0f, 0.0f, 1.0f);
+    transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
+    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetYMaterial, "YArrow");
+    yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
+    this->transformWidgetYID = this->transformWidgetRaycaster.addObject(yArrow, arrowColliderMesh);
 
-    Core::Color zArrowColor(0.0f, 0.0f, 1.0f, 1.0f);
-    arrowMaterialZ->setHighlightColor(zArrowColor);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, arrowMaterialZ, "ZArrow");
+    transformWidgetZColor.set(0.0f, 0.0f, 1.0f, 1.0f);
+    transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
+    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetZMaterial, "ZArrow");
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
+    zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, -halfLength);
+    this->transformWidgetZID = this->transformWidgetRaycaster.addObject(zArrow, arrowColliderMesh);
 
 
     this->transformWidgetRoot->addChild(xArrow);
@@ -415,7 +424,7 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
             case GestureAdapter::GestureEventType::Move:
-                this->rayCastForObjectSelection(event.end.x, event.end.y, false);
+                this->rayCastForTransformWidgetSelection(event.end.x, event.end.y);
             break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:
@@ -432,6 +441,31 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
             if (button == 1) this->rayCastForObjectSelection(x, y, true);
         }
         break;
+    }
+}
+
+void ModelerApp::rayCastForTransformWidgetSelection(Core::UInt32 x, Core::UInt32 y) {
+    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
+    Core::Vector4u viewport = graphics->getViewport();
+    Core::Ray ray = this->transformWidgetCamera->getRay(viewport, x, y);
+    std::vector<Core::Hit> hits;
+    Core::Bool hit = this->transformWidgetRaycaster.castRay(ray, hits);
+
+    this->transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
+    this->transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
+    this->transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
+    if (hits.size() > 0) {
+        Core::Hit& hit = hits[0];
+        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+        if (hit.ID == this->transformWidgetXID) {
+            this->transformWidgetXMaterial->setHighlightColor(this->transformWidgetHighlightColor);
+        }
+        else if (hit.ID == this->transformWidgetYID) {
+            this->transformWidgetYMaterial->setHighlightColor(this->transformWidgetHighlightColor);
+        }
+        else if (hit.ID == this->transformWidgetZID) {
+            this->transformWidgetZMaterial->setHighlightColor(this->transformWidgetHighlightColor);
+        }
     }
 }
 

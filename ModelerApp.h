@@ -18,6 +18,8 @@
 #include "GestureAdapter.h"
 #include "PipedEventAdapter.h"
 #include "OrbitControls.h"
+#include "BasicRimShadowMaterial.h"
+
 
 class RenderWindow;
 class MainGUI;
@@ -40,6 +42,7 @@ private:
     void setupHighlightMaterials();
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
+    void rayCastForTransformWidgetSelection(Core::UInt32 x, Core::UInt32 y);
     void rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject = true);
     void setupRenderCamera();
     void setupDefaultObjects();
@@ -78,4 +81,15 @@ private:
     Core::WeakPointer<Core::Object3D> transformWidgetCameraObj;
     Core::WeakPointer<Core::Camera> transformWidgetCamera;
     Core::WeakPointer<Core::Object3D> transformWidgetRoot;
+    Core::Color transformWidgetHighlightColor;
+    Core::Color transformWidgetXColor;
+    Core::Color transformWidgetYColor;
+    Core::Color transformWidgetZColor;
+    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetXMaterial;
+    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetYMaterial;
+    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetZMaterial;
+    Core::UInt32 transformWidgetXID;
+    Core::UInt32 transformWidgetYID;
+    Core::UInt32 transformWidgetZID;
+
 };

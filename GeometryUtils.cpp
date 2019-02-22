@@ -118,6 +118,9 @@ Core::WeakPointer<Core::Mesh> GeometryUtils::buildArrowMesh(Core::Real baseLengt
     Core::Real vertices[componentCount];
     Core::Real colors[componentCount];
 
+    Core::Real totalLength = baseLength + coneLength;
+    Core::Real halfLength = totalLength / 2.0f;
+
     Core::Real lastBaseX = 0.0f;
     Core::Real lastBaseY = 0.0f;
     Core::Real lastConeX = 0.0f;
@@ -146,15 +149,15 @@ Core::WeakPointer<Core::Mesh> GeometryUtils::buildArrowMesh(Core::Real baseLengt
             // Core::Vector3r botB(lastBaseX, 0.0, lastBaseY);
             // Core::Vector3r botC(0.0, 0.0, 0.0);
             vertices[index] = baseX;
-            vertices[index + 1] = 0.0;
+            vertices[index + 1] = -halfLength;
             vertices[index + 2] = baseY;
             vertices[index + 3] = 1.0;
             vertices[index + 4] = lastBaseX;
-            vertices[index + 5] = 0.0;
+            vertices[index + 5] = -halfLength;
             vertices[index + 6] = lastBaseY;
             vertices[index + 7] = 1.0;
             vertices[index + 8] = 0.0;
-            vertices[index + 9] = 0.0;
+            vertices[index + 9] = -halfLength;
             vertices[index + 10] = 0.0;
             vertices[index + 11] = 1.0;
 
@@ -166,28 +169,28 @@ Core::WeakPointer<Core::Mesh> GeometryUtils::buildArrowMesh(Core::Real baseLengt
             //Core::Vector3r sideE(lastBaseX, baseLength, lastBaseY);
             //Core::Vector3r sideF(lastBaseX, 0.0, lastBaseY);
             vertices[index + 12] = lastBaseX;
-            vertices[index + 13] = 0.0;
+            vertices[index + 13] = -halfLength;
             vertices[index + 14] = lastBaseY;
             vertices[index + 15] = 1.0;
             vertices[index + 16] = baseX;
-            vertices[index + 17] = 0.0;
+            vertices[index + 17] = -halfLength;
             vertices[index + 18] = baseY;
             vertices[index + 19] = 1.0;
             vertices[index + 20] = baseX;
-            vertices[index + 21] = baseLength;
+            vertices[index + 21] = baseLength - halfLength;
             vertices[index + 22] = baseY;
             vertices[index + 23] = 1.0;
 
             vertices[index + 24] = baseX;
-            vertices[index + 25] = baseLength;
+            vertices[index + 25] = baseLength - halfLength;
             vertices[index + 26] = baseY;
             vertices[index + 27] = 1.0;
             vertices[index + 28] = lastBaseX;
-            vertices[index + 29] = baseLength;
+            vertices[index + 29] = baseLength - halfLength;
             vertices[index + 30] = lastBaseY;
             vertices[index + 31] = 1.0;
             vertices[index + 32] = lastBaseX;
-            vertices[index + 33] = 0.0;
+            vertices[index + 33] = -halfLength;
             vertices[index + 34] = lastBaseY;
             vertices[index + 35] = 1.0;
 
@@ -201,28 +204,28 @@ Core::WeakPointer<Core::Mesh> GeometryUtils::buildArrowMesh(Core::Real baseLengt
             //Core::Vector3r botConeF(lastBaseX, baseLength, lastBaseY);
 
             vertices[index + 36] = lastBaseX;
-            vertices[index + 37] = baseLength;
+            vertices[index + 37] = baseLength - halfLength;
             vertices[index + 38] = lastBaseY;
             vertices[index + 39] = 1.0;
             vertices[index + 40] = baseX;
-            vertices[index + 41] = baseLength;
+            vertices[index + 41] = baseLength - halfLength;
             vertices[index + 42] = baseY;
             vertices[index + 43] = 1.0;
             vertices[index + 44] = coneX;
-            vertices[index + 45] = baseLength;
+            vertices[index + 45] = baseLength - halfLength;
             vertices[index + 46] = coneY;
             vertices[index + 47] = 1.0;
 
             vertices[index + 48] = coneX;
-            vertices[index + 49] = baseLength;
+            vertices[index + 49] = baseLength - halfLength;
             vertices[index + 50] = coneY;
             vertices[index + 51] = 1.0;
             vertices[index + 52] = lastConeX;
-            vertices[index + 53] = baseLength;
+            vertices[index + 53] = baseLength - halfLength;
             vertices[index + 54] = lastConeY;
             vertices[index + 55] = 1.0;
             vertices[index + 56] = lastBaseX;
-            vertices[index + 57] = baseLength;
+            vertices[index + 57] = baseLength - halfLength;
             vertices[index + 58] = lastBaseY;
             vertices[index + 59] = 1.0;
 
@@ -231,15 +234,15 @@ Core::WeakPointer<Core::Mesh> GeometryUtils::buildArrowMesh(Core::Real baseLengt
             //Core::Vector3r coneB(coneX, baseLength, coneY);
             //Core::Vector3r coneC(0.0, baseLength + coneLength, 0.0);
             vertices[index + 60] = lastConeX;
-            vertices[index + 61] = baseLength;
+            vertices[index + 61] = baseLength - halfLength;
             vertices[index + 62] = lastConeY;
             vertices[index + 63] = 1.0;
             vertices[index + 64] = coneX;
-            vertices[index + 65] = baseLength;
+            vertices[index + 65] = baseLength - halfLength;
             vertices[index + 66] = coneY;
             vertices[index + 67] = 1.0;
             vertices[index + 68] = 0.0;
-            vertices[index + 69] = baseLength + coneLength;
+            vertices[index + 69] = baseLength + coneLength - halfLength;
             vertices[index + 70] = 0.0;
             vertices[index + 71] = 1.0;
         }
