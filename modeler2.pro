@@ -12,7 +12,8 @@ HEADERS       = \
     CoreScene.h \
     Exception.h \
     MainGUI.h \
-    GeometryUtils.h
+    GeometryUtils.h \
+    BasicRimShadowMaterial.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -27,7 +28,8 @@ SOURCES       = \
     CoreScene.cpp \
     Exception.cpp \
     MainGUI.cpp \
-    GeometryUtils.cpp
+    GeometryUtils.cpp \
+    BasicRimShadowMaterial.cpp
 
 QT           += widgets
 

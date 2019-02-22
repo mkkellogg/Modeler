@@ -1,6 +1,5 @@
 #include "GeometryUtils.h"
 #include "Core/math/Math.h"
-#include "Core/material/BasicLitMaterial.h"
 #include "Core/material/StandardAttributes.h"
 #include "Core/render/MeshRenderer.h"
 
@@ -12,7 +11,8 @@ GeometryUtils::GeometryUtils() {
 
 Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLength, Core::Real baseRadius,
                                                           Core::Real coneLength, Core::Real coneRadius,
-                                                          Core::UInt32 subdivisions, Core::Color color) {
+                                                          Core::UInt32 subdivisions, Core::Color color,
+                                                          Core::WeakPointer<Core::Material> material) {
 
     Core::UInt32 facesPerSide = 6;
     Core::UInt32 faceCount = subdivisions * facesPerSide;
@@ -164,7 +164,6 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
     }
 
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
-    Core::WeakPointer<Core::BasicLitMaterial> arrowMaterial = engine->createMaterial<Core::BasicLitMaterial>();
 
     // ======= model platform objects ===============
     Core::WeakPointer<Core::Mesh> arrowMesh(engine->createMesh(vertexCount, false));
@@ -192,7 +191,7 @@ Core::WeakPointer<MeshContainer> GeometryUtils::buildArrowMesh(Core::Real baseLe
 
     Core::WeakPointer<MeshContainer> arrowObj(engine->createObject3D<MeshContainer>());
     arrowObj->setName("Arrow");
-    Core::WeakPointer<Core::MeshRenderer> arrowRenderer(engine->createRenderer<Core::MeshRenderer>(arrowMaterial, arrowObj));
+    Core::WeakPointer<Core::MeshRenderer> arrowRenderer(engine->createRenderer<Core::MeshRenderer>(material, arrowObj));
     arrowObj->addRenderable(arrowMesh);
 
     return arrowObj;
