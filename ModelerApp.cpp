@@ -258,19 +258,24 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
 
 
-    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterial = engine->createMaterial<BasicRimShadowMaterial>();
+    Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialX = engine->createMaterial<BasicRimShadowMaterial>();
+    arrowMaterialX->setHighlightLowerBound(0.6f);
+    arrowMaterialX->setHighlightScale(1.25f);
+    Core::WeakPointer<Core::Material> arrowMaterialY = arrowMaterialX->clone();
+    Core::WeakPointer<Core::Material> arrowMaterialZ = arrowMaterialX->clone();
+
     Core::WeakPointer<Core::Object3D> transformationWidgetRoot = engine->createObject3D();
     transformationWidgetRoot->setName("TransformWidget");
 
     Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, xArrowColor, arrowMaterial);
+    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, xArrowColor, arrowMaterialX);
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
 
     Core::Color yArrowColor(0.0f, 1.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, yArrowColor, arrowMaterial);
+    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, yArrowColor, arrowMaterialY);
 
     Core::Color zArrowColor(0.0f, 0.0f, 1.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildArrowMesh(2.0f, 0.125f, 0.5f, 0.25f, 16, zArrowColor, arrowMaterial);
+    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, zArrowColor, arrowMaterialZ);
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
 
 

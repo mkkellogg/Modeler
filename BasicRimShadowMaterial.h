@@ -14,6 +14,9 @@ public:
     virtual void sendCustomUniformsToShader() override;
     virtual Core::WeakPointer<Material> clone() override;
 
+    void setHighlightLowerBound(Core::Real lowerBound);
+    void setHighlightScale(Core::Real scale);
+
 private:
     BasicRimShadowMaterial(Core::WeakPointer<Core::Graphics> graphics);
     void bindShaderVarLocations();
@@ -27,4 +30,9 @@ private:
     Core::Int32 viewMatrixLocation;
     Core::Int32 modelMatrixLocation;
     Core::Int32 modelInverseTransposeMatrixLocation;
+    Core::Int32 highlightScaleLocation;
+    Core::Int32 highlightLowerBoundLocation;
+
+    Core::Real highlightScale;
+    Core::Real highlightLowerBound;
 };
