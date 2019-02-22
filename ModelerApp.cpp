@@ -128,10 +128,27 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     Core::WeakPointer<Core::Scene> scene(engine->createScene());
     engine->setActiveScene(scene);
     this->coreScene.setSceneRoot(scene->getRoot());
-
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
 
-    // ====== initial camera setup ====================
+    this->setupRenderCamera();
+    this->setupDefaultObjects();
+    this->setupTransformWidget();
+    this->setupLights();
+    this->setupHighlightMaterials();
+
+    engine->onPostRender([this]() {
+        this->postRenderCallback();
+    }, true);
+
+    this->renderWindow->onUpdate([this](Core::WeakPointer<Core::Engine> engine){
+        this->resolveOnUpdateCallbacks();
+    });
+}
+
+void ModelerApp::setupRenderCamera() {
+
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
+
     Core::WeakPointer<Core::Object3D> cameraObj = engine->createObject3D<Core::Object3D>();
     cameraObj->setName("Main camera");
     this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
@@ -151,7 +168,11 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     cameraObj->getTransform().translate(5, 0, 0);
     cameraObj->getTransform().updateWorldMatrix();
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
+}
 
+void ModelerApp::setupDefaultObjects() {
+
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
     // ====== model platform vertex attributes ====================
     Core::Real cubeVertexPositions[] = {
@@ -257,15 +278,15 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
 
+}
 
-
-
-
+void ModelerApp::setupTransformWidget() {
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
     Core::WeakPointer<BasicRimShadowMaterial> arrowMaterialX = engine->createMaterial<BasicRimShadowMaterial>();
     arrowMaterialX->setHighlightLowerBound(0.6f);
     arrowMaterialX->setHighlightScale(1.25f);
-    arrowMaterialX->setDepthTestEnabled(false);
+    arrowMaterialX->setDepthTestEnabled(true);
     Core::WeakPointer<Core::Material> arrowMaterialY = arrowMaterialX->clone();
     Core::WeakPointer<Core::Material> arrowMaterialZ = arrowMaterialX->clone();
 
@@ -273,14 +294,14 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->transformWidgetRoot->setName("TransformWidget");
 
     Core::Color xArrowColor(1.0f, 0.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, xArrowColor, arrowMaterialX);
+    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, xArrowColor, arrowMaterialX);
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
 
     Core::Color yArrowColor(0.0f, 1.0f, 0.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, yArrowColor, arrowMaterialY);
+    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, yArrowColor, arrowMaterialY);
 
     Core::Color zArrowColor(0.0f, 0.0f, 1.0f, 1.0f);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildArrowMesh(2.0f, 0.05f, 0.4f, 0.15f, 16, zArrowColor, arrowMaterialZ);
+    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildArrowMesh(2.0f, 0.035f, 0.4f, 0.15f, 16, zArrowColor, arrowMaterialZ);
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0f);
 
 
@@ -291,73 +312,76 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->transformWidgetCameraObj = engine->createObject3D();
     this->transformWidgetCamera = engine->createPerspectiveCamera(this->transformWidgetCameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
 
+}
 
+void ModelerApp::setupLights() {
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
-
-
-
-
-    // ========== lights ============================
-    Core::WeakPointer<Core::Object3D> ambientLightObject = engine->createObject3D();
-    ambientLightObject->setName("Ambient light");
+    this->ambientLightObject = engine->createObject3D();
+    this->ambientLightObject->setName("Ambient light");
     this->coreScene.addObjectToScene(ambientLightObject);
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    Core::WeakPointer<Core::Object3D> pointLightObject = engine->createObject3D();
-    pointLightObject->setName("Point light");
+    this->pointLightObject = engine->createObject3D();
+    this->pointLightObject->setName("Point light");
     this->coreScene.addObjectToScene(pointLightObject);
     Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
     pointLight->setColor(1.0f, 1.0f, 1.0f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     pointLight->setRadius(10.0f);
 
-    Core::WeakPointer<Core::Object3D> directionalLightObject = engine->createObject3D();
-    directionalLightObject->setName("Directonal light");
+    this->directionalLightObject = engine->createObject3D();
+    this->directionalLightObject->setName("Directonal light");
     this->coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));
+    this->directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));
 
-    engine->onUpdate([this, pointLightObject]() {
-
-        static Core::Real rotationAngle = 0.0;
-        static Core::Real counter = 0.0;
-        counter += 0.01;
-        if (counter> 1.0) counter = 0.0;
-
-        if (Core::WeakPointer<Core::Object3D>::isValid(pointLightObject)) {
-
-            rotationAngle += 0.6 * Core::Time::getDeltaTime();
-            rotationAngle = 0.0f;
-            if (rotationAngle >= Core::Math::TwoPI) rotationAngle -= Core::Math::TwoPI;
-
-            Core::Quaternion qA;
-            qA.fromAngleAxis(rotationAngle, 0, 1, 0);
-            Core::Matrix4x4 rotationMatrixA;
-            qA.rotationMatrix(rotationMatrixA);
-
-            Core::Quaternion qB;
-            qB.fromAngleAxis(-0.8, 1, 0, 0);
-            Core::Matrix4x4 rotationMatrixB;
-            qB.rotationMatrix(rotationMatrixB);
-
-            Core::Matrix4x4 worldMatrix;
-
-            worldMatrix.preTranslate(10.0f, 10.0f, 0.0f);
-            worldMatrix.preMultiply(rotationMatrixA);
-            //worldMatrix.multiply(rotationMatrixB);
-
-            Core::WeakPointer<Core::Object3D> lightObjectPtr = pointLightObject;
-            lightObjectPtr->getTransform().getLocalMatrix().copy(worldMatrix);
-
-        }
-
-        auto vp = Core::Engine::instance()->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
-        this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
+    engine->onUpdate([this]() {
+        this->updateLights();
     }, true);
+}
 
+void ModelerApp::updateLights() {
+    static Core::Real rotationAngle = 0.0;
+    static Core::Real counter = 0.0;
+    counter += 0.01;
+    if (counter> 1.0) counter = 0.0;
+
+    if (Core::WeakPointer<Core::Object3D>::isValid(this->pointLightObject)) {
+
+        rotationAngle += 0.6 * Core::Time::getDeltaTime();
+        rotationAngle = 0.0f;
+        if (rotationAngle >= Core::Math::TwoPI) rotationAngle -= Core::Math::TwoPI;
+
+        Core::Quaternion qA;
+        qA.fromAngleAxis(rotationAngle, 0, 1, 0);
+        Core::Matrix4x4 rotationMatrixA;
+        qA.rotationMatrix(rotationMatrixA);
+
+        Core::Quaternion qB;
+        qB.fromAngleAxis(-0.8, 1, 0, 0);
+        Core::Matrix4x4 rotationMatrixB;
+        qB.rotationMatrix(rotationMatrixB);
+
+        Core::Matrix4x4 worldMatrix;
+
+        worldMatrix.preTranslate(10.0f, 10.0f, 0.0f);
+        worldMatrix.preMultiply(rotationMatrixA);
+        //worldMatrix.multiply(rotationMatrixB);
+
+        Core::WeakPointer<Core::Object3D> lightObjectPtr = this->pointLightObject;
+        lightObjectPtr->getTransform().getLocalMatrix().copy(worldMatrix);
+
+    }
+
+    auto vp = Core::Engine::instance()->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
+    this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
+}
+
+void ModelerApp::setupHighlightMaterials() {
     this->highlightColor.set(1.0, 0.65, 0.0, 0.35);
     this->outlineColor.set(1.0, 0.65, 0.0, 1.0);
     this->darkOutlineColor.set(this->outlineColor.r * .5, this->outlineColor.g * .5, this->outlineColor.b * .5, 1.0);
@@ -373,103 +397,98 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->outlineMaterial = engine->createMaterial<Core::OutlineMaterial>();
     this->outlineMaterial->setLit(false);
     this->outlineMaterial->setColor(outlineColor);
+}
 
-    engine->onRender([this]() {
-        if (this->coreScene.getSelectedObject()) {
-            Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
+void ModelerApp::postRenderCallback() {
+    if (this->coreScene.getSelectedObject()) {
+        Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
 
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
 
 
-            this->highlightMaterial->setStencilTestEnabled(false);
-            this->highlightMaterial->setStencilWriteMask(0x00);
-            this->highlightMaterial->setFaceCullingEnabled(true);
-            this->highlightMaterial->setColorWriteEnabled(true);
-            this->highlightMaterial->setDepthTestEnabled(true);
-            this->highlightMaterial->setDepthWriteEnabled(true);
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
+        this->highlightMaterial->setStencilTestEnabled(false);
+        this->highlightMaterial->setStencilWriteMask(0x00);
+        this->highlightMaterial->setFaceCullingEnabled(true);
+        this->highlightMaterial->setColorWriteEnabled(true);
+        this->highlightMaterial->setDepthTestEnabled(true);
+        this->highlightMaterial->setDepthWriteEnabled(true);
+        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
 \
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-            this->highlightMaterial->setStencilWriteMask(0xFF);
-            this->highlightMaterial->setStencilReadMask(0xFF);
-            this->highlightMaterial->setStencilRef(1);
-            this->highlightMaterial->setStencilTestEnabled(true);
-            this->highlightMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
-            this->highlightMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
-            this->highlightMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
-            this->highlightMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
-            this->highlightMaterial->setFaceCullingEnabled(false);
-            this->highlightMaterial->setColorWriteEnabled(false);
-            this->highlightMaterial->setDepthTestEnabled(false);
-            this->highlightMaterial->setDepthWriteEnabled(false);
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+        this->highlightMaterial->setStencilWriteMask(0xFF);
+        this->highlightMaterial->setStencilReadMask(0xFF);
+        this->highlightMaterial->setStencilRef(1);
+        this->highlightMaterial->setStencilTestEnabled(true);
+        this->highlightMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
+        this->highlightMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+        this->highlightMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+        this->highlightMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
+        this->highlightMaterial->setFaceCullingEnabled(false);
+        this->highlightMaterial->setColorWriteEnabled(false);
+        this->highlightMaterial->setDepthTestEnabled(false);
+        this->highlightMaterial->setDepthWriteEnabled(true);
+        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
 
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
-            this->outlineMaterial->setStencilWriteMask(0x00);
-            this->outlineMaterial->setStencilReadMask(0xFF);
-            this->outlineMaterial->setStencilRef(1);
-            this->outlineMaterial->setStencilTestEnabled(true);
-            this->outlineMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::NotEqual);
-            this->outlineMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
-            this->outlineMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
-            this->outlineMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
-            this->outlineMaterial->setFaceCullingEnabled(false);
-            this->outlineMaterial->setColor(this->outlineColor);
-            this->outlineMaterial->setColorWriteEnabled(true);
-            this->outlineMaterial->setDepthWriteEnabled(false);
-            this->outlineMaterial->setDepthTestEnabled(true);
-            this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+        this->outlineMaterial->setStencilWriteMask(0x00);
+        this->outlineMaterial->setStencilReadMask(0xFF);
+        this->outlineMaterial->setStencilRef(1);
+        this->outlineMaterial->setStencilTestEnabled(true);
+        this->outlineMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::NotEqual);
+        this->outlineMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+        this->outlineMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+        this->outlineMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
+        this->outlineMaterial->setFaceCullingEnabled(false);
+        this->outlineMaterial->setColor(this->outlineColor);
+        this->outlineMaterial->setColorWriteEnabled(true);
+        this->outlineMaterial->setDepthWriteEnabled(false);
+        this->outlineMaterial->setDepthTestEnabled(true);
+        this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
+        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
 
 
-            this->outlineMaterial->setColor(this->darkOutlineColor);
-            this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
+        this->outlineMaterial->setColor(this->darkOutlineColor);
+        this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
+        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
 
 
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
-            this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-        }
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+    }
 
-        this->transformWidgetCamera->copyFrom(this->renderCamera);
+    this->transformWidgetCamera->copyFrom(this->renderCamera);
 
-        Core::Point3r transformWidgetPosition;
-        Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
-        transformWidgetTransform.transform(transformWidgetPosition);
+    Core::Point3r transformWidgetPosition;
+    Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
+    transformWidgetTransform.transform(transformWidgetPosition);
 
-        Core::Point3r renderCameraPosition;
-        Core::Transform& renderCameraTransform = this->renderCamera->getOwner()->getTransform();
-        renderCameraTransform.transform(renderCameraPosition);
+    Core::Point3r renderCameraPosition;
+    Core::Transform& renderCameraTransform = this->renderCamera->getOwner()->getTransform();
+    renderCameraTransform.transform(renderCameraPosition);
 
-        Core::Vector3r transformWidgetToRenderCamera = renderCameraPosition - transformWidgetPosition;
-        transformWidgetToRenderCamera.normalize();
-        transformWidgetToRenderCamera.scale(15.0f);
+    Core::Vector3r transformWidgetToRenderCamera = renderCameraPosition - transformWidgetPosition;
+    transformWidgetToRenderCamera.normalize();
+    transformWidgetToRenderCamera.scale(18.0f);
 
-        Core::Point3r newTransformWidgetCameraPosition = transformWidgetPosition + transformWidgetToRenderCamera;
+    Core::Point3r newTransformWidgetCameraPosition = transformWidgetPosition + transformWidgetToRenderCamera;
 
-        Core::WeakPointer<Core::Object3D> transformWidgetCameraObj = this->transformWidgetCamera->getOwner();
-        Core::Point3r transformWidgetCameraPosition;
-        renderCameraTransform.transform(transformWidgetCameraPosition);
-        Core::Vector3r translation = newTransformWidgetCameraPosition - transformWidgetCameraPosition;
-        transformWidgetCameraObj->getTransform().getLocalMatrix().copy(renderCameraTransform.getLocalMatrix());
-        transformWidgetCameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
-        transformWidgetCameraObj->getTransform().updateWorldMatrix();
+    Core::WeakPointer<Core::Object3D> transformWidgetCameraObj = this->transformWidgetCamera->getOwner();
+    Core::Point3r transformWidgetCameraPosition;
+    renderCameraTransform.transform(transformWidgetCameraPosition);
+    Core::Vector3r translation = newTransformWidgetCameraPosition - transformWidgetCameraPosition;
+    transformWidgetCameraObj->getTransform().getLocalMatrix().copy(renderCameraTransform.getLocalMatrix());
+    transformWidgetCameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
+    transformWidgetCameraObj->getTransform().updateWorldMatrix();
 
-        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
-        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
-        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
-        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->transformWidgetRoot, this->transformWidgetCamera);
-
-    }, true);
-
-    this->renderWindow->onUpdate([this](Core::WeakPointer<Core::Engine> engine){
-        this->resolveOnUpdateCallbacks();
-    });
+    this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+    this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+    this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->transformWidgetRoot, this->transformWidgetCamera);
 }
 
 void ModelerApp::gesture(GestureAdapter::GestureEvent event) {

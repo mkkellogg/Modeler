@@ -37,11 +37,17 @@ public:
 
 private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);
+    void setupHighlightMaterials();
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
     void rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject = true);
-
+    void setupRenderCamera();
+    void setupDefaultObjects();
+    void setupTransformWidget();
+    void setupLights();
+    void updateLights();
     void resolveOnUpdateCallbacks();
+    void postRenderCallback();
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;
@@ -50,8 +56,10 @@ private:
     Core::WeakPointer<Core::Engine> engine;
     Core::RayCaster sceneRaycaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
-    Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
-    Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;
+    Core::WeakPointer<Core::Object3D> ambientLightObject;
+    Core::WeakPointer<Core::Object3D> directionalLightObject;
+    Core::WeakPointer<Core::Object3D> pointLightObject;
+
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;
     std::shared_ptr<PipedEventAdapter<GestureAdapter::GestureEvent>> pipedGestureAdapter;
@@ -60,6 +68,8 @@ private:
     Core::Color highlightColor;
     Core::Color outlineColor;
     Core::Color darkOutlineColor;
+    Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
+    Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;
 
     QMutex onUpdateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
