@@ -51,6 +51,8 @@ private:
     void updateLights();
     void updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object);
     void updateTransformWidgetCamera();
+    void startTransformWidgetAction(Core::UInt32 x, Core::UInt32 y);
+    void updateTransformWidgetAction(Core::UInt32 x, Core::UInt32 y);
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();
@@ -91,8 +93,13 @@ private:
     Core::WeakPointer<BasicRimShadowMaterial> transformWidgetXMaterial;
     Core::WeakPointer<BasicRimShadowMaterial> transformWidgetYMaterial;
     Core::WeakPointer<BasicRimShadowMaterial> transformWidgetZMaterial;
-    Core::UInt32 transformWidgetXID;
-    Core::UInt32 transformWidgetYID;
-    Core::UInt32 transformWidgetZID;
+    Core::UInt32 transformWidgetXTranslateID;
+    Core::UInt32 transformWidgetYTranslateID;
+    Core::UInt32 transformWidgetZTranslateID;
+
+    Core::Int32 transformWidgetActiveComponentID;
+    Core::Point3r transformWidgetActionStartPosition;
+    Core::Vector3r transformWidgetActionNormal;
+    Core::Vector4r transformWidgetPlane;
 
 };
