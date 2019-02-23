@@ -51,9 +51,10 @@ private:
     void updateLights();
     void updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object);
     void updateTransformWidgetCamera();
+    void endTransformWidgetAction(Core::Int32 x, Core::Int32 y);
     void startTransformWidgetAction(Core::Int32 x, Core::Int32 y);
     void updateTransformWidgetAction(Core::Int32 x, Core::Int32 y);
-    Core::Point3r getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin);
+    bool getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();
@@ -99,6 +100,7 @@ private:
     Core::UInt32 transformWidgetZTranslateID;
 
     Core::Int32 transformWidgetActiveComponentID;
+    bool transformWidgetActionInProgress;
     Core::Point3r transformWidgetActionStartPosition;
     Core::Vector3r transformWidgetActionNormal;
     Core::Vector3r transformWidgetActionOffset;

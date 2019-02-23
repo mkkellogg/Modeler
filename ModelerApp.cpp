@@ -41,6 +41,7 @@ using MeshContainer = Core::RenderableContainer<Core::Mesh>;
 
 ModelerApp::ModelerApp(): renderWindow(nullptr) {
     this->transformWidgetActiveComponentID = -1;
+    this->transformWidgetActionInProgress = false;
 }
 
 void ModelerApp::init() {
@@ -59,6 +60,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
             std::shared_ptr<MouseAdapter> mouseAdapter = std::make_shared<MouseAdapter>();
             this->renderWindow->setMouseAdapter(mouseAdapter);
             mouseAdapter->onMouseButtonPressed(std::bind(&ModelerApp::mouseButton, this, std::placeholders::_1,  std::placeholders::_2,  std::placeholders::_3, std::placeholders::_4));
+            mouseAdapter->onMouseButtonReleased(std::bind(&ModelerApp::mouseButton, this, std::placeholders::_1,  std::placeholders::_2,  std::placeholders::_3, std::placeholders::_4));
 
             this->pipedGestureAdapter = std::make_shared<PipedEventAdapter<GestureAdapter::GestureEvent>>(std::bind(&ModelerApp::gesture, this, std::placeholders::_1));
             this->gestureAdapter = std::make_shared<GestureAdapter>();
@@ -461,11 +463,11 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
             break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:
-                if (this->transformWidgetActiveComponentID == -1) {
-                    this->orbitControls->handleGesture((event));
+                if (this->transformWidgetActionInProgress) {
+                    this->updateTransformWidgetAction(event.end.x, event.end.y);
                 }
                 else {
-                    this->updateTransformWidgetAction(event.end.x, event.end.y);
+                    this->orbitControls->handleGesture(event);
                 }
             break;
         }
@@ -474,19 +476,28 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
 
 void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y) {
     switch(type) {
-        case MouseAdapter::MouseEventType::ButtonPress: {
+        case MouseAdapter::MouseEventType::ButtonPress:
             if (this->transformWidgetActiveComponentID == -1) {
                 if (button == 1) this->rayCastForObjectSelection(x, y, true);
             }
             else {
-                this->startTransformWidgetAction(x, y);
+                if (button == 1) this->startTransformWidgetAction(x, y);
             }
-        }
+        break;
+        case MouseAdapter::MouseEventType::ButtonRelease:
+            if (button == 1) this->endTransformWidgetAction(x, y);
         break;
     }
 }
 
+void ModelerApp::endTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
+    this->transformWidgetActionInProgress = false;
+    this->transformWidgetActiveComponentID = -1;
+    this->rayCastForTransformWidgetSelection(x, y);
+}
+
 void ModelerApp::startTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
+    if (this->transformWidgetActionInProgress) return;
     Core::Point3r transformWidgetPosition;
     Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
     transformWidgetTransform.updateWorldMatrix();
@@ -511,12 +522,18 @@ void ModelerApp::startTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
     Core::Real d = planeNormal.dot(transformWidgetPosition);
     this->transformWidgetPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
 
-    this->transformWidgetActionStartPosition = this->getTransformWidgetTranslationTargetPosition(x, y, transformWidgetPosition);
+    bool validTarget = this->getTransformWidgetTranslationTargetPosition(x, y, transformWidgetPosition, this->transformWidgetActionStartPosition);
+    if (!validTarget) return;
     this->transformWidgetActionOffset = transformWidgetPosition - this->transformWidgetActionStartPosition;
+    this->transformWidgetActionInProgress = true;
 }
 
 void ModelerApp::updateTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
-    Core::Point3r targetPosition = this->getTransformWidgetTranslationTargetPosition(x, y, this->transformWidgetActionStartPosition);
+    if (!this->transformWidgetActionInProgress) return;
+    Core::Point3r targetPosition;
+    bool validTarget = this->getTransformWidgetTranslationTargetPosition(x, y, this->transformWidgetActionStartPosition, targetPosition);
+
+    if (!validTarget) return;
 
     Core::Point3r transformWidgetPosition;
     Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
@@ -529,21 +546,23 @@ void ModelerApp::updateTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
     this->coreScene.getSelectedObject()->getTransform().translate(translation, Core::TransformationSpace::World);
 }
 
-Core::Point3r ModelerApp::getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin) {
+bool ModelerApp::getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {
     Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
     Core::Vector4u viewport = graphics->getViewport();
     Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
 
-    Core::Vector4r rayOrigin(ray.Origin.x, ray.Origin.y, ray.Origin.z, 1.0f);
-    Core::Vector4r rayDir(ray.Direction.x, ray.Direction.y, ray.Direction.z, 0.0f);
-    Core::Real t = -(Core::Vector4r::dot(this->transformWidgetPlane, rayOrigin) / Core::Vector4r::dot(this->transformWidgetPlane, rayDir));
-    Core::Point3r intersection = ray.Origin + ray.Direction * t;
+    Core::Hit planeHit;
+    Core::Bool intersects = ray.intersectPlane(this->transformWidgetPlane, planeHit);
+    if (!intersects) return false;
+
+    Core::Point3r intersection = planeHit.Origin;
 
     Core::Vector3r toIntersection = intersection - origin;
     Core::Real p = toIntersection.dot(this->transformWidgetActionNormal);
     Core::Vector3r offset = this->transformWidgetActionNormal * p;
     Core::Point3r targetPosition = origin + offset;
-    return targetPosition;
+    out = targetPosition;
+    return true;
 }
 
 void ModelerApp::rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y) {
