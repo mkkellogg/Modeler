@@ -532,7 +532,7 @@ void ModelerApp::updateTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
 Core::Point3r ModelerApp::getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin) {
     Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
     Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = this->transformWidgetCamera->getRay(viewport, x, y);
+    Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
 
     Core::Vector4r rayOrigin(ray.Origin.x, ray.Origin.y, ray.Origin.z, 1.0f);
     Core::Vector4r rayDir(ray.Direction.x, ray.Direction.y, ray.Direction.z, 0.0f);
