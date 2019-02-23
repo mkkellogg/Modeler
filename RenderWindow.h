@@ -36,8 +36,6 @@ public:
 
     Core::WeakPointer<Core::Engine> getEngine();
     void onInit(LifeCycleEventCallback func);
-    void onUpdate(LifeCycleEventCallback func, bool oneTime = false);
-    void onPreRender(LifeCycleEventCallback func, bool oneTime = false);
     QMutex& getUpdateMutex();
 
 public slots:
@@ -61,8 +59,6 @@ private:
     void render();
     void resolveOnInits();
     void resolveOnInit(LifeCycleEventCallback callback);
-    void resolveOnUpdates();
-    void resolveOnPreRenders();
 
     QMutex onPreRenderMutex;
     QMutex onUpdateMutex;
@@ -71,8 +67,4 @@ private:
     bool engineInitialized;
     Core::PersistentWeakPointer<Core::Engine> engine;
     std::vector<LifeCycleEventCallback> onInits;
-    std::vector<LifeCycleEventCallback> onUpdates;
-    std::vector<LifeCycleEventCallback> onPreRenders;
-    std::vector<LifeCycleEventCallback> onSingleUpdates;
-    std::vector<LifeCycleEventCallback> onSinglePreRenders;
 };

@@ -82,8 +82,6 @@ void RenderWindow::paintGL()
 
     QMutexLocker ml(&this->updateMutex);
     this->update();
-    this->resolveOnUpdates();
-    this->resolveOnPreRenders();
     this->render();
 
 }
@@ -117,22 +115,6 @@ void RenderWindow::onInit(LifeCycleEventCallback func) {
     }
 }
 
-void RenderWindow::onPreRender(LifeCycleEventCallback func, bool oneTime) {
-    QMutexLocker ml(&this->onPreRenderMutex);
-    if (oneTime) this->onSingleUpdates.push_back(func);
-    else this->onPreRenders.push_back(func);
-}
-
-void RenderWindow::onUpdate(LifeCycleEventCallback func, bool oneTime) {
-    QMutexLocker ml(&this->onUpdateMutex);
-    if (oneTime) this->onSingleUpdates.push_back(func);
-    else this->onUpdates.push_back(func);
-}
-
-QMutex& RenderWindow::getUpdateMutex() {
-    return this->updateMutex;
-}
-
 void RenderWindow::resolveOnInits() {
     for(std::vector<LifeCycleEventCallback>::iterator itr = onInits.begin(); itr != onInits.end(); ++itr) {
         LifeCycleEventCallback func = *itr;
@@ -142,30 +124,4 @@ void RenderWindow::resolveOnInits() {
 
 void RenderWindow::resolveOnInit(LifeCycleEventCallback callback) {
     callback(this);
-}
-
-void RenderWindow::resolveOnUpdates() {
-    std::vector<LifeCycleEventCallback> arrays[] = {this->onSingleUpdates, this->onUpdates};
-    for (unsigned int i = 0; i < 2; i++) {
-        std::vector<LifeCycleEventCallback>& array = arrays[i];
-        QMutexLocker ml(&this->onUpdateMutex);
-        for(std::vector<LifeCycleEventCallback>::iterator itr = array.begin(); itr != array.end(); ++itr) {
-            LifeCycleEventCallback func = *itr;
-            func(this);
-        }
-    }
-    this->onSingleUpdates.clear();
-}
-
-void RenderWindow::resolveOnPreRenders() {
-    std::vector<LifeCycleEventCallback> arrays[] = {this->onSinglePreRenders, this->onPreRenders};
-    for (unsigned int i = 0; i < 2; i++) {
-        std::vector<LifeCycleEventCallback>& array = arrays[i];
-        QMutexLocker ml(&this->onPreRenderMutex);
-        for(std::vector<LifeCycleEventCallback>::iterator itr = array.begin(); itr != array.end(); ++itr) {
-            LifeCycleEventCallback func = *itr;
-            func(this);
-        }
-    }
-    this->onSingleUpdates.clear();
 }

@@ -52,7 +52,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
         this->renderWindow = renderWindow;
         RenderWindow::LifeCycleEventCallback onRenderWindowInit = [this](RenderWindow* renderWindow) {
             this->engine = renderWindow->getEngine();
-            this->coreSync = std::make_shared<CoreSync>(renderWindow);
+            this->coreSync = std::make_shared<CoreSync>();
             this->engineReady(engine);
             this->orbitControls = std::make_shared<OrbitControls>(this->engine, this->renderCamera, this->coreSync);
 
@@ -135,11 +135,15 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->setupLights();
     this->setupHighlightMaterials();
 
+    engine->onPreRender([this]() {
+        this->preRenderCallback();
+    }, true);
+
     engine->onPostRender([this]() {
         this->postRenderCallback();
     }, true);
 
-    this->renderWindow->onUpdate([this](Core::WeakPointer<Core::Engine> engine){
+    engine->onUpdate([this]() {
         this->resolveOnUpdateCallbacks();
     });
 }
@@ -327,6 +331,13 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineMaterial->setColor(outlineColor);
 }
 
+void ModelerApp::preRenderCallback() {
+    Core::WeakPointer<Core::Object3D> selectedObject = this->getCoreScene().getSelectedObject();
+    if (selectedObject) {
+        this->updateTransformWidgetForObject(selectedObject);
+    }
+}
+
 void ModelerApp::postRenderCallback() {
     if (this->coreScene.getSelectedObject()) {
         Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
@@ -387,16 +398,43 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+
+        this->updateTransformWidgetCamera();
+        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->transformWidgetRoot, this->transformWidgetCamera);
     }
+}
+
+void ModelerApp::updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object) {
+     Core::Transform& objectTransform = object->getTransform();
+     objectTransform.updateWorldMatrix();
+
+     Core::Point3r origin;
+     Core::Vector3r forward = Core::Vector3r::Forward;
+     Core::Vector3r up = Core::Vector3r::Up;
+
+     objectTransform.transform(origin);
+     objectTransform.transform(forward);
+     objectTransform.transform(up);
+
+     Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
+     transformWidgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
+}
+
+void ModelerApp::updateTransformWidgetCamera() {
 
     this->transformWidgetCamera->copyFrom(this->renderCamera);
 
     Core::Point3r transformWidgetPosition;
     Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
+    transformWidgetTransform.updateWorldMatrix();
     transformWidgetTransform.transform(transformWidgetPosition);
 
     Core::Point3r renderCameraPosition;
     Core::Transform& renderCameraTransform = this->renderCamera->getOwner()->getTransform();
+    renderCameraTransform.updateWorldMatrix();
     renderCameraTransform.transform(renderCameraPosition);
 
     Core::Vector3r transformWidgetToRenderCamera = renderCameraPosition - transformWidgetPosition;
@@ -406,17 +444,13 @@ void ModelerApp::postRenderCallback() {
     Core::Point3r newTransformWidgetCameraPosition = transformWidgetPosition + transformWidgetToRenderCamera;
 
     Core::WeakPointer<Core::Object3D> transformWidgetCameraObj = this->transformWidgetCamera->getOwner();
+    transformWidgetCameraObj->getTransform().updateWorldMatrix();
     Core::Point3r transformWidgetCameraPosition;
     renderCameraTransform.transform(transformWidgetCameraPosition);
     Core::Vector3r translation = newTransformWidgetCameraPosition - transformWidgetCameraPosition;
     transformWidgetCameraObj->getTransform().getLocalMatrix().copy(renderCameraTransform.getLocalMatrix());
     transformWidgetCameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
     transformWidgetCameraObj->getTransform().updateWorldMatrix();
-
-    this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
-    this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
-    this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->transformWidgetRoot, this->transformWidgetCamera);
 }
 
 void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
@@ -445,6 +479,7 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
 }
 
 void ModelerApp::rayCastForTransformWidgetSelection(Core::UInt32 x, Core::UInt32 y) {
+    this->updateTransformWidgetCamera();
     Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
     Core::Vector4u viewport = graphics->getViewport();
     Core::Ray ray = this->transformWidgetCamera->getRay(viewport, x, y);
@@ -481,7 +516,9 @@ void ModelerApp::rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool 
         Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
 
-        if (setSelectedObject) this->getCoreScene().setSelectedObject(rootObject);
+        if (setSelectedObject) {
+            this->getCoreScene().setSelectedObject(rootObject);
+        }
     }
 }
 

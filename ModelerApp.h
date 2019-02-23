@@ -49,7 +49,10 @@ private:
     void setupTransformWidget();
     void setupLights();
     void updateLights();
+    void updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object);
+    void updateTransformWidgetCamera();
     void resolveOnUpdateCallbacks();
+    void preRenderCallback();
     void postRenderCallback();
 
     RenderWindow* renderWindow;
