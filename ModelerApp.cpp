@@ -147,7 +147,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     engine->onUpdate([this]() {
         this->resolveOnUpdateCallbacks();
-    });
+    }, true);
 }
 
 void ModelerApp::setupRenderCamera() {
@@ -195,55 +195,6 @@ void ModelerApp::setupDefaultObjects() {
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
-
-}
-
-void ModelerApp::setupTransformWidget() {
-    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
-
-    transformWidgetXMaterial = engine->createMaterial<BasicRimShadowMaterial>();
-    transformWidgetXMaterial->setHighlightLowerBound(0.6f);
-    transformWidgetXMaterial->setHighlightScale(1.25f);
-    transformWidgetXMaterial->setDepthTestEnabled(true);
-    transformWidgetYMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
-    transformWidgetZMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
-
-    this->transformWidgetRoot = engine->createObject3D();
-    this->transformWidgetRoot->setName("TransformWidget");
-
-    transformWidgetHighlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::Real baseLength = 2.0f;
-    Core::Real coneLength = 0.4f;
-    Core::Real halfLength = (baseLength + coneLength) / 2.0f;
-    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, transformWidgetHighlightColor);
-    Core::WeakPointer<Core::Mesh> arrowColliderMesh = GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, transformWidgetHighlightColor);
-
-    transformWidgetXColor.set(1.0f, 0.0f, 0.0f, 1.0f);
-    transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetXMaterial, "XArrow");
-    xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
-    xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
-    this->transformWidgetXTranslateID = this->transformWidgetRaycaster.addObject(xArrow, arrowColliderMesh);
-
-    transformWidgetYColor.set(0.0f, 1.0f, 0.0f, 1.0f);
-    transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetYMaterial, "YArrow");
-    yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
-    this->transformWidgetYTranslateID = this->transformWidgetRaycaster.addObject(yArrow, arrowColliderMesh);
-
-    transformWidgetZColor.set(0.0f, 0.0f, 1.0f, 1.0f);
-    transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetZMaterial, "ZArrow");
-    zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
-    zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
-    this->transformWidgetZTranslateID = this->transformWidgetRaycaster.addObject(zArrow, arrowColliderMesh);
-
-    this->transformWidgetRoot->addChild(xArrow);
-    this->transformWidgetRoot->addChild(yArrow);
-    this->transformWidgetRoot->addChild(zArrow);
-
-    this->transformWidgetCameraObj = engine->createObject3D();
-    this->transformWidgetCamera = engine->createPerspectiveCamera(this->transformWidgetCameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
 
 }
 
@@ -408,6 +359,116 @@ void ModelerApp::postRenderCallback() {
     }
 }
 
+void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
+    if (this->engineIsReady) {
+        GestureAdapter::GestureEventType eventType = event.getType();
+        switch(eventType) {
+            case GestureAdapter::GestureEventType::Move:
+                this->rayCastForTransformWidgetSelection(event.end.x, event.end.y);
+            break;
+            case GestureAdapter::GestureEventType::Drag:
+            case GestureAdapter::GestureEventType::Scroll:
+                if (this->transformWidgetActionInProgress) {
+                    this->updateTransformWidgetAction(event.end.x, event.end.y);
+                }
+                else {
+                    this->orbitControls->handleGesture(event);
+                }
+            break;
+        }
+    }
+}
+
+void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y) {
+    switch(type) {
+        case MouseAdapter::MouseEventType::ButtonPress:
+            if (this->transformWidgetActiveComponentID == -1) {
+                if (button == 1) this->rayCastForObjectSelection(x, y, true);
+            }
+            else {
+                if (button == 1) this->startTransformWidgetAction(x, y);
+            }
+        break;
+        case MouseAdapter::MouseEventType::ButtonRelease:
+            if (button == 1) this->endTransformWidgetAction(x, y);
+        break;
+    }
+}
+
+void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject) {
+    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
+    Core::Vector4u viewport = graphics->getViewport();
+    Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
+    std::vector<Core::Hit> hits;
+    Core::Bool hitOccurred = this->sceneRaycaster.castRay(ray, hits);
+
+    if (hitOccurred) {
+        Core::Hit& hit = hits[0];
+        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+        Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
+
+        if (setSelectedObject) {
+            this->getCoreScene().setSelectedObject(rootObject);
+        }
+    }
+}
+
+void ModelerApp::resolveOnUpdateCallbacks() {
+    QMutexLocker ml(&this->onUpdateMutex);
+    for (ModelerAppLifecycleEventCallback callback : this->onUpdates) {
+        callback();
+    }
+}
+
+void ModelerApp::setupTransformWidget() {
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
+
+    transformWidgetXMaterial = engine->createMaterial<BasicRimShadowMaterial>();
+    transformWidgetXMaterial->setHighlightLowerBound(0.6f);
+    transformWidgetXMaterial->setHighlightScale(1.25f);
+    transformWidgetXMaterial->setDepthTestEnabled(true);
+    transformWidgetYMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
+    transformWidgetZMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
+
+    this->transformWidgetRoot = engine->createObject3D();
+    this->transformWidgetRoot->setName("TransformWidget");
+
+    transformWidgetHighlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
+    Core::Real baseLength = 2.0f;
+    Core::Real coneLength = 0.4f;
+    Core::Real halfLength = (baseLength + coneLength) / 2.0f;
+    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, transformWidgetHighlightColor);
+    Core::WeakPointer<Core::Mesh> arrowColliderMesh = GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, transformWidgetHighlightColor);
+
+    transformWidgetXColor.set(1.0f, 0.0f, 0.0f, 1.0f);
+    transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
+    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetXMaterial, "XArrow");
+    xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
+    xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
+    this->transformWidgetXTranslateID = this->transformWidgetRaycaster.addObject(xArrow, arrowColliderMesh);
+
+    transformWidgetYColor.set(0.0f, 1.0f, 0.0f, 1.0f);
+    transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
+    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetYMaterial, "YArrow");
+    yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
+    this->transformWidgetYTranslateID = this->transformWidgetRaycaster.addObject(yArrow, arrowColliderMesh);
+
+    transformWidgetZColor.set(0.0f, 0.0f, 1.0f, 1.0f);
+    transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
+    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetZMaterial, "ZArrow");
+    zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
+    zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
+    this->transformWidgetZTranslateID = this->transformWidgetRaycaster.addObject(zArrow, arrowColliderMesh);
+
+    this->transformWidgetRoot->addChild(xArrow);
+    this->transformWidgetRoot->addChild(yArrow);
+    this->transformWidgetRoot->addChild(zArrow);
+
+    this->transformWidgetCameraObj = engine->createObject3D();
+    this->transformWidgetCamera = engine->createPerspectiveCamera(this->transformWidgetCameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
+
+}
+
 void ModelerApp::updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object) {
      Core::Transform& objectTransform = object->getTransform();
      objectTransform.updateWorldMatrix();
@@ -454,39 +515,34 @@ void ModelerApp::updateTransformWidgetCamera() {
     transformWidgetCameraObj->getTransform().updateWorldMatrix();
 }
 
-void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
-    if (this->engineIsReady) {
-        GestureAdapter::GestureEventType eventType = event.getType();
-        switch(eventType) {
-            case GestureAdapter::GestureEventType::Move:
-                this->rayCastForTransformWidgetSelection(event.end.x, event.end.y);
-            break;
-            case GestureAdapter::GestureEventType::Drag:
-            case GestureAdapter::GestureEventType::Scroll:
-                if (this->transformWidgetActionInProgress) {
-                    this->updateTransformWidgetAction(event.end.x, event.end.y);
-                }
-                else {
-                    this->orbitControls->handleGesture(event);
-                }
-            break;
+void ModelerApp::rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y) {
+    this->updateTransformWidgetCamera();
+    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
+    Core::Vector4u viewport = graphics->getViewport();
+    Core::Ray ray = this->transformWidgetCamera->getRay(viewport, x, y);
+    std::vector<Core::Hit> hits;
+    Core::Bool hitOccurred = this->transformWidgetRaycaster.castRay(ray, hits);
+
+    if (hitOccurred) {
+        Core::Hit& hit = hits[0];
+        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+        if (this->transformWidgetActiveComponentID != hit.ID) {
+            this->resetTransformWidgetColors();
+            this->transformWidgetActiveComponentID = hit.ID;
+            if (hit.ID == this->transformWidgetXTranslateID) {
+                this->transformWidgetXMaterial->setHighlightColor(this->transformWidgetHighlightColor);
+            }
+            else if (hit.ID == this->transformWidgetYTranslateID) {
+                this->transformWidgetYMaterial->setHighlightColor(this->transformWidgetHighlightColor);
+            }
+            else if (hit.ID == this->transformWidgetZTranslateID) {
+                this->transformWidgetZMaterial->setHighlightColor(this->transformWidgetHighlightColor);
+            }
         }
     }
-}
-
-void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y) {
-    switch(type) {
-        case MouseAdapter::MouseEventType::ButtonPress:
-            if (this->transformWidgetActiveComponentID == -1) {
-                if (button == 1) this->rayCastForObjectSelection(x, y, true);
-            }
-            else {
-                if (button == 1) this->startTransformWidgetAction(x, y);
-            }
-        break;
-        case MouseAdapter::MouseEventType::ButtonRelease:
-            if (button == 1) this->endTransformWidgetAction(x, y);
-        break;
+    else {
+        this->transformWidgetActiveComponentID = -1;
+        this->resetTransformWidgetColors();
     }
 }
 
@@ -565,62 +621,8 @@ bool ModelerApp::getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core
     return true;
 }
 
-void ModelerApp::rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y) {
-    this->updateTransformWidgetCamera();
-    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = this->transformWidgetCamera->getRay(viewport, x, y);
-    std::vector<Core::Hit> hits;
-    Core::Bool hitOccurred = this->transformWidgetRaycaster.castRay(ray, hits);
-
-    if (hitOccurred) {
-        Core::Hit& hit = hits[0];
-        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
-        if (this->transformWidgetActiveComponentID != hit.ID) {
-            this->transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
-            this->transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
-            this->transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
-            this->transformWidgetActiveComponentID = hit.ID;
-            if (hit.ID == this->transformWidgetXTranslateID) {
-                this->transformWidgetXMaterial->setHighlightColor(this->transformWidgetHighlightColor);
-            }
-            else if (hit.ID == this->transformWidgetYTranslateID) {
-                this->transformWidgetYMaterial->setHighlightColor(this->transformWidgetHighlightColor);
-            }
-            else if (hit.ID == this->transformWidgetZTranslateID) {
-                this->transformWidgetZMaterial->setHighlightColor(this->transformWidgetHighlightColor);
-            }
-        }
-    }
-    else {
-        this->transformWidgetActiveComponentID = -1;
-        this->transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
-        this->transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
-        this->transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
-    }
-}
-
-void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject) {
-    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
-    std::vector<Core::Hit> hits;
-    Core::Bool hitOccurred = this->sceneRaycaster.castRay(ray, hits);
-
-    if (hitOccurred) {
-        Core::Hit& hit = hits[0];
-        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
-        Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
-
-        if (setSelectedObject) {
-            this->getCoreScene().setSelectedObject(rootObject);
-        }
-    }
-}
-
-void ModelerApp::resolveOnUpdateCallbacks() {
-    QMutexLocker ml(&this->onUpdateMutex);
-    for (ModelerAppLifecycleEventCallback callback : this->onUpdates) {
-        callback();
-    }
+void ModelerApp::resetTransformWidgetColors() {
+    this->transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
+    this->transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
+    this->transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
 }

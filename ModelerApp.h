@@ -42,22 +42,24 @@ private:
     void setupHighlightMaterials();
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
-    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
     void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject = true);
     void setupRenderCamera();
     void setupDefaultObjects();
     void setupTransformWidget();
     void setupLights();
     void updateLights();
+    void resolveOnUpdateCallbacks();
+    void preRenderCallback();
+    void postRenderCallback();
+
+    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
     void updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object);
     void updateTransformWidgetCamera();
     void endTransformWidgetAction(Core::Int32 x, Core::Int32 y);
     void startTransformWidgetAction(Core::Int32 x, Core::Int32 y);
     void updateTransformWidgetAction(Core::Int32 x, Core::Int32 y);
     bool getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
-    void resolveOnUpdateCallbacks();
-    void preRenderCallback();
-    void postRenderCallback();
+    void resetTransformWidgetColors();
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;
