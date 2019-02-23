@@ -41,9 +41,9 @@ private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);
     void setupHighlightMaterials();
     void gesture(GestureAdapter::GestureEvent event);
-    void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::UInt32 x, Core::UInt32 y);
-    void rayCastForTransformWidgetSelection(Core::UInt32 x, Core::UInt32 y);
-    void rayCastForObjectSelection(Core::UInt32 x, Core::UInt32 y, bool setSelectedObject = true);
+    void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
+    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
+    void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject = true);
     void setupRenderCamera();
     void setupDefaultObjects();
     void setupTransformWidget();
@@ -51,8 +51,9 @@ private:
     void updateLights();
     void updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object);
     void updateTransformWidgetCamera();
-    void startTransformWidgetAction(Core::UInt32 x, Core::UInt32 y);
-    void updateTransformWidgetAction(Core::UInt32 x, Core::UInt32 y);
+    void startTransformWidgetAction(Core::Int32 x, Core::Int32 y);
+    void updateTransformWidgetAction(Core::Int32 x, Core::Int32 y);
+    Core::Point3r getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin);
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();
@@ -100,6 +101,7 @@ private:
     Core::Int32 transformWidgetActiveComponentID;
     Core::Point3r transformWidgetActionStartPosition;
     Core::Vector3r transformWidgetActionNormal;
+    Core::Vector3r transformWidgetActionOffset;
     Core::Vector4r transformWidgetPlane;
 
 };
