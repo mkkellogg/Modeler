@@ -19,6 +19,7 @@
 #include "PipedEventAdapter.h"
 #include "OrbitControls.h"
 #include "BasicRimShadowMaterial.h"
+#include "TransformWidget.h"
 
 
 class RenderWindow;
@@ -45,22 +46,12 @@ private:
     void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject = true);
     void setupRenderCamera();
     void setupDefaultObjects();
-    void setupTransformWidget();
     void setupLights();
     void updateLights();
     void resolveOnUpdateCallbacks();
     void addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh);
     void preRenderCallback();
     void postRenderCallback();
-
-    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
-    void updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object);
-    void updateTransformWidgetCamera();
-    void endTransformWidgetAction(Core::Int32 x, Core::Int32 y);
-    void startTransformWidgetAction(Core::Int32 x, Core::Int32 y);
-    void updateTransformWidgetAction(Core::Int32 x, Core::Int32 y);
-    bool getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
-    void resetTransformWidgetColors();
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;
@@ -87,26 +78,6 @@ private:
     QMutex onUpdateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
 
-    Core::RayCaster transformWidgetRaycaster;
-    Core::WeakPointer<Core::Object3D> transformWidgetCameraObj;
-    Core::WeakPointer<Core::Camera> transformWidgetCamera;
-    Core::WeakPointer<Core::Object3D> transformWidgetRoot;
-    Core::Color transformWidgetHighlightColor;
-    Core::Color transformWidgetXColor;
-    Core::Color transformWidgetYColor;
-    Core::Color transformWidgetZColor;
-    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetXMaterial;
-    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetYMaterial;
-    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetZMaterial;
-    Core::UInt32 transformWidgetXTranslateID;
-    Core::UInt32 transformWidgetYTranslateID;
-    Core::UInt32 transformWidgetZTranslateID;
-
-    Core::Int32 transformWidgetActiveComponentID;
-    bool transformWidgetActionInProgress;
-    Core::Point3r transformWidgetActionStartPosition;
-    Core::Vector3r transformWidgetActionNormal;
-    Core::Vector3r transformWidgetActionOffset;
-    Core::Vector4r transformWidgetPlane;
+    TransformWidget transformWidget;
 
 };

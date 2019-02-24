@@ -13,7 +13,8 @@ HEADERS       = \
     Exception.h \
     MainGUI.h \
     GeometryUtils.h \
-    BasicRimShadowMaterial.h
+    BasicRimShadowMaterial.h \
+    TransformWidget.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -29,7 +30,8 @@ SOURCES       = \
     Exception.cpp \
     MainGUI.cpp \
     GeometryUtils.cpp \
-    BasicRimShadowMaterial.cpp
+    BasicRimShadowMaterial.cpp \
+    TransformWidget.cpp
 
 QT           += widgets
 

@@ -40,8 +40,7 @@
 using MeshContainer = Core::RenderableContainer<Core::Mesh>;
 
 ModelerApp::ModelerApp(): renderWindow(nullptr) {
-    this->transformWidgetActiveComponentID = -1;
-    this->transformWidgetActionInProgress = false;
+
 }
 
 void ModelerApp::init() {
@@ -132,7 +131,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->setupRenderCamera();
     this->setupDefaultObjects();
-    this->setupTransformWidget();
+    this->transformWidget.init(this->renderCamera, this->coreScene);
     this->setupLights();
     this->setupHighlightMaterials();
 
@@ -253,7 +252,7 @@ void ModelerApp::setupHighlightMaterials() {
 void ModelerApp::preRenderCallback() {
     Core::WeakPointer<Core::Object3D> selectedObject = this->getCoreScene().getSelectedObject();
     if (selectedObject) {
-        this->updateTransformWidgetForObject(selectedObject);
+        this->transformWidget.updateForObject(selectedObject);
     }
 }
 
@@ -313,11 +312,8 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
 
-        this->updateTransformWidgetCamera();
-        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
-        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
-        this->transformWidgetCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->transformWidgetRoot, this->transformWidgetCamera);
+        this->transformWidget.updateCamera();
+        this->transformWidget.render();
     }
 }
 
@@ -326,14 +322,11 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
             case GestureAdapter::GestureEventType::Move:
-                this->rayCastForTransformWidgetSelection(event.end.x, event.end.y);
+                this->transformWidget.rayCastForTransformWidgetSelection(event.end.x, event.end.y);
             break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:
-                if (this->transformWidgetActionInProgress) {
-                    this->updateTransformWidgetAction(event.end.x, event.end.y);
-                }
-                else {
+                if (!this->transformWidget.handleDrag(event.end.x, event.end.y)) {
                     this->orbitControls->handleGesture(event);
                 }
             break;
@@ -344,15 +337,14 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
 void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y) {
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
-            if (this->transformWidgetActiveComponentID == -1) {
-                if (button == 1) this->rayCastForObjectSelection(x, y, true);
-            }
-            else {
-                if (button == 1) this->startTransformWidgetAction(x, y);
+            if (button == 1) {
+                if (!this->transformWidget.startAction(x, y)) {
+                    this->rayCastForObjectSelection(x, y, true);
+                }
             }
         break;
         case MouseAdapter::MouseEventType::ButtonRelease:
-            if (button == 1) this->endTransformWidgetAction(x, y);
+            if (button == 1) this->transformWidget.endAction(x, y);
         break;
     }
 }
@@ -385,211 +377,4 @@ void ModelerApp::resolveOnUpdateCallbacks() {
 void ModelerApp::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh) {
     this->sceneRaycaster.addObject(object, mesh);
     this->meshToObjectMap[mesh->getObjectID()] = object;
-}
-
-void ModelerApp::setupTransformWidget() {
-    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
-
-    transformWidgetXMaterial = engine->createMaterial<BasicRimShadowMaterial>();
-    transformWidgetXMaterial->setHighlightLowerBound(0.6f);
-    transformWidgetXMaterial->setHighlightScale(1.25f);
-    transformWidgetXMaterial->setDepthTestEnabled(true);
-    transformWidgetYMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
-    transformWidgetZMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(transformWidgetXMaterial->clone());
-
-    this->transformWidgetRoot = engine->createObject3D();
-    this->transformWidgetRoot->setName("TransformWidget");
-
-    transformWidgetHighlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::Real baseLength = 2.0f;
-    Core::Real coneLength = 0.4f;
-    Core::Real halfLength = (baseLength + coneLength) / 2.0f;
-    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, transformWidgetHighlightColor);
-    Core::WeakPointer<Core::Mesh> arrowColliderMesh = GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, transformWidgetHighlightColor);
-
-    transformWidgetXColor.set(1.0f, 0.0f, 0.0f, 1.0f);
-    transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetXMaterial, "XArrow");
-    xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
-    xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
-    this->transformWidgetXTranslateID = this->transformWidgetRaycaster.addObject(xArrow, arrowColliderMesh);
-
-    transformWidgetYColor.set(0.0f, 1.0f, 0.0f, 1.0f);
-    transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetYMaterial, "YArrow");
-    yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
-    this->transformWidgetYTranslateID = this->transformWidgetRaycaster.addObject(yArrow, arrowColliderMesh);
-
-    transformWidgetZColor.set(0.0f, 0.0f, 1.0f, 1.0f);
-    transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, transformWidgetZMaterial, "ZArrow");
-    zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
-    zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
-    this->transformWidgetZTranslateID = this->transformWidgetRaycaster.addObject(zArrow, arrowColliderMesh);
-
-    this->transformWidgetRoot->addChild(xArrow);
-    this->transformWidgetRoot->addChild(yArrow);
-    this->transformWidgetRoot->addChild(zArrow);
-
-    this->transformWidgetCameraObj = engine->createObject3D();
-    this->transformWidgetCamera = engine->createPerspectiveCamera(this->transformWidgetCameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
-
-}
-
-void ModelerApp::updateTransformWidgetForObject(Core::WeakPointer<Core::Object3D> object) {
-     Core::Transform& objectTransform = object->getTransform();
-     objectTransform.updateWorldMatrix();
-
-     Core::Point3r origin;
-     Core::Vector3r forward = Core::Vector3r::Forward;
-     Core::Vector3r up = Core::Vector3r::Up;
-
-     objectTransform.transform(origin);
-     objectTransform.transform(forward);
-     objectTransform.transform(up);
-
-     Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
-     transformWidgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
-}
-
-void ModelerApp::updateTransformWidgetCamera() {
-
-    this->transformWidgetCamera->copyFrom(this->renderCamera);
-
-    Core::Point3r transformWidgetPosition;
-    Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
-    transformWidgetTransform.updateWorldMatrix();
-    transformWidgetTransform.transform(transformWidgetPosition);
-
-    Core::Point3r renderCameraPosition;
-    Core::Transform& renderCameraTransform = this->renderCamera->getOwner()->getTransform();
-    renderCameraTransform.updateWorldMatrix();
-    renderCameraTransform.transform(renderCameraPosition);
-
-    Core::Vector3r transformWidgetToRenderCamera = renderCameraPosition - transformWidgetPosition;
-    transformWidgetToRenderCamera.normalize();
-    transformWidgetToRenderCamera.scale(18.0f);
-
-    Core::Point3r newTransformWidgetCameraPosition = transformWidgetPosition + transformWidgetToRenderCamera;
-
-    Core::WeakPointer<Core::Object3D> transformWidgetCameraObj = this->transformWidgetCamera->getOwner();
-    transformWidgetCameraObj->getTransform().updateWorldMatrix();
-    Core::Point3r transformWidgetCameraPosition;
-    renderCameraTransform.transform(transformWidgetCameraPosition);
-    Core::Vector3r translation = newTransformWidgetCameraPosition - transformWidgetCameraPosition;
-    transformWidgetCameraObj->getTransform().getLocalMatrix().copy(renderCameraTransform.getLocalMatrix());
-    transformWidgetCameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
-    transformWidgetCameraObj->getTransform().updateWorldMatrix();
-}
-
-void ModelerApp::rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y) {
-    this->updateTransformWidgetCamera();
-    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = this->transformWidgetCamera->getRay(viewport, x, y);
-    std::vector<Core::Hit> hits;
-    Core::Bool hitOccurred = this->transformWidgetRaycaster.castRay(ray, hits);
-
-    if (hitOccurred) {
-        Core::Hit& hit = hits[0];
-        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
-        if (this->transformWidgetActiveComponentID != hit.ID) {
-            this->resetTransformWidgetColors();
-            this->transformWidgetActiveComponentID = hit.ID;
-            if (hit.ID == this->transformWidgetXTranslateID) {
-                this->transformWidgetXMaterial->setHighlightColor(this->transformWidgetHighlightColor);
-            }
-            else if (hit.ID == this->transformWidgetYTranslateID) {
-                this->transformWidgetYMaterial->setHighlightColor(this->transformWidgetHighlightColor);
-            }
-            else if (hit.ID == this->transformWidgetZTranslateID) {
-                this->transformWidgetZMaterial->setHighlightColor(this->transformWidgetHighlightColor);
-            }
-        }
-    }
-    else {
-        this->transformWidgetActiveComponentID = -1;
-        this->resetTransformWidgetColors();
-    }
-}
-
-void ModelerApp::endTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
-    this->transformWidgetActionInProgress = false;
-    this->transformWidgetActiveComponentID = -1;
-    this->rayCastForTransformWidgetSelection(x, y);
-}
-
-void ModelerApp::startTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
-    if (this->transformWidgetActionInProgress) return;
-    Core::Point3r transformWidgetPosition;
-    Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
-    transformWidgetTransform.updateWorldMatrix();
-    transformWidgetTransform.transform(transformWidgetPosition);
-
-    Core::Vector3r planeNormal;
-    if (this->transformWidgetActiveComponentID == this->transformWidgetXTranslateID) {
-        this->transformWidgetActionNormal.set(1.0f, 0.0f, 0.0f);
-        planeNormal.set(0.0f, 0.0f, 1.0f);
-    }
-    else if (this->transformWidgetActiveComponentID == this->transformWidgetYTranslateID) {
-        this->transformWidgetActionNormal.set(0.0f, 1.0f, 0.0f);
-        planeNormal.set(0.0f, 0.0f, 1.0f);
-    }
-    else if (this->transformWidgetActiveComponentID == this->transformWidgetZTranslateID) {
-        this->transformWidgetActionNormal.set(0.0f, 0.0f, 1.0f);
-        planeNormal.set(0.0f, 1.0f, 0.0f);
-    }
-    transformWidgetTransform.transform(this->transformWidgetActionNormal);
-    transformWidgetTransform.transform(planeNormal);
-
-    Core::Real d = planeNormal.dot(transformWidgetPosition);
-    this->transformWidgetPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
-
-    bool validTarget = this->getTransformWidgetTranslationTargetPosition(x, y, transformWidgetPosition, this->transformWidgetActionStartPosition);
-    if (!validTarget) return;
-    this->transformWidgetActionOffset = transformWidgetPosition - this->transformWidgetActionStartPosition;
-    this->transformWidgetActionInProgress = true;
-}
-
-void ModelerApp::updateTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
-    if (!this->transformWidgetActionInProgress) return;
-    Core::Point3r targetPosition;
-    bool validTarget = this->getTransformWidgetTranslationTargetPosition(x, y, this->transformWidgetActionStartPosition, targetPosition);
-
-    if (!validTarget) return;
-
-    Core::Point3r transformWidgetPosition;
-    Core::Transform& transformWidgetTransform = this->transformWidgetRoot->getTransform();
-    transformWidgetTransform.updateWorldMatrix();
-    transformWidgetTransform.transform(transformWidgetPosition);
-
-    Core::Vector3r translation = targetPosition - transformWidgetPosition +  this->transformWidgetActionOffset;
-    transformWidgetTransform.translate(translation, Core::TransformationSpace::World);
-
-    this->coreScene.getSelectedObject()->getTransform().translate(translation, Core::TransformationSpace::World);
-}
-
-bool ModelerApp::getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {
-    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
-
-    Core::Hit planeHit;
-    Core::Bool intersects = ray.intersectPlane(this->transformWidgetPlane, planeHit);
-    if (!intersects) return false;
-
-    Core::Point3r intersection = planeHit.Origin;
-
-    Core::Vector3r toIntersection = intersection - origin;
-    Core::Real p = toIntersection.dot(this->transformWidgetActionNormal);
-    Core::Vector3r offset = this->transformWidgetActionNormal * p;
-    Core::Point3r targetPosition = origin + offset;
-    out = targetPosition;
-    return true;
-}
-
-void ModelerApp::resetTransformWidgetColors() {
-    this->transformWidgetXMaterial->setHighlightColor(transformWidgetXColor);
-    this->transformWidgetYMaterial->setHighlightColor(transformWidgetYColor);
-    this->transformWidgetZMaterial->setHighlightColor(transformWidgetZColor);
 }
