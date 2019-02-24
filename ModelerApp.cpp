@@ -178,7 +178,6 @@ void ModelerApp::setupRenderCamera() {
 }
 
 void ModelerApp::setupDefaultObjects() {
-
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
     Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = engine->createMaterial<Core::BasicLitMaterial>();
@@ -220,6 +219,7 @@ void ModelerApp::setupLights() {
     Core::WeakPointer<Core::Mesh> pointLightMesh = GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
     Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
     Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
+    pointLightRenderer->setCastShadows(false);
     this->pointLightObject->addRenderable(pointLightMesh);
     this->addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
@@ -265,7 +265,6 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
 
-
         this->highlightMaterial->setStencilTestEnabled(false);
         this->highlightMaterial->setStencilWriteMask(0x00);
         this->highlightMaterial->setFaceCullingEnabled(true);
@@ -274,7 +273,6 @@ void ModelerApp::postRenderCallback() {
         this->highlightMaterial->setDepthWriteEnabled(true);
         Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
 
-\
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
         this->highlightMaterial->setStencilWriteMask(0xFF);
         this->highlightMaterial->setStencilReadMask(0xFF);
@@ -289,7 +287,6 @@ void ModelerApp::postRenderCallback() {
         this->highlightMaterial->setDepthTestEnabled(false);
         this->highlightMaterial->setDepthWriteEnabled(true);
         Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
-
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
         this->outlineMaterial->setStencilWriteMask(0x00);
@@ -308,11 +305,9 @@ void ModelerApp::postRenderCallback() {
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
         Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
 
-
         this->outlineMaterial->setColor(this->darkOutlineColor);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
         Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
-
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
