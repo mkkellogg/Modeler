@@ -65,30 +65,30 @@ void TransformWidget::updateCamera() {
 
     this->camera->copyFrom(this->targetCamera);
 
-    Core::Point3r transformWidgetPosition;
-    Core::Transform& transformWidgetTransform = this->rootObject->getTransform();
-    transformWidgetTransform.updateWorldMatrix();
-    transformWidgetTransform.transform(transformWidgetPosition);
+    Core::Point3r widgetPosition;
+    Core::Transform& widgetTransform = this->rootObject->getTransform();
+    widgetTransform.updateWorldMatrix();
+    widgetTransform.transform(widgetPosition);
 
     Core::Point3r targetCameraPosition;
     Core::Transform& targetCameraTransform = this->targetCamera->getOwner()->getTransform();
     targetCameraTransform.updateWorldMatrix();
     targetCameraTransform.transform(targetCameraPosition);
 
-    Core::Vector3r transformWidgetTotargetCamera = targetCameraPosition - transformWidgetPosition;
-    transformWidgetTotargetCamera.normalize();
-    transformWidgetTotargetCamera.scale(18.0f);
+    Core::Vector3r widgetToTargetCamera = targetCameraPosition - widgetPosition;
+    widgetToTargetCamera.normalize();
+    widgetToTargetCamera.scale(18.0f);
 
-    Core::Point3r newTransformWidgetCameraPosition = transformWidgetPosition + transformWidgetTotargetCamera;
+    Core::Point3r newCameraPosition = widgetPosition + widgetToTargetCamera;
 
-    Core::WeakPointer<Core::Object3D> transformWidgetCameraObj = this->camera->getOwner();
-    transformWidgetCameraObj->getTransform().updateWorldMatrix();
-    Core::Point3r transformWidgetCameraPosition;
-    targetCameraTransform.transform(transformWidgetCameraPosition);
-    Core::Vector3r translation = newTransformWidgetCameraPosition - transformWidgetCameraPosition;
-    transformWidgetCameraObj->getTransform().getLocalMatrix().copy(targetCameraTransform.getLocalMatrix());
-    transformWidgetCameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
-    transformWidgetCameraObj->getTransform().updateWorldMatrix();
+    Core::WeakPointer<Core::Object3D> cameraObj = this->camera->getOwner();
+    cameraObj->getTransform().updateWorldMatrix();
+    Core::Point3r cameraPosition;
+    targetCameraTransform.transform(cameraPosition);
+    Core::Vector3r translation = newCameraPosition - cameraPosition;
+    cameraObj->getTransform().getLocalMatrix().copy(targetCameraTransform.getLocalMatrix());
+    cameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
+    cameraObj->getTransform().updateWorldMatrix();
 }
 
 void TransformWidget::render() {
@@ -101,10 +101,10 @@ void TransformWidget::render() {
 bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
     if (this->actionInProgress) return true;
     if (this->activeComponentID == -1) return false;
-    Core::Point3r transformWidgetPosition;
-    Core::Transform& transformWidgetTransform = this->rootObject->getTransform();
-    transformWidgetTransform.updateWorldMatrix();
-    transformWidgetTransform.transform(transformWidgetPosition);
+    Core::Point3r widgetPosition;
+    Core::Transform& widgetTransform = this->rootObject->getTransform();
+    widgetTransform.updateWorldMatrix();
+    widgetTransform.transform(widgetPosition);
 
     Core::Vector3r planeNormal;
     if (this->activeComponentID == this->xTranslateID) {
@@ -119,15 +119,15 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
         this->actionNormal.set(0.0f, 0.0f, 1.0f);
         planeNormal.set(0.0f, 1.0f, 0.0f);
     }
-    transformWidgetTransform.transform(this->actionNormal);
-    transformWidgetTransform.transform(planeNormal);
+    widgetTransform.transform(this->actionNormal);
+    widgetTransform.transform(planeNormal);
 
-    Core::Real d = planeNormal.dot(transformWidgetPosition);
+    Core::Real d = planeNormal.dot(widgetPosition);
     this->actionPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
 
-    bool validTarget = this->getTransformWidgetTranslationTargetPosition(x, y, transformWidgetPosition, this->actionStartPosition);
+    bool validTarget = this->getTranslationTargetPosition(x, y, widgetPosition, this->actionStartPosition);
     if (!validTarget) return false;
-    this->actionOffset = transformWidgetPosition - this->actionStartPosition;
+    this->actionOffset = widgetPosition - this->actionStartPosition;
     this->actionInProgress = true;
     return true;
 }
@@ -135,12 +135,12 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
 void TransformWidget::endAction(Core::Int32 x, Core::Int32 y) {
     this->actionInProgress = false;
     this->activeComponentID = -1;
-    this->rayCastForTransformWidgetSelection(x, y);
+    this->rayCastForSelection(x, y);
 }
 
 bool TransformWidget::handleDrag(Core::Int32 x, Core::Int32 y) {
     if (this->actionInProgress) {
-        this->updateTransformWidgetAction(x, y);
+        this->updateAction(x, y);
         return true;
     }
     return false;
@@ -158,11 +158,11 @@ void TransformWidget::setTargetObject(Core::WeakPointer<Core::Object3D> object) 
      objectTransform.transform(forward);
      objectTransform.transform(up);
 
-     Core::Transform& transformWidgetTransform = this->rootObject->getTransform();
-     transformWidgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
+     Core::Transform& widgetTransform = this->rootObject->getTransform();
+     widgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
 }
 
-void TransformWidget::rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y) {
+void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
     this->updateCamera();
     Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
     Core::Vector4u viewport = graphics->getViewport();
@@ -174,7 +174,7 @@ void TransformWidget::rayCastForTransformWidgetSelection(Core::Int32 x, Core::In
         Core::Hit& hit = hits[0];
         Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
         if (this->activeComponentID != hit.ID) {
-            this->resetTransformWidgetColors();
+            this->resetColors();
             this->activeComponentID = hit.ID;
             if (hit.ID == this->xTranslateID) {
                 this->xMaterial->setHighlightColor(this->highlightColor);
@@ -189,30 +189,30 @@ void TransformWidget::rayCastForTransformWidgetSelection(Core::Int32 x, Core::In
     }
     else {
         this->activeComponentID = -1;
-        this->resetTransformWidgetColors();
+        this->resetColors();
     }
 }
 
 
-void TransformWidget::updateTransformWidgetAction(Core::Int32 x, Core::Int32 y) {
+void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     if (!this->actionInProgress) return;
     Core::Point3r targetPosition;
-    bool validTarget = this->getTransformWidgetTranslationTargetPosition(x, y, this->actionStartPosition, targetPosition);
+    bool validTarget = this->getTranslationTargetPosition(x, y, this->actionStartPosition, targetPosition);
 
     if (!validTarget) return;
 
-    Core::Point3r transformWidgetPosition;
-    Core::Transform& transformWidgetTransform = this->rootObject->getTransform();
-    transformWidgetTransform.updateWorldMatrix();
-    transformWidgetTransform.transform(transformWidgetPosition);
+    Core::Point3r widgetPosition;
+    Core::Transform& widgetTransform = this->rootObject->getTransform();
+    widgetTransform.updateWorldMatrix();
+    widgetTransform.transform(widgetPosition);
 
-    Core::Vector3r translation = targetPosition - transformWidgetPosition +  this->actionOffset;
-    transformWidgetTransform.translate(translation, Core::TransformationSpace::World);
+    Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
+    widgetTransform.translate(translation, Core::TransformationSpace::World);
 
     this->coreScene->getSelectedObject()->getTransform().translate(translation, Core::TransformationSpace::World);
 }
 
-bool TransformWidget::getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {
+bool TransformWidget::getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {
     Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
     Core::Vector4u viewport = graphics->getViewport();
     Core::Ray ray = this->targetCamera->getRay(viewport, x, y);
@@ -231,7 +231,7 @@ bool TransformWidget::getTransformWidgetTranslationTargetPosition(Core::Int32 x,
     return true;
 }
 
-void TransformWidget::resetTransformWidgetColors() {
+void TransformWidget::resetColors() {
     this->xMaterial->setHighlightColor(xColor);
     this->yMaterial->setHighlightColor(yColor);
     this->zMaterial->setHighlightColor(zColor);

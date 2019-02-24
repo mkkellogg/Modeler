@@ -322,7 +322,7 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
             case GestureAdapter::GestureEventType::Move:
-                this->transformWidget.rayCastForTransformWidgetSelection(event.end.x, event.end.y);
+                this->transformWidget.rayCastForSelection(event.end.x, event.end.y);
             break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:

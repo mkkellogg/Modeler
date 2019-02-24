@@ -19,13 +19,13 @@ public:
     bool startAction(Core::Int32 x, Core::Int32 y);
     void endAction(Core::Int32 x, Core::Int32 y);
     bool handleDrag(Core::Int32 x, Core::Int32 y);
-    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
+    void rayCastForSelection(Core::Int32 x, Core::Int32 y);
     void setTargetObject(Core::WeakPointer<Core::Object3D> object);
 
 private:
-    void updateTransformWidgetAction(Core::Int32 x, Core::Int32 y);
-    bool getTransformWidgetTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
-    void resetTransformWidgetColors();
+    void updateAction(Core::Int32 x, Core::Int32 y);
+    bool getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
+    void resetColors();
 
     CoreScene* coreScene;
     Core::WeakPointer<Core::Camera> targetCamera;
