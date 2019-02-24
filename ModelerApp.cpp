@@ -146,8 +146,11 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     }, true);
 
     engine->onUpdate([this]() {
+        auto vp = Core::Engine::instance()->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
+        this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
         this->resolveOnUpdateCallbacks();
     }, true);
+
 }
 
 void ModelerApp::setupRenderCamera() {
@@ -207,13 +210,21 @@ void ModelerApp::setupLights() {
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    this->pointLightObject = engine->createObject3D();
+    this->pointLightObject = engine->createObject3D<MeshContainer>();
     this->pointLightObject->setName("Point light");
     this->coreScene.addObjectToScene(pointLightObject);
     Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
     pointLight->setColor(1.0f, 1.0f, 1.0f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     pointLight->setRadius(10.0f);
+    this->pointLightObject->getTransform().translate(Core::Vector3r(5.0f, 10.0f, 5.0f));
+    Core::Real pointLightSize = 0.35f;
+    Core::WeakPointer<Core::Mesh> pointLightMesh = GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
+    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
+    this->pointLightObject->addRenderable(pointLightMesh);
+    this->sceneRaycaster.addObject(this->pointLightObject, pointLightMesh);
+    this->meshToObjectMap[pointLightMesh->getObjectID()] = this->pointLightObject;
 
     this->directionalLightObject = engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
@@ -222,47 +233,6 @@ void ModelerApp::setupLights() {
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));
-
-    engine->onUpdate([this]() {
-        //this->updateLights();
-        auto vp = Core::Engine::instance()->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
-        this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
-    }, true);
-}
-
-void ModelerApp::updateLights() {
-    static Core::Real rotationAngle = 0.0;
-    static Core::Real counter = 0.0;
-    counter += 0.01;
-    if (counter> 1.0) counter = 0.0;
-
-    if (Core::WeakPointer<Core::Object3D>::isValid(this->pointLightObject)) {
-
-        rotationAngle += 0.6 * Core::Time::getDeltaTime();
-        rotationAngle = 0.0f;
-        if (rotationAngle >= Core::Math::TwoPI) rotationAngle -= Core::Math::TwoPI;
-
-        Core::Quaternion qA;
-        qA.fromAngleAxis(rotationAngle, 0, 1, 0);
-        Core::Matrix4x4 rotationMatrixA;
-        qA.rotationMatrix(rotationMatrixA);
-
-        Core::Quaternion qB;
-        qB.fromAngleAxis(-0.8, 1, 0, 0);
-        Core::Matrix4x4 rotationMatrixB;
-        qB.rotationMatrix(rotationMatrixB);
-
-        Core::Matrix4x4 worldMatrix;
-
-        worldMatrix.preTranslate(10.0f, 10.0f, 0.0f);
-        worldMatrix.preMultiply(rotationMatrixA);
-        //worldMatrix.multiply(rotationMatrixB);
-
-        Core::WeakPointer<Core::Object3D> lightObjectPtr = this->pointLightObject;
-        lightObjectPtr->getTransform().getLocalMatrix().copy(worldMatrix);
-
-    }
-
 }
 
 void ModelerApp::setupHighlightMaterials() {

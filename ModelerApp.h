@@ -70,7 +70,7 @@ private:
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
-    Core::WeakPointer<Core::Object3D> pointLightObject;
+    Core::WeakPointer<Core::RenderableContainer<Core::Mesh>>  pointLightObject;
 
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;
