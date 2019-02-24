@@ -95,8 +95,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
                if (meshContainer) {
                    std::vector<Core::WeakPointer<Core::Mesh>> meshes = meshContainer->getRenderables();
                    for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
-                       this->sceneRaycaster.addObject(obj, mesh);
-                       this->meshToObjectMap[mesh->getObjectID()] = obj;
+                       this->addObjectToSceneRaycaster(obj, mesh);
                    }
                }
            });
@@ -192,8 +191,7 @@ void ModelerApp::setupDefaultObjects() {
     Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
     this->coreScene.addObjectToScene(bottomSlabObj);
-    this->sceneRaycaster.addObject(bottomSlabObj, slab);
-    this->meshToObjectMap[slab->getObjectID()] = bottomSlabObj;
+    this->addObjectToSceneRaycaster(bottomSlabObj, slab);
     // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
@@ -223,8 +221,7 @@ void ModelerApp::setupLights() {
     Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
     Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
     this->pointLightObject->addRenderable(pointLightMesh);
-    this->sceneRaycaster.addObject(this->pointLightObject, pointLightMesh);
-    this->meshToObjectMap[pointLightMesh->getObjectID()] = this->pointLightObject;
+    this->addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
     this->directionalLightObject = engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
@@ -388,6 +385,11 @@ void ModelerApp::resolveOnUpdateCallbacks() {
     for (ModelerAppLifecycleEventCallback callback : this->onUpdates) {
         callback();
     }
+}
+
+void ModelerApp::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh) {
+    this->sceneRaycaster.addObject(object, mesh);
+    this->meshToObjectMap[mesh->getObjectID()] = object;
 }
 
 void ModelerApp::setupTransformWidget() {

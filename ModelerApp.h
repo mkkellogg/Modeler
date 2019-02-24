@@ -49,6 +49,7 @@ private:
     void setupLights();
     void updateLights();
     void resolveOnUpdateCallbacks();
+    void addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh);
     void preRenderCallback();
     void postRenderCallback();
 
