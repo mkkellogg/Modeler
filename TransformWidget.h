@@ -15,12 +15,12 @@ public:
     TransformWidget();
     void init(Core::WeakPointer<Core::Camera> targetCamera, CoreScene& coreScene);
     void updateCamera();
-    bool handleDrag(Core::Int32 x, Core::Int32 y);
-    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
+    void render();
     bool startAction(Core::Int32 x, Core::Int32 y);
     void endAction(Core::Int32 x, Core::Int32 y);
-    void render();
-    void updateForObject(Core::WeakPointer<Core::Object3D> object);
+    bool handleDrag(Core::Int32 x, Core::Int32 y);
+    void rayCastForTransformWidgetSelection(Core::Int32 x, Core::Int32 y);
+    void setTargetObject(Core::WeakPointer<Core::Object3D> object);
 
 private:
     void updateTransformWidgetAction(Core::Int32 x, Core::Int32 y);
@@ -29,25 +29,25 @@ private:
 
     CoreScene* coreScene;
     Core::WeakPointer<Core::Camera> targetCamera;
-    Core::RayCaster transformWidgetRaycaster;
-    Core::WeakPointer<Core::Object3D> transformWidgetCameraObj;
-    Core::WeakPointer<Core::Camera> transformWidgetCamera;
-    Core::WeakPointer<Core::Object3D> transformWidgetRoot;
-    Core::Color transformWidgetHighlightColor;
-    Core::Color transformWidgetXColor;
-    Core::Color transformWidgetYColor;
-    Core::Color transformWidgetZColor;
-    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetXMaterial;
-    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetYMaterial;
-    Core::WeakPointer<BasicRimShadowMaterial> transformWidgetZMaterial;
-    Core::UInt32 transformWidgetXTranslateID;
-    Core::UInt32 transformWidgetYTranslateID;
-    Core::UInt32 transformWidgetZTranslateID;
+    Core::RayCaster raycaster;
+    Core::WeakPointer<Core::Object3D> cameraObj;
+    Core::WeakPointer<Core::Camera> camera;
+    Core::WeakPointer<Core::Object3D> rootObject;
+    Core::Color highlightColor;
+    Core::Color xColor;
+    Core::Color yColor;
+    Core::Color zColor;
+    Core::WeakPointer<BasicRimShadowMaterial> xMaterial;
+    Core::WeakPointer<BasicRimShadowMaterial> yMaterial;
+    Core::WeakPointer<BasicRimShadowMaterial> zMaterial;
+    Core::UInt32 xTranslateID;
+    Core::UInt32 yTranslateID;
+    Core::UInt32 zTranslateID;
 
-    Core::Int32 transformWidgetActiveComponentID;
-    bool transformWidgetActionInProgress;
-    Core::Point3r transformWidgetActionStartPosition;
-    Core::Vector3r transformWidgetActionNormal;
-    Core::Vector3r transformWidgetActionOffset;
-    Core::Vector4r transformWidgetPlane;
+    Core::Int32 activeComponentID;
+    bool actionInProgress;
+    Core::Point3r actionStartPosition;
+    Core::Vector3r actionNormal;
+    Core::Vector3r actionOffset;
+    Core::Vector4r actionPlane;
 };

@@ -252,7 +252,7 @@ void ModelerApp::setupHighlightMaterials() {
 void ModelerApp::preRenderCallback() {
     Core::WeakPointer<Core::Object3D> selectedObject = this->getCoreScene().getSelectedObject();
     if (selectedObject) {
-        this->transformWidget.updateForObject(selectedObject);
+        this->transformWidget.setTargetObject(selectedObject);
     }
 }
 
