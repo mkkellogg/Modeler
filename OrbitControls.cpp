@@ -21,7 +21,7 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         Core::WeakPointer<Core::Object3D> cameraObjPtr = this->targetCamera->getOwner();
         Core::Vector3r cameraVec;
         cameraVec.set(0, 0, -1);
-        cameraObjPtr->getTransform().transform(cameraVec);
+        cameraObjPtr->getTransform().applyTransformationTo(cameraVec);
         cameraVec = cameraVec * event.scrollDistance;
         cameraObjPtr->getTransform().translate(cameraVec, Core::TransformationSpace::World);
     }
@@ -79,7 +79,7 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
 
         Core::Point3r cameraPos;
         cameraPos.set(0, 0, 0);
-        cameraObjPtr->getTransform().transform(cameraPos);
+        cameraObjPtr->getTransform().applyTransformationTo(cameraPos);
         cameraPos.set(cameraPos.x - this->origin.x, cameraPos.y - this->origin.y, cameraPos.z - this->origin.z);
         Core::Real distanceFromOrigin = cameraPos.magnitude();
 
