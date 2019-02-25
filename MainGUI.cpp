@@ -275,7 +275,8 @@ QVBoxLayout* MainGUI::buildRightLayout() {
 
 void MainGUI::updateObjectProperties(Core::WeakPointer<Core::Object3D> object) {
     Core::Matrix4x4 worldTransformation;
-    object->getTransform().getWorldTransformation(worldTransformation);
+    object->getTransform().updateWorldMatrix();
+    worldTransformation = object->getTransform().getWorldMatrix();
     Core::Vector3r translation;
     Core::Quaternion rotation;
     Core::Vector3r scale;

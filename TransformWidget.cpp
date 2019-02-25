@@ -63,15 +63,9 @@ void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera, CoreSce
 void TransformWidget::updateCamera() {
     this->camera->copyFrom(this->targetCamera);
 
-    Core::Point3r widgetPosition;
-    Core::Transform& widgetTransform = this->rootObject->getTransform();
-    widgetTransform.updateWorldMatrix();
-    widgetTransform.getWorldMatrix().transform(widgetPosition);
-
-    Core::Point3r targetCameraPosition;
+    Core::Point3r widgetPosition = this->rootObject->getTransform().getWorldPosition();
     Core::Transform& targetCameraTransform = this->targetCamera->getOwner()->getTransform();
-    targetCameraTransform.updateWorldMatrix();
-    targetCameraTransform.getWorldMatrix().transform(targetCameraPosition);
+    Core::Point3r targetCameraPosition = targetCameraTransform.getWorldPosition();
 
     Core::Vector3r widgetToTargetCamera = targetCameraPosition - widgetPosition;
     widgetToTargetCamera.normalize();
@@ -80,13 +74,8 @@ void TransformWidget::updateCamera() {
     Core::Point3r newCameraPosition = widgetPosition + widgetToTargetCamera;
 
     Core::WeakPointer<Core::Object3D> cameraObj = this->camera->getOwner();
-    cameraObj->getTransform().updateWorldMatrix();
-    Core::Point3r cameraPosition;
-    targetCameraTransform.getWorldMatrix().transform(cameraPosition);
-    Core::Vector3r translation = newCameraPosition - cameraPosition;
-    cameraObj->getTransform().getLocalMatrix().copy(targetCameraTransform.getLocalMatrix());
-    cameraObj->getTransform().translate(translation, Core::TransformationSpace::World);
-    cameraObj->getTransform().updateWorldMatrix();
+    cameraObj->getTransform().setLocalMatrix(targetCameraTransform.getLocalMatrix());
+    cameraObj->getTransform().setWorldPosition(newCameraPosition);
 }
 
 void TransformWidget::render() {
@@ -99,8 +88,9 @@ void TransformWidget::render() {
 bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
     if (this->actionInProgress) return true;
     if (this->activeComponentID == -1) return false;
-    Core::Point3r widgetPosition;
+
     Core::Transform& widgetTransform = this->rootObject->getTransform();
+    Core::Point3r widgetPosition;
     widgetTransform.updateWorldMatrix();
     widgetTransform.getWorldMatrix().transform(widgetPosition);
 
@@ -199,10 +189,8 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
 
     if (!validTarget) return;
 
-    Core::Point3r widgetPosition;
     Core::Transform& widgetTransform = this->rootObject->getTransform();
-    widgetTransform.updateWorldMatrix();
-    widgetTransform.getWorldMatrix().transform(widgetPosition);
+    Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
 
     Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
     widgetTransform.translate(translation, Core::TransformationSpace::World);
