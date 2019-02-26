@@ -131,13 +131,19 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->setupRenderCamera();
     this->setupDefaultObjects();
-    this->transformWidget.init(this->renderCamera);
+    //this->transformWidget.init(this->renderCamera);
     this->setupLights();
     this->setupHighlightMaterials();
 
-    this->coreScene.onObjectSelected([this](Core::WeakPointer<Core::Object3D> selectedObject){
+    this->coreScene.onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> selectedObject){
         if (selectedObject) {
-            this->transformWidget.setTargetObject(selectedObject);
+            //this->transformWidget.setTargetObject(selectedObject);
+        }
+    });
+
+    this->coreScene.onSelectedObjectRemoved([this](Core::WeakPointer<Core::Object3D> deselectedObject){
+        if (deselectedObject) {
+            //this->transformWidget.setTargetObject(selectedObject);
         }
     });
 
@@ -256,12 +262,12 @@ void ModelerApp::setupHighlightMaterials() {
 }
 
 void ModelerApp::preRenderCallback() {
-    this->transformWidget.update();
+    //this->transformWidget.update();
 }
 
 void ModelerApp::postRenderCallback() {
-    if (this->coreScene.getSelectedObject()) {
-        Core::WeakPointer<Core::Object3D> selectedObject = this->coreScene.getSelectedObject();
+    const std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->coreScene.getSelectedObjects();
+    if (selectedObjects.size() > 0 ) {
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
@@ -273,7 +279,9 @@ void ModelerApp::postRenderCallback() {
         this->highlightMaterial->setColorWriteEnabled(true);
         this->highlightMaterial->setDepthTestEnabled(true);
         this->highlightMaterial->setDepthWriteEnabled(true);
-        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
+        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
+            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->highlightMaterial);
+        }
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
         this->highlightMaterial->setStencilWriteMask(0xFF);
@@ -288,7 +296,9 @@ void ModelerApp::postRenderCallback() {
         this->highlightMaterial->setColorWriteEnabled(false);
         this->highlightMaterial->setDepthTestEnabled(false);
         this->highlightMaterial->setDepthWriteEnabled(true);
-        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->highlightMaterial);
+        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
+            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->highlightMaterial);
+        }
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
         this->outlineMaterial->setStencilWriteMask(0x00);
@@ -305,18 +315,22 @@ void ModelerApp::postRenderCallback() {
         this->outlineMaterial->setDepthWriteEnabled(false);
         this->outlineMaterial->setDepthTestEnabled(true);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
-        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
+        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
+            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->outlineMaterial);
+        }
 
         this->outlineMaterial->setColor(this->darkOutlineColor);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
-        Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObject, this->renderCamera, this->outlineMaterial);
+        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
+            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->outlineMaterial);
+        }
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
 
-        this->transformWidget.updateCamera();
-        this->transformWidget.render();
+        //this->transformWidget.updateCamera();
+        //this->transformWidget.render();
     }
 }
 
@@ -325,13 +339,13 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
             case GestureAdapter::GestureEventType::Move:
-                this->transformWidget.rayCastForSelection(event.end.x, event.end.y);
+                //this->transformWidget.rayCastForSelection(event.end.x, event.end.y);
             break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:
-                if (!this->transformWidget.handleDrag(event.end.x, event.end.y)) {
+                //if (!this->transformWidget.handleDrag(event.end.x, event.end.y)) {
                     this->orbitControls->handleGesture(event);
-                }
+                //}
             break;
         }
     }
@@ -341,13 +355,13 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
             if (button == 1) {
-                if (!this->transformWidget.startAction(x, y)) {
+                //if (!this->transformWidget.startAction(x, y)) {
                     this->rayCastForObjectSelection(x, y, true);
-                }
+                //}
             }
         break;
         case MouseAdapter::MouseEventType::ButtonRelease:
-            if (button == 1) this->transformWidget.endAction(x, y);
+            //if (button == 1) this->transformWidget.endAction(x, y);
         break;
     }
 }
@@ -365,7 +379,12 @@ void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool se
         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
 
         if (setSelectedObject) {
-            this->coreScene.setSelectedObject(rootObject);
+            if (this->getCoreScene().isObjectSelected(rootObject)) {
+                this->coreScene.removeSelectedObject(rootObject);
+            }
+            else {
+                this->coreScene.addSelectedObject(rootObject);
+            }
         }
     }
 }

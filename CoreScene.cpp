@@ -31,21 +31,47 @@ void CoreScene::onSceneUpdated(SceneUpdatedCallback callback) {
     this->sceneUpdatedCallbacks.push_back(callback);
 }
 
-Core::WeakPointer<Core::Object3D> CoreScene::getSelectedObject() {
-    return this->selectedObject;
+std::vector<Core::WeakPointer<Core::Object3D>>& CoreScene::getSelectedObjects() {
+    return this->selectedObjects;
 }
 
-void CoreScene::setSelectedObject(Core::WeakPointer<Core::Object3D> newSelectedObject) {
-    if ((this->selectedObject.isValid() && !newSelectedObject.isValid()) ||
-        (!this->selectedObject.isValid() && newSelectedObject.isValid()) ||
-         newSelectedObject.get() != this->selectedObject.get()) {
-        this->selectedObject = newSelectedObject;
-        for (OnObjectSelectedCallback callback : this->objectSelectedCallbacks) {
+void CoreScene::addSelectedObject(Core::WeakPointer<Core::Object3D> newSelectedObject) {
+    if (newSelectedObject.isValid() && !this->isObjectSelected(newSelectedObject)) {
+        this->selectedObjects.push_back(newSelectedObject);
+        for (OnObjectSelectedCallback callback : this->selectedObjectAddedCallbacks) {
             callback(newSelectedObject);
         }
     }
 }
 
-void CoreScene::onObjectSelected(OnObjectSelectedCallback callback) {
-    this->objectSelectedCallbacks.push_back(callback);
+void CoreScene::removeSelectedObject(Core::WeakPointer<Core::Object3D> objectToRemove) {
+    if (this->selectedObjects.size() > 0) {
+        for (unsigned int i = 0; i < this->selectedObjects.size(); i++) {
+            Core::WeakPointer<Core::Object3D> selectedObject = this->selectedObjects[i];
+            if(selectedObject.get() == objectToRemove.get()) {
+                this->selectedObjects[i] = this->selectedObjects[this->selectedObjects.size() - 1];
+                this->selectedObjects.pop_back();
+                for (OnObjectSelectedCallback callback : this->selectedObjectRemovedCallbacks) {
+                    callback(objectToRemove);
+                }
+                return;
+            }
+        }
+    }
+}
+
+void CoreScene::onSelectedObjectAdded(OnObjectSelectedCallback callback) {
+    this->selectedObjectAddedCallbacks.push_back(callback);
+}
+
+void CoreScene::onSelectedObjectRemoved(OnObjectSelectedCallback callback) {
+    this->selectedObjectRemovedCallbacks.push_back(callback);
+}
+
+bool CoreScene::isObjectSelected(Core::WeakPointer<Core::Object3D> candidateObject) {
+    for (std::vector<Core::WeakPointer<Core::Object3D>>::iterator itr = this->selectedObjects.begin(); itr != this->selectedObjects.end(); ++itr) {
+        Core::WeakPointer<Core::Object3D> selectedObject = *itr;
+        if(selectedObject.get() == candidateObject.get()) return true;
+    }
+    return false;
 }

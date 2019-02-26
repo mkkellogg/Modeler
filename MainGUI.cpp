@@ -40,15 +40,16 @@ void MainGUI::setModelerApp(ModelerApp* modelerApp) {
         this->modelerApp->getCoreScene().onSceneUpdated([this](Core::WeakPointer<Core::Object3D> object){
             this->refreshSceneTree();
         });
-        this->modelerApp->getCoreScene().onObjectSelected([this](Core::WeakPointer<Core::Object3D> object){
-            this->selectSceneObject(object);
-            this->updateObjectProperties(object);
+        this->modelerApp->getCoreScene().onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> object){
+            this->updateSelectedSceneObjects(object, true);
+            this->updateSelectedSceneObjectsProperties();
+        });
+        this->modelerApp->getCoreScene().onSelectedObjectRemoved([this](Core::WeakPointer<Core::Object3D> object){
+            this->updateSelectedSceneObjects(object, false);
+            this->updateSelectedSceneObjectsProperties();
         });
         this->modelerApp->onUpdate([this]() {
-            Core::WeakPointer<Core::Object3D> selectedObject = this->modelerApp->getCoreScene().getSelectedObject();
-            if (selectedObject) {
-                this->updateObjectProperties(selectedObject);
-            }
+            this->updateSelectedSceneObjectsProperties();
         });
     }
     else {
@@ -203,7 +204,13 @@ QVBoxLayout* MainGUI::buildLeftLayout() {
 }
 
 QVBoxLayout* MainGUI::buildRightLayout() {
-    QGroupBox * transformFrame = new QGroupBox (" Transform ", this);
+
+    this->propertiesPlaceHolderFrame = new QGroupBox(this);
+    this->propertiesPlaceHolderFrame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QString placeHolderFrameStyle = QString("QGroupBox {width: 300px; border:none;}");
+    this->propertiesPlaceHolderFrame->setStyleSheet(placeHolderFrameStyle);
+
+    this->transformFrame = new QGroupBox (" Transform ", this);
     transformFrame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     transformFrame->setObjectName("transformFrame");
     QGridLayout *transformFrameLayout = new QGridLayout;
@@ -271,59 +278,86 @@ QVBoxLayout* MainGUI::buildRightLayout() {
     QVBoxLayout *rightLayout = new QVBoxLayout;
     rightLayout->setAlignment(Qt::AlignTop);
     rightLayout->addWidget(transformFrame);
+    rightLayout->addWidget(propertiesPlaceHolderFrame);
     return rightLayout;
 }
 
-void MainGUI::updateObjectProperties(Core::WeakPointer<Core::Object3D> object) {
-    Core::Matrix4x4 worldTransformation;
-    object->getTransform().updateWorldMatrix();
-    worldTransformation = object->getTransform().getWorldMatrix();
-    Core::Vector3r translation;
-    Core::Quaternion rotation;
-    Core::Vector3r scale;
-    Core::Vector3r euler;
+void MainGUI::updateSelectedSceneObjectsProperties() {
+    std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->modelerApp->getCoreScene().getSelectedObjects();
+    if (selectedObjects.size() == 1) {
+        Core::WeakPointer<Core::Object3D> object = selectedObjects[0];
+        Core::Matrix4x4 worldTransformation;
+        object->getTransform().updateWorldMatrix();
+        worldTransformation = object->getTransform().getWorldMatrix();
+        Core::Vector3r translation;
+        Core::Quaternion rotation;
+        Core::Vector3r scale;
+        Core::Vector3r euler;
 
-    worldTransformation.decompose(translation, rotation, scale);
-    euler = rotation.euler();
+        worldTransformation.decompose(translation, rotation, scale);
+        euler = rotation.euler();
 
-    std::ostringstream ss;
+        std::ostringstream ss;
 
-    ss << translation.x;
-    this->positionX->setText(QString::fromStdString(ss.str()));
-    ss.str("");
-    ss << translation.y;
-    this->positionY->setText(QString::fromStdString(ss.str()));
-    ss.str("");
-    ss << translation.z;
-    this->positionZ->setText(QString::fromStdString(ss.str()));
+        ss << translation.x;
+        this->positionX->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << translation.y;
+        this->positionY->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << translation.z;
+        this->positionZ->setText(QString::fromStdString(ss.str()));
 
-    ss.str("");
-    ss << euler.x;
-    this->rotationX->setText(QString::fromStdString(ss.str()));
-    ss.str("");
-    ss << euler.y;
-    this->rotationY->setText(QString::fromStdString(ss.str()));
-    ss.str("");
-    ss << euler.z;
-    this->rotationZ->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << euler.x;
+        this->rotationX->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << euler.y;
+        this->rotationY->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << euler.z;
+        this->rotationZ->setText(QString::fromStdString(ss.str()));
 
-    ss.str("");
-    ss << scale.x;
-    this->scaleX->setText(QString::fromStdString(ss.str()));
-    ss.str("");
-    ss << scale.y;
-    this->scaleY->setText(QString::fromStdString(ss.str()));
-    ss.str("");
-    ss << scale.z;
-    this->scaleZ->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << scale.x;
+        this->scaleX->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << scale.y;
+        this->scaleY->setText(QString::fromStdString(ss.str()));
+        ss.str("");
+        ss << scale.z;
+        this->scaleZ->setText(QString::fromStdString(ss.str()));
+        this->transformFrame->setVisible(true);
+        //this->propertiesPlaceHolderFrame->setVisible(false);
+    }
+    else {
+        //this->propertiesPlaceHolderFrame->setVisible(true);
+        this->transformFrame->setVisible(false);
+    }
 }
 
 void MainGUI::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
-    QList<QTreeWidgetItem*> selectedItems = this->sceneObjectTree->selectedItems();
+    /*QList<QTreeWidgetItem*> selectedItems = this->sceneObjectTree->selectedItems();
     for (const QTreeWidgetItem* item : selectedItems) {
         SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
         this->modelerApp->getCoreScene().setSelectedObject(sceneTreeItem->sceneObject);
+    }*/
+
+    QModelIndexList selectedIndexes = selected.indexes();
+    QModelIndexList deselectedIndexes = deselected.indexes();
+
+    for (unsigned int i = 0; i < deselectedIndexes.size(); i++) {
+        QTreeWidgetItem * item = this->sceneObjectTree->getItemFromIndex(deselectedIndexes[i]);
+        SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
+        this->modelerApp->getCoreScene().removeSelectedObject(sceneTreeItem->sceneObject);
     }
+
+    for (unsigned int i = 0; i < selectedIndexes.size(); i++) {
+        QTreeWidgetItem * item = this->sceneObjectTree->getItemFromIndex(selectedIndexes[i]);
+        SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
+        this->modelerApp->getCoreScene().addSelectedObject(sceneTreeItem->sceneObject);
+    }
+
 }
 
 void MainGUI::browseForModel() {
@@ -375,13 +409,18 @@ void MainGUI::setModelScaleEditText(float scale) {
     this->modelScaleEdit->setText(QString::fromStdString(scaleText));
 }
 
-void MainGUI::selectSceneObject(Core::WeakPointer<Core::Object3D> object) {
+void MainGUI::updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added) {
     Core::UInt64 objectID = object->getID();
     if (this->sceneObjectTreeMap.find(objectID) != this->sceneObjectTreeMap.end()) {
-        this->sceneObjectTree->clearSelection();
-        SceneTreeWidgetItem* mappedItem = this->sceneObjectTreeMap[objectID];
-        this->expandAllAbove(mappedItem);
-        mappedItem->setSelected(true);
+        if (added) {
+            SceneTreeWidgetItem* mappedItem = this->sceneObjectTreeMap[objectID];
+            this->expandAllAbove(mappedItem);
+            mappedItem->setSelected(true);
+        }
+        else {
+            SceneTreeWidgetItem* mappedItem = this->sceneObjectTreeMap[objectID];
+            mappedItem->setSelected(false);
+        }
     }
 }
 

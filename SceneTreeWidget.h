@@ -8,4 +8,5 @@ public:
     SceneTreeWidget();
 
     void mouseMoveEvent(QMouseEvent *evt) override;
+    QTreeWidgetItem * getItemFromIndex(const QModelIndex & index);
 };

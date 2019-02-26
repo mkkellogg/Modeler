@@ -54,8 +54,8 @@ private:
     QGroupBox* buildLoadModelGUI();
     QVBoxLayout* buildLeftLayout();
     QVBoxLayout* buildRightLayout();
-    void selectSceneObject(Core::WeakPointer<Core::Object3D> object);
-    void updateObjectProperties(Core::WeakPointer<Core::Object3D> object);
+    void updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added);
+    void updateSelectedSceneObjectsProperties();
     void populateSceneTree(QTreeWidget* sceneObjectTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
     void refreshSceneTree();
     void expandAllAbove(SceneTreeWidgetItem* item);
@@ -71,6 +71,9 @@ private:
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
     QCheckBox* modelZUpCheckBox;
+
+    QGroupBox* propertiesPlaceHolderFrame;
+    QGroupBox* transformFrame;
     QLineEdit* positionX;
     QLineEdit* positionY;
     QLineEdit* positionZ;
