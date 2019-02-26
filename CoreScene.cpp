@@ -49,14 +49,26 @@ void CoreScene::removeSelectedObject(Core::WeakPointer<Core::Object3D> objectToR
         for (unsigned int i = 0; i < this->selectedObjects.size(); i++) {
             Core::WeakPointer<Core::Object3D> selectedObject = this->selectedObjects[i];
             if(selectedObject.get() == objectToRemove.get()) {
-                this->selectedObjects[i] = this->selectedObjects[this->selectedObjects.size() - 1];
-                this->selectedObjects.pop_back();
-                for (OnObjectSelectedCallback callback : this->selectedObjectRemovedCallbacks) {
-                    callback(objectToRemove);
-                }
+                this->removeSelectedObjectAtIndex(i);
                 return;
             }
         }
+    }
+}
+
+void CoreScene::removeSelectedObjectAtIndex(unsigned int index) {
+    Core::WeakPointer<Core::Object3D> objectToRemove = this->selectedObjects[index];
+    this->selectedObjects[index] = this->selectedObjects[this->selectedObjects.size() - 1];
+    this->selectedObjects.pop_back();
+    for (OnObjectSelectedCallback callback : this->selectedObjectRemovedCallbacks) {
+        callback(objectToRemove);
+    }
+    return;
+}
+
+void CoreScene::clearSelectedObjects() {
+    while (this->selectedObjects.size() > 0) {
+        removeSelectedObjectAtIndex(0);
     }
 }
 

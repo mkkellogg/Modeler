@@ -283,7 +283,7 @@ void ModelerApp::postRenderCallback() {
             Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->highlightMaterial);
         }
 
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
+        this->engine->getGraphicsSystem()->clearActiveRenderTarget(false, false, true);
         this->highlightMaterial->setStencilWriteMask(0xFF);
         this->highlightMaterial->setStencilReadMask(0xFF);
         this->highlightMaterial->setStencilRef(1);
@@ -300,7 +300,6 @@ void ModelerApp::postRenderCallback() {
             Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->highlightMaterial);
         }
 
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
         this->outlineMaterial->setStencilWriteMask(0x00);
         this->outlineMaterial->setStencilReadMask(0xFF);
         this->outlineMaterial->setStencilRef(1);
@@ -379,12 +378,8 @@ void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool se
         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
 
         if (setSelectedObject) {
-            if (this->getCoreScene().isObjectSelected(rootObject)) {
-                this->coreScene.removeSelectedObject(rootObject);
-            }
-            else {
-                this->coreScene.addSelectedObject(rootObject);
-            }
+            this->coreScene.clearSelectedObjects();
+            this->coreScene.addSelectedObject(rootObject);
         }
     }
 }

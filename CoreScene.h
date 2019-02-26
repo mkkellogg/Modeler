@@ -21,13 +21,13 @@ public:
     std::vector<Core::WeakPointer<Core::Object3D>>& getSelectedObjects();
     void addSelectedObject(Core::WeakPointer<Core::Object3D> newSelectedObject);
     void removeSelectedObject(Core::WeakPointer<Core::Object3D> objectToRemove);
+    void clearSelectedObjects();
     void onSelectedObjectAdded(OnObjectSelectedCallback callback);
     void onSelectedObjectRemoved(OnObjectSelectedCallback callback);
     bool isObjectSelected(Core::WeakPointer<Core::Object3D> candidateObject);
 
 private:
-
-
+    void removeSelectedObjectAtIndex(unsigned int index);
     Core::WeakPointer<Core::Object3D> sceneRoot;
     std::vector<SceneUpdatedCallback> sceneUpdatedCallbacks;
     std::vector<Core::WeakPointer<Core::Object3D>> selectedObjects;
