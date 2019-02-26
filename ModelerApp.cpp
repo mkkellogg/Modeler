@@ -135,6 +135,12 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->setupLights();
     this->setupHighlightMaterials();
 
+    this->coreScene.onObjectSelected([this](Core::WeakPointer<Core::Object3D> selectedObject){
+        if (selectedObject) {
+            this->transformWidget.setTargetObject(selectedObject);
+        }
+    });
+
     engine->onPreRender([this]() {
         this->preRenderCallback();
     }, true);
@@ -250,10 +256,6 @@ void ModelerApp::setupHighlightMaterials() {
 }
 
 void ModelerApp::preRenderCallback() {
-    Core::WeakPointer<Core::Object3D> selectedObject = this->getCoreScene().getSelectedObject();
-    if (selectedObject) {
-        this->transformWidget.setTargetObject(selectedObject);
-    }
     this->transformWidget.update();
 }
 
@@ -363,7 +365,7 @@ void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool se
         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
 
         if (setSelectedObject) {
-            this->getCoreScene().setSelectedObject(rootObject);
+            this->coreScene.setSelectedObject(rootObject);
         }
     }
 }
