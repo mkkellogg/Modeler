@@ -20,17 +20,20 @@ public:
     void endAction(Core::Int32 x, Core::Int32 y);
     bool handleDrag(Core::Int32 x, Core::Int32 y);
     void rayCastForSelection(Core::Int32 x, Core::Int32 y);
-    void setTargetObject(Core::WeakPointer<Core::Object3D> object);
+    void addTargetObject(Core::WeakPointer<Core::Object3D> object);
+    void removeTargetObject(Core::WeakPointer<Core::Object3D> object);
+    bool hasTargetObject(Core::WeakPointer<Core::Object3D> candidateObject);
     void update();
 
 private:
+    void removeTargetObjectAtIndex(unsigned int index);
     void updateAction(Core::Int32 x, Core::Int32 y);
     bool getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
     void resetColors();
 
     CoreScene* coreScene;
     Core::WeakPointer<Core::Object3D> rootObject;
-    Core::WeakPointer<Core::Object3D> targetObject;
+    std::vector<Core::WeakPointer<Core::Object3D>> targetObjects;
     Core::WeakPointer<Core::Camera> targetCamera;
     Core::RayCaster raycaster;
     Core::WeakPointer<Core::Object3D> cameraObj;

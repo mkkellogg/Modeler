@@ -133,27 +133,63 @@ bool TransformWidget::handleDrag(Core::Int32 x, Core::Int32 y) {
     return false;
 }
 
-void TransformWidget::setTargetObject(Core::WeakPointer<Core::Object3D> object) {
-    this->targetObject = object;
+void TransformWidget::addTargetObject(Core::WeakPointer<Core::Object3D> object) {
+    if (this->hasTargetObject(object)) return;
+    this->targetObjects.push_back(object);
     this->update();
 }
 
-void TransformWidget::update() {
-    if (this->targetObject) {
-        Core::Transform& objectTransform = this->targetObject->getTransform();
-        objectTransform.updateWorldMatrix();
+void TransformWidget::removeTargetObject(Core::WeakPointer<Core::Object3D> object) {
+    unsigned int index = 0;
+    for (std::vector<Core::WeakPointer<Core::Object3D>>::iterator itr = this->targetObjects.begin(); itr != this->targetObjects.end(); ++itr) {
+        Core::WeakPointer<Core::Object3D> targetObject = *itr;
+        if(targetObject.get() == object.get()) {
+            this->removeTargetObjectAtIndex(index);
+            return;
+        }
+        index++;
+    }
+}
 
+void TransformWidget::removeTargetObjectAtIndex(unsigned int index) {
+     this->targetObjects[index] = this->targetObjects[this->targetObjects.size() - 1];
+     this->targetObjects.pop_back();
+}
+
+bool TransformWidget::hasTargetObject(Core::WeakPointer<Core::Object3D> candidateObject) {
+    for (std::vector<Core::WeakPointer<Core::Object3D>>::iterator itr = this->targetObjects.begin(); itr != this->targetObjects.end(); ++itr) {
+        Core::WeakPointer<Core::Object3D> targetObject = *itr;
+        if(targetObject.get() == candidateObject.get()) return true;
+    }
+    return false;
+}
+
+void TransformWidget::update() {
+
+    if (this->targetObjects.size() > 0) {
+        Core::Point3r center;
         Core::Point3r origin;
         Core::Vector3r forward = Core::Vector3r::Forward;
         Core::Vector3r up = Core::Vector3r::Up;
+        for (unsigned int i = 0; i < this->targetObjects.size(); i++) {
+            Core::WeakPointer<Core::Object3D> targetObject = this->targetObjects[i];
+            Core::Transform& objectTransform = targetObject->getTransform();
+            objectTransform.updateWorldMatrix();
+            Core::Point3r objectCenter;
+            objectTransform.getWorldMatrix().transform(objectCenter);
+            center = center + Core::Vector3r(objectCenter.x, objectCenter.y, objectCenter.z);
 
-        objectTransform.getWorldMatrix().transform(origin);
-        objectTransform.getWorldMatrix().transform(forward);
-        objectTransform.getWorldMatrix().transform(up);
-
+            if (i == 0) {
+                objectTransform.getWorldMatrix().transform(origin);
+                objectTransform.getWorldMatrix().transform(forward);
+                objectTransform.getWorldMatrix().transform(up);
+            }
+        }
+        center = center * (1.0f / (float)this->targetObjects.size());
         Core::Transform& widgetTransform = this->rootObject->getTransform();
-        widgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
+        widgetTransform.getLocalMatrix().lookAt(center, center + forward, up);
     }
+
 }
 
 void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
@@ -189,6 +225,9 @@ void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
 
 
 void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
+    static std::vector<Core::Point3r> newPositions;
+    newPositions.resize(0);
+
     if (!this->actionInProgress) return;
     Core::Point3r targetPosition;
     bool validTarget = this->getTranslationTargetPosition(x, y, this->actionStartPosition, targetPosition);
@@ -199,9 +238,19 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
 
     Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
+
+    for (unsigned int i = 0; i < this->targetObjects.size(); i ++) {
+        Core::Transform& transform = this->targetObjects[i]->getTransform();
+        newPositions.push_back(transform.getWorldPosition() + translation);
+    }
+
+    for (unsigned int i = 0; i < this->targetObjects.size(); i ++) {
+        Core::Transform& transform = this->targetObjects[i]->getTransform();
+        transform.setWorldPosition(newPositions[i]);
+    }
     widgetTransform.translate(translation, Core::TransformationSpace::World);
 
-    this->targetObject->getTransform().translate(translation, Core::TransformationSpace::World);
+
 }
 
 bool TransformWidget::getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {

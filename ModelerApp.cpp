@@ -132,19 +132,19 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->setupRenderCamera();
     this->setupDefaultObjects();
-    //this->transformWidget.init(this->renderCamera);
+    this->transformWidget.init(this->renderCamera);
     this->setupLights();
     this->setupHighlightMaterials();
 
     this->coreScene.onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> selectedObject){
         if (selectedObject) {
-            //this->transformWidget.setTargetObject(selectedObject);
+            this->transformWidget.addTargetObject(selectedObject);
         }
     });
 
     this->coreScene.onSelectedObjectRemoved([this](Core::WeakPointer<Core::Object3D> deselectedObject){
         if (deselectedObject) {
-            //this->transformWidget.setTargetObject(selectedObject);
+            this->transformWidget.removeTargetObject(deselectedObject);
         }
     });
 
@@ -263,7 +263,7 @@ void ModelerApp::setupHighlightMaterials() {
 }
 
 void ModelerApp::preRenderCallback() {
-    //this->transformWidget.update();
+    this->transformWidget.update();
 }
 
 void ModelerApp::postRenderCallback() {
@@ -322,8 +322,8 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
 
-        //this->transformWidget.updateCamera();
-        //this->transformWidget.render();
+        this->transformWidget.updateCamera();
+        this->transformWidget.render();
     }
 }
 
@@ -332,13 +332,13 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
         GestureAdapter::GestureEventType eventType = event.getType();
         switch(eventType) {
             case GestureAdapter::GestureEventType::Move:
-                //this->transformWidget.rayCastForSelection(event.end.x, event.end.y);
+                this->transformWidget.rayCastForSelection(event.end.x, event.end.y);
             break;
             case GestureAdapter::GestureEventType::Drag:
             case GestureAdapter::GestureEventType::Scroll:
-                //if (!this->transformWidget.handleDrag(event.end.x, event.end.y)) {
+                if (!this->transformWidget.handleDrag(event.end.x, event.end.y)) {
                     this->orbitControls->handleGesture(event);
-                //}
+                }
             break;
         }
     }
@@ -348,13 +348,13 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
             if (button == 1) {
-                //if (!this->transformWidget.startAction(x, y)) {
+                if (!this->transformWidget.startAction(x, y)) {
                     this->rayCastForObjectSelection(x, y, true, KeyboardAdapter::isModifierActive(KeyboardAdapter::Modifier::Ctrl));
-                //}
+                }
             }
         break;
         case MouseAdapter::MouseEventType::ButtonRelease:
-            //if (button == 1) this->transformWidget.endAction(x, y);
+            if (button == 1) this->transformWidget.endAction(x, y);
         break;
     }
 }
