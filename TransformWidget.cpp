@@ -9,11 +9,10 @@ TransformWidget::TransformWidget(): coreScene(nullptr) {
     this->actionInProgress = false;
 }
 
-void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera, CoreScene& coreScene) {
+void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
     this->targetCamera = targetCamera;
-    this->coreScene = &coreScene;
 
     xMaterial = engine->createMaterial<BasicRimShadowMaterial>();
     xMaterial->setHighlightLowerBound(0.6f);
@@ -135,19 +134,26 @@ bool TransformWidget::handleDrag(Core::Int32 x, Core::Int32 y) {
 }
 
 void TransformWidget::setTargetObject(Core::WeakPointer<Core::Object3D> object) {
-     Core::Transform& objectTransform = object->getTransform();
-     objectTransform.updateWorldMatrix();
+    this->targetObject = object;
+    this->update();
+}
 
-     Core::Point3r origin;
-     Core::Vector3r forward = Core::Vector3r::Forward;
-     Core::Vector3r up = Core::Vector3r::Up;
+void TransformWidget::update() {
+    if (this->targetObject) {
+        Core::Transform& objectTransform = this->targetObject->getTransform();
+        objectTransform.updateWorldMatrix();
 
-     objectTransform.getWorldMatrix().transform(origin);
-     objectTransform.getWorldMatrix().transform(forward);
-     objectTransform.getWorldMatrix().transform(up);
+        Core::Point3r origin;
+        Core::Vector3r forward = Core::Vector3r::Forward;
+        Core::Vector3r up = Core::Vector3r::Up;
 
-     Core::Transform& widgetTransform = this->rootObject->getTransform();
-     widgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
+        objectTransform.getWorldMatrix().transform(origin);
+        objectTransform.getWorldMatrix().transform(forward);
+        objectTransform.getWorldMatrix().transform(up);
+
+        Core::Transform& widgetTransform = this->rootObject->getTransform();
+        widgetTransform.getLocalMatrix().lookAt(origin, origin + forward, up);
+    }
 }
 
 void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
@@ -195,7 +201,7 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
     widgetTransform.translate(translation, Core::TransformationSpace::World);
 
-    this->coreScene->getSelectedObject()->getTransform().translate(translation, Core::TransformationSpace::World);
+    this->targetObject->getTransform().translate(translation, Core::TransformationSpace::World);
 }
 
 bool TransformWidget::getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {

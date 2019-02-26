@@ -131,7 +131,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->setupRenderCamera();
     this->setupDefaultObjects();
-    this->transformWidget.init(this->renderCamera, this->coreScene);
+    this->transformWidget.init(this->renderCamera);
     this->setupLights();
     this->setupHighlightMaterials();
 
@@ -254,6 +254,7 @@ void ModelerApp::preRenderCallback() {
     if (selectedObject) {
         this->transformWidget.setTargetObject(selectedObject);
     }
+    this->transformWidget.update();
 }
 
 void ModelerApp::postRenderCallback() {

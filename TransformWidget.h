@@ -13,7 +13,7 @@ class TransformWidget
 {
 public:
     TransformWidget();
-    void init(Core::WeakPointer<Core::Camera> targetCamera, CoreScene& coreScene);
+    void init(Core::WeakPointer<Core::Camera> targetCamera);
     void updateCamera();
     void render();
     bool startAction(Core::Int32 x, Core::Int32 y);
@@ -21,6 +21,7 @@ public:
     bool handleDrag(Core::Int32 x, Core::Int32 y);
     void rayCastForSelection(Core::Int32 x, Core::Int32 y);
     void setTargetObject(Core::WeakPointer<Core::Object3D> object);
+    void update();
 
 private:
     void updateAction(Core::Int32 x, Core::Int32 y);
@@ -28,11 +29,12 @@ private:
     void resetColors();
 
     CoreScene* coreScene;
+    Core::WeakPointer<Core::Object3D> rootObject;
+    Core::WeakPointer<Core::Object3D> targetObject;
     Core::WeakPointer<Core::Camera> targetCamera;
     Core::RayCaster raycaster;
     Core::WeakPointer<Core::Object3D> cameraObj;
     Core::WeakPointer<Core::Camera> camera;
-    Core::WeakPointer<Core::Object3D> rootObject;
     Core::Color highlightColor;
     Core::Color xColor;
     Core::Color yColor;
