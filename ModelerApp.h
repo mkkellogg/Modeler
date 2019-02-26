@@ -43,7 +43,7 @@ private:
     void setupHighlightMaterials();
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
-    void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject = true);
+    void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject, bool multiSelect);
     void setupRenderCamera();
     void setupDefaultObjects();
     void setupLights();
@@ -52,6 +52,7 @@ private:
     void addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh);
     void preRenderCallback();
     void postRenderCallback();
+    void renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material);
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;

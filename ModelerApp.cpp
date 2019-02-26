@@ -1,6 +1,7 @@
 #include "ModelerApp.h"
 #include "RenderWindow.h"
 #include "GeometryUtils.h"
+#include "KeyboardAdapter.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -267,6 +268,7 @@ void ModelerApp::preRenderCallback() {
 
 void ModelerApp::postRenderCallback() {
     const std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->coreScene.getSelectedObjects();
+    std::unordered_map<Core::UInt64, Core::Bool> rendered;
     if (selectedObjects.size() > 0 ) {
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
@@ -279,9 +281,7 @@ void ModelerApp::postRenderCallback() {
         this->highlightMaterial->setColorWriteEnabled(true);
         this->highlightMaterial->setDepthTestEnabled(true);
         this->highlightMaterial->setDepthWriteEnabled(true);
-        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->highlightMaterial);
-        }
+        this->renderOnce(selectedObjects, this->renderCamera, this->highlightMaterial);
 
         this->engine->getGraphicsSystem()->clearActiveRenderTarget(false, false, true);
         this->highlightMaterial->setStencilWriteMask(0xFF);
@@ -296,9 +296,7 @@ void ModelerApp::postRenderCallback() {
         this->highlightMaterial->setColorWriteEnabled(false);
         this->highlightMaterial->setDepthTestEnabled(false);
         this->highlightMaterial->setDepthWriteEnabled(true);
-        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->highlightMaterial);
-        }
+        this->renderOnce(selectedObjects, this->renderCamera, this->highlightMaterial);
 
         this->outlineMaterial->setStencilWriteMask(0x00);
         this->outlineMaterial->setStencilReadMask(0xFF);
@@ -314,15 +312,11 @@ void ModelerApp::postRenderCallback() {
         this->outlineMaterial->setDepthWriteEnabled(false);
         this->outlineMaterial->setDepthTestEnabled(true);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
-        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->outlineMaterial);
-        }
+        this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
 
         this->outlineMaterial->setColor(this->darkOutlineColor);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
-        for (unsigned int i = 0; i < selectedObjects.size(); i++) {
-            Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(selectedObjects[i], this->renderCamera, this->outlineMaterial);
-        }
+        this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
@@ -355,7 +349,7 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
         case MouseAdapter::MouseEventType::ButtonPress:
             if (button == 1) {
                 //if (!this->transformWidget.startAction(x, y)) {
-                    this->rayCastForObjectSelection(x, y, true);
+                    this->rayCastForObjectSelection(x, y, true, KeyboardAdapter::isModifierActive(KeyboardAdapter::Modifier::Ctrl));
                 //}
             }
         break;
@@ -365,7 +359,7 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
     }
 }
 
-void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject) {
+void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject,  bool multiSelect) {
     Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
     Core::Vector4u viewport = graphics->getViewport();
     Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
@@ -378,8 +372,13 @@ void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool se
         Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
 
         if (setSelectedObject) {
-            this->coreScene.clearSelectedObjects();
-            this->coreScene.addSelectedObject(rootObject);
+            if (multiSelect) {
+                this->coreScene.addSelectedObject(rootObject);
+            }
+            else {
+                this->coreScene.clearSelectedObjects();
+                this->coreScene.addSelectedObject(rootObject);
+            }
         }
     }
 }
@@ -394,4 +393,23 @@ void ModelerApp::resolveOnUpdateCallbacks() {
 void ModelerApp::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh) {
     this->sceneRaycaster.addObject(object, mesh);
     this->meshToObjectMap[mesh->getObjectID()] = object;
+}
+
+void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material) {
+    Core::WeakPointer<Core::Renderer> renderer =  Core::Engine::instance()->getGraphicsSystem()->getRenderer();
+    std::unordered_map<Core::UInt64, bool> rendered;
+    for (unsigned int i = 0; i < objects.size(); i++) {
+        Core::WeakPointer<Core::Object3D> object = objects[i];
+        bool objectRendered = false;
+        while (!objectRendered && object) {
+           objectRendered = rendered[object->getID()];
+           object = object->getParent();
+        }
+
+        if (!objectRendered) {
+            object = objects[i];
+            renderer->renderObjectBasic(object, camera, material);
+            rendered[object->getID()] = true;
+        }
+    }
 }
