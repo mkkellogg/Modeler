@@ -1,6 +1,7 @@
 #include "Core/render/Camera.h"
 
 #include "TransformWidget.h"
+#include "SceneUtils.h"
 
 using MeshContainer = Core::RenderableContainer<Core::Mesh>;
 
@@ -227,6 +228,8 @@ void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
 void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     static std::vector<Core::Point3r> newPositions;
     newPositions.resize(0);
+    static std::vector<Core::WeakPointer<Core::Object3D>> roots;
+    roots.resize(0);
 
     if (!this->actionInProgress) return;
     Core::Point3r targetPosition;
@@ -239,13 +242,15 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
 
     Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
 
-    for (unsigned int i = 0; i < this->targetObjects.size(); i ++) {
-        Core::Transform& transform = this->targetObjects[i]->getTransform();
+    SceneUtils::getRootObjects(this->targetObjects, roots);
+
+    for (unsigned int i = 0; i < roots.size(); i ++) {
+        Core::Transform& transform = roots[i]->getTransform();
         newPositions.push_back(transform.getWorldPosition() + translation);
     }
 
-    for (unsigned int i = 0; i < this->targetObjects.size(); i ++) {
-        Core::Transform& transform = this->targetObjects[i]->getTransform();
+    for (unsigned int i = 0; i < roots.size(); i ++) {
+        Core::Transform& transform = roots[i]->getTransform();
         transform.setWorldPosition(newPositions[i]);
     }
     widgetTransform.translate(translation, Core::TransformationSpace::World);

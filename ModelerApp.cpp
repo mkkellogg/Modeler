@@ -1,6 +1,7 @@
 #include "ModelerApp.h"
 #include "RenderWindow.h"
 #include "GeometryUtils.h"
+#include "SceneUtils.h"
 #include "KeyboardAdapter.h"
 
 #include "Core/util/Time.h"
@@ -268,7 +269,6 @@ void ModelerApp::preRenderCallback() {
 
 void ModelerApp::postRenderCallback() {
     const std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->coreScene.getSelectedObjects();
-    std::unordered_map<Core::UInt64, Core::Bool> rendered;
     if (selectedObjects.size() > 0 ) {
 
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
@@ -397,19 +397,11 @@ void ModelerApp::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> obj
 
 void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material) {
     Core::WeakPointer<Core::Renderer> renderer =  Core::Engine::instance()->getGraphicsSystem()->getRenderer();
-    std::unordered_map<Core::UInt64, bool> rendered;
-    for (unsigned int i = 0; i < objects.size(); i++) {
-        Core::WeakPointer<Core::Object3D> object = objects[i];
-        bool objectRendered = false;
-        while (!objectRendered && object) {
-           objectRendered = rendered[object->getID()];
-           object = object->getParent();
-        }
-
-        if (!objectRendered) {
-            object = objects[i];
-            renderer->renderObjectBasic(object, camera, material);
-            rendered[object->getID()] = true;
-        }
+    static std::vector<Core::WeakPointer<Core::Object3D>> roots;
+    roots.resize(0);
+    SceneUtils::getRootObjects(objects, roots);
+    for (unsigned int i = 0; i < roots.size(); i++) {
+        Core::WeakPointer<Core::Object3D> object = roots[i];
+        renderer->renderObjectBasic(object, camera, material);
     }
 }

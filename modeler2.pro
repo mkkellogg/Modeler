@@ -16,7 +16,8 @@ HEADERS       = \
     BasicRimShadowMaterial.h \
     TransformWidget.h \
     SceneTreeWidget.h \
-    KeyboardAdapter.h
+    KeyboardAdapter.h \
+    SceneUtils.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -35,7 +36,8 @@ SOURCES       = \
     BasicRimShadowMaterial.cpp \
     TransformWidget.cpp \
     SceneTreeWidget.cpp \
-    KeyboardAdapter.cpp
+    KeyboardAdapter.cpp \
+    SceneUtils.cpp
 
 QT           += widgets
 
