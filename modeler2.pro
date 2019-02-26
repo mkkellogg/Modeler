@@ -14,7 +14,8 @@ HEADERS       = \
     MainGUI.h \
     GeometryUtils.h \
     BasicRimShadowMaterial.h \
-    TransformWidget.h
+    TransformWidget.h \
+    SceneTreeWidget.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -31,7 +32,8 @@ SOURCES       = \
     MainGUI.cpp \
     GeometryUtils.cpp \
     BasicRimShadowMaterial.cpp \
-    TransformWidget.cpp
+    TransformWidget.cpp \
+    SceneTreeWidget.cpp
 
 QT           += widgets
 

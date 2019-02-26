@@ -179,7 +179,7 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
 
 QVBoxLayout* MainGUI::buildLeftLayout() {
 
-    this->sceneObjectTree = new QTreeWidget;
+    this->sceneObjectTree = new SceneTreeWidget;
     this->sceneObjectTree->setStyleSheet("QTreeWidget {margin: 0px; border:none; background-color: transparent;}");
     this->sceneObjectTree->setColumnCount(1);
     this->sceneObjectTree->setHeaderHidden(true);
@@ -187,6 +187,7 @@ QVBoxLayout* MainGUI::buildLeftLayout() {
     this->sceneObjectTree->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->sceneObjectTree->header()->setStretchLastSection(false);
     this->sceneObjectTree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    this->sceneObjectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
     connect(this->sceneObjectTree->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(sceneTreeSelectionChanged(const QItemSelection&,const QItemSelection&)));
 
     QGroupBox* sceneObjectTreeFrame = new QGroupBox(" Scene Tree ", this);

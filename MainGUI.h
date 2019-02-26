@@ -5,6 +5,8 @@
 
 #include <QTreeWidgetItem>
 
+#include "SceneTreeWidget.h"
+
 #include "Core/Engine.h"
 
 class QSlider;
@@ -64,7 +66,7 @@ private:
     RenderWindow *renderWindow;
     QPushButton *dockBtn;
     MainWindow *mainWindow;
-    QTreeWidget* sceneObjectTree;
+    SceneTreeWidget* sceneObjectTree;
     QLineEdit* modelNameEdit;
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
