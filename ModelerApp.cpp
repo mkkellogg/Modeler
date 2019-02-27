@@ -188,12 +188,19 @@ void ModelerApp::setupRenderCamera() {
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
 
     std::vector<std::shared_ptr<Core::RawImage>> skyboxImages;
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/right.tga", true));
+    /*skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/right.tga", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/left.tga", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/up.tga", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/down.tga", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/back.tga", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/front.tga", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/front.tga", true));*/
+
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/front.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/back.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/up.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/down.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/left.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/right.png", true));
 
     Core::TextureAttributes skyboxTextureAttributes;
     skyboxTextureAttributes.FilterMode = Core::TextureFilter::BiLinear;
