@@ -188,13 +188,6 @@ void ModelerApp::setupRenderCamera() {
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
 
     std::vector<std::shared_ptr<Core::RawImage>> skyboxImages;
-    /*skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/right.tga", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/left.tga", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/up.tga", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/down.tga", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/back.tga", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/front.tga", true));*/
-
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/front.png", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/back.png", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/up.png", true));
@@ -215,7 +208,7 @@ void ModelerApp::setupRenderCamera() {
 void ModelerApp::setupDefaultObjects() {
 
     Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = this->engine->createMaterial<Core::BasicLitMaterial>();
-    Core::Color slabColor(0.0f, 0.53f, 0.16f, 1.0f);
+    Core::Color slabColor(0.6f, 0.45f, 0.45f, 1.0f);
     Core::WeakPointer<Core::Mesh> slab = GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
     slab->calculateNormals(75.0f);
 
