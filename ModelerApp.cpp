@@ -158,7 +158,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     }, true);
 
     engine->onUpdate([this]() {
-        auto vp = Core::Engine::instance()->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
+        auto vp = this->engine->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
         this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
         this->resolveOnUpdateCallbacks();
     }, true);
@@ -167,9 +167,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
 void ModelerApp::setupRenderCamera() {
 
-    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
-
-    Core::WeakPointer<Core::Object3D> cameraObj = engine->createObject3D<Core::Object3D>();
+    Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
     cameraObj->setName("Main camera");
     this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
     this->coreScene.addObjectToScene(cameraObj);
@@ -188,19 +186,35 @@ void ModelerApp::setupRenderCamera() {
     cameraObj->getTransform().translate(5, 0, 0);
     cameraObj->getTransform().updateWorldMatrix();
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
+
+    std::vector<std::shared_ptr<Core::RawImage>> skyboxImages;
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/right.tga", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/left.tga", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/up.tga", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/down.tga", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/back.tga", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/front.tga", true));
+
+    Core::TextureAttributes skyboxTextureAttributes;
+    skyboxTextureAttributes.FilterMode = Core::TextureFilter::BiLinear;
+    skyboxTextureAttributes.MipMapLevel = 0;
+    Core::WeakPointer<Core::CubeTexture> skyboxTexture = this->engine->createCubeTexture(skyboxTextureAttributes);
+    skyboxTexture->build(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
+
+    this->renderCamera->buildSkybox(skyboxTexture);
+    this->renderCamera->setSkyboxEnabled(true);
 }
 
 void ModelerApp::setupDefaultObjects() {
-    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
 
-    Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = engine->createMaterial<Core::BasicLitMaterial>();
+    Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = this->engine->createMaterial<Core::BasicLitMaterial>();
     Core::Color slabColor(0.0f, 0.53f, 0.16f, 1.0f);
     Core::WeakPointer<Core::Mesh> slab = GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
     slab->calculateNormals(75.0f);
 
-    Core::WeakPointer<MeshContainer> bottomSlabObj(engine->createObject3D<MeshContainer>());
+    Core::WeakPointer<MeshContainer> bottomSlabObj(this->engine->createObject3D<MeshContainer>());
     bottomSlabObj->setName("Base platform");
-    Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
+    Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(this->engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
     this->coreScene.addObjectToScene(bottomSlabObj);
     this->addObjectToSceneRaycaster(bottomSlabObj, slab);
@@ -212,34 +226,32 @@ void ModelerApp::setupDefaultObjects() {
 }
 
 void ModelerApp::setupLights() {
-    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
-
-    this->ambientLightObject = engine->createObject3D();
+    this->ambientLightObject = this->engine->createObject3D();
     this->ambientLightObject->setName("Ambient light");
     this->coreScene.addObjectToScene(ambientLightObject);
-    Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
+    Core::WeakPointer<Core::AmbientLight> ambientLight = this->engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    this->pointLightObject = engine->createObject3D<MeshContainer>();
+    this->pointLightObject = this->engine->createObject3D<MeshContainer>();
     this->pointLightObject->setName("Point light");
     this->coreScene.addObjectToScene(pointLightObject);
-    Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
+    Core::WeakPointer<Core::PointLight> pointLight = this->engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
     pointLight->setColor(1.0f, 1.0f, 1.0f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     pointLight->setRadius(10.0f);
     this->pointLightObject->getTransform().translate(Core::Vector3r(5.0f, 10.0f, 5.0f));
     Core::Real pointLightSize = 0.35f;
     Core::WeakPointer<Core::Mesh> pointLightMesh = GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
-    Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
-    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
+    Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = this->engine->createMaterial<Core::BasicMaterial>();
+    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(this->engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
     pointLightRenderer->setCastShadows(false);
     this->pointLightObject->addRenderable(pointLightMesh);
     this->addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
-    this->directionalLightObject = engine->createObject3D();
+    this->directionalLightObject = this->engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
     this->coreScene.addObjectToScene(directionalLightObject);
-    Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
+    Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));
@@ -250,7 +262,7 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineColor.set(1.0, 0.65, 0.0, 1.0);
     this->darkOutlineColor.set(this->outlineColor.r * .5, this->outlineColor.g * .5, this->outlineColor.b * .5, 1.0);
 
-    this->highlightMaterial = engine->createMaterial<Core::BasicColoredMaterial>();
+    this->highlightMaterial = this->engine->createMaterial<Core::BasicColoredMaterial>();
     this->highlightMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
     this->highlightMaterial->setSourceBlendingMethod(Core::RenderState::BlendingMethod::SrcAlpha);
     this->highlightMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
@@ -258,7 +270,7 @@ void ModelerApp::setupHighlightMaterials() {
     this->highlightMaterial->setZOffset(-.00005f);
     this->highlightMaterial->setColor(highlightColor);
 
-    this->outlineMaterial = engine->createMaterial<Core::OutlineMaterial>();
+    this->outlineMaterial = this->engine->createMaterial<Core::OutlineMaterial>();
     this->outlineMaterial->setLit(false);
     this->outlineMaterial->setColor(outlineColor);
 }
@@ -275,6 +287,8 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
 
+        Core::Bool isSkyboxEnabled = this->renderCamera->isSkyboxEnabled();
+        this->renderCamera->setSkyboxEnabled(false);
         this->highlightMaterial->setStencilTestEnabled(false);
         this->highlightMaterial->setStencilWriteMask(0x00);
         this->highlightMaterial->setFaceCullingEnabled(true);
@@ -318,6 +332,7 @@ void ModelerApp::postRenderCallback() {
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
         this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
 
+        this->renderCamera->setSkyboxEnabled(isSkyboxEnabled);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
@@ -396,7 +411,7 @@ void ModelerApp::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> obj
 }
 
 void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material) {
-    Core::WeakPointer<Core::Renderer> renderer =  Core::Engine::instance()->getGraphicsSystem()->getRenderer();
+    Core::WeakPointer<Core::Renderer> renderer =  this->engine->getGraphicsSystem()->getRenderer();
     static std::vector<Core::WeakPointer<Core::Object3D>> roots;
     roots.resize(0);
     SceneUtils::getRootObjects(objects, roots);

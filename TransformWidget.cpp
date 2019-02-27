@@ -62,6 +62,7 @@ void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
 
 void TransformWidget::updateCamera() {
     this->camera->copyFrom(this->targetCamera);
+    this->camera->setSkyboxEnabled(false);
 
     Core::Point3r widgetPosition = this->rootObject->getTransform().getWorldPosition();
     Core::Transform& targetCameraTransform = this->targetCamera->getOwner()->getTransform();

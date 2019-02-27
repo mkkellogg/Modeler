@@ -328,21 +328,13 @@ void MainGUI::updateSelectedSceneObjectsProperties() {
         ss << scale.z;
         this->scaleZ->setText(QString::fromStdString(ss.str()));
         this->transformFrame->setVisible(true);
-        //this->propertiesPlaceHolderFrame->setVisible(false);
     }
     else {
-        //this->propertiesPlaceHolderFrame->setVisible(true);
         this->transformFrame->setVisible(false);
     }
 }
 
 void MainGUI::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
-    /*QList<QTreeWidgetItem*> selectedItems = this->sceneObjectTree->selectedItems();
-    for (const QTreeWidgetItem* item : selectedItems) {
-        SceneTreeWidgetItem* sceneTreeItem = const_cast<SceneTreeWidgetItem*>(dynamic_cast<const SceneTreeWidgetItem*>(item));
-        this->modelerApp->getCoreScene().setSelectedObject(sceneTreeItem->sceneObject);
-    }*/
-
     QModelIndexList selectedIndexes = selected.indexes();
     QModelIndexList deselectedIndexes = deselected.indexes();
 
