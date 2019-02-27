@@ -11,7 +11,7 @@
 
 
 OrbitControls::OrbitControls(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Camera> targetCamera, Core::WeakPointer<CoreSync> coreSync):
-    engine(engine), targetCamera(targetCamera), coreSync(coreSync) {
+    engine(engine), targetCamera(targetCamera), coreSync(coreSync), moveFrames(0) {
 
 }
 
@@ -26,8 +26,15 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         cameraObjPtr->getTransform().translate(cameraVec, Core::TransformationSpace::World);
     }
     else if (event.getType() == GestureAdapter::GestureEventType::Drag) {
+
         Core::Int32 eventStartX = event.start.x;
         Core::Int32 eventStartY = event.start.y;
+
+        if (this->moveFrames > 0) {
+            eventStartX = this->lastMoveX;
+            eventStartY = this->lastMoveY;
+        }
+
         Core::Int32 eventEndX = event.end.x;
         Core::Int32 eventEndY = event.end.y;
         GestureAdapter::GesturePointer eventPointer = event.pointer;
@@ -41,13 +48,17 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         Core::Real ndcEndX = (Core::Real)eventEndX / (Core::Real)viewport.z * 2.0f - 1.0f;
         Core::Real ndcEndY = (Core::Real)eventEndY / (Core::Real)viewport.w * 2.0f - 1.0f;
 
-        Core::Point3r viewStartP(ndcStartX, ndcEndY, 0.25f);
-        Core::Point3r viewEndP(ndcEndX, ndcStartY, 0.25f);
+        Core::Real ndcZ = 0.0f;
+        if (eventPointer == GestureAdapter::GesturePointer::Tertiary) ndcZ = 0.5f;
+
+        Core::Point3r viewStartP(ndcStartX, ndcEndY, ndcZ);
+        Core::Point3r viewEndP(ndcEndX, ndcStartY, ndcZ);
         this->targetCamera->unProject(viewStartP);
         this->targetCamera->unProject(viewEndP);
 
         Core::WeakPointer<Core::Object3D> cameraObjPtr = this->targetCamera->getOwner();
 
+        cameraObjPtr->getTransform().updateWorldMatrix();
         Core::Matrix4x4 viewMat = cameraObjPtr->getTransform().getWorldMatrix();
         viewMat.transform(viewStartP);
         viewMat.transform(viewEndP);
@@ -55,8 +66,17 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         Core::Vector3r viewStart(viewStartP.x, viewStartP.y, viewStartP.z);
         Core::Vector3r viewEnd(viewEndP.x, viewEndP.y, viewEndP.z);
 
-        viewStart = Core::Point3r(viewStart.x, viewStart.y, viewStart.z) - this->origin;
-        viewEnd = Core::Point3r(viewEnd.x, viewEnd.y, viewEnd.z) - this->origin;
+        Core::Point3r camPos;
+        cameraObjPtr->getTransform().getWorldMatrix().transform(camPos);
+
+        Core::Vector3r toOrigin = this->origin - camPos;
+        toOrigin.normalize();
+        toOrigin = toOrigin * 5.0f;
+
+        Core::Point3r tempOrigin = camPos + toOrigin;
+
+        viewStart = Core::Point3r(viewStart.x, viewStart.y, viewStart.z) - tempOrigin;
+        viewEnd = Core::Point3r(viewEnd.x, viewEnd.y, viewEnd.z) - tempOrigin;
 
         Core::Vector3r viewStartN = Core::Vector3r(viewStart.x, viewStart.y, viewStart.z);
         viewStartN.normalize();
@@ -65,7 +85,7 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         viewEndN.normalize();
 
         Core::Real dot = Core::Vector3r::dot(viewStartN, viewEndN);
-         Core::Real angle = 0.0f;
+        Core::Real angle = 0.0f;
         if (dot < 1.0f && dot > -1.0f) {
             angle = Core::Math::aCos(dot);
         }
@@ -83,35 +103,48 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         cameraPos.set(cameraPos.x - this->origin.x, cameraPos.y - this->origin.y, cameraPos.z - this->origin.z);
         Core::Real distanceFromOrigin = cameraPos.magnitude();
 
-        using GesturePointer = GestureAdapter::GesturePointer;
-        if (eventPointer == GesturePointer::Secondary) {
+        if (eventPointer == GestureAdapter::GesturePointer::Secondary) {
+            if (angle > 0.0f) {
+                Core::Real rotationScaleFactor = 30.0f;//Core::Math::max(distanceFromOrigin, 1.0f);
+                Core::Quaternion qA;
+                qA.fromAngleAxis(angle * rotationScaleFactor, rotAxis);
+                Core::Matrix4x4 rot = qA.rotationMatrix();
 
-            Core::Real rotationScaleFactor = Core::Math::max(distanceFromOrigin, 1.0f);
-            Core::Quaternion qA;
-            qA.fromAngleAxis(angle * rotationScaleFactor, rotAxis);
-            Core::Matrix4x4 rot = qA.rotationMatrix();
+                Core::Vector3r orgVec(this->origin.x, this->origin.y, this->origin.z);
+                orgVec.invert();
+                Core::Matrix4x4 worldTransformation;
+                worldTransformation.setIdentity();
+                worldTransformation.preTranslate(orgVec);
+                worldTransformation.preMultiply(rot);
+                orgVec.invert();
+                worldTransformation.preTranslate(orgVec);
+                cameraObjPtr->getTransform().transformBy(worldTransformation, Core::TransformationSpace::World);
+                cameraObjPtr->getTransform().lookAt(this->origin);
 
-            Core::Vector3r orgVec(this->origin.x, this->origin.y, this->origin.z);
-            orgVec.invert();
-            Core::Matrix4x4 worldTransformation;
-            worldTransformation.setIdentity();
-            worldTransformation.preTranslate(orgVec);
-            worldTransformation.preMultiply(rot);
-            orgVec.invert();
-            worldTransformation.preTranslate(orgVec);
-            cameraObjPtr->getTransform().transformBy(worldTransformation, Core::TransformationSpace::World);
-            cameraObjPtr->getTransform().lookAt(this->origin);
-
+                this->lastMoveX = event.end.x;
+                this->lastMoveY = event.end.y;
+            }
         }
-        else if (eventPointer == GesturePointer::Tertiary) {
-
+        else if (eventPointer == GestureAdapter::GesturePointer::Tertiary) {
             Core::Real translationScaleFactor = distanceFromOrigin;
             Core::Vector3r viewDragVector = viewEnd - viewStart;
             viewDragVector.invert();
             viewDragVector = viewDragVector * translationScaleFactor;
             this->origin = this->origin + viewDragVector;
             cameraObjPtr->getTransform().translate(viewDragVector, Core::TransformationSpace::World);
+            this->lastMoveX = event.end.x;
+            this->lastMoveY = event.end.y;
         }
     }
 
+    if (this->moveFrames == 0) {
+        this->lastMoveX = event.start.x;
+        this->lastMoveY = event.start.y;
+    }
+
+    this->moveFrames++;
+}
+
+void OrbitControls::resetMove() {
+    this->moveFrames = 0;
 }

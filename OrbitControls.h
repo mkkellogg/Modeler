@@ -10,11 +10,14 @@ class OrbitControls {
 public:
     OrbitControls(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Camera> targetCamera, Core::WeakPointer<CoreSync> coreSync);
     void handleGesture(GestureAdapter::GestureEvent event);
-
+    void resetMove();
 private:
+    Core::UInt32 moveFrames;
     Core::Point3r origin;
     Core::WeakPointer<Core::Engine> engine;
     Core::WeakPointer<Core::Camera> targetCamera;
     Core::WeakPointer<CoreSync> coreSync;
+    Core::Int32 lastMoveX;
+    Core::Int32 lastMoveY;
 };
 

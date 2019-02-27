@@ -362,6 +362,7 @@ void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
 void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y) {
     switch(type) {
         case MouseAdapter::MouseEventType::ButtonPress:
+            this->orbitControls->resetMove();
             if (button == 1) {
                 if (!this->transformWidget.startAction(x, y)) {
                     this->rayCastForObjectSelection(x, y, true, KeyboardAdapter::isModifierActive(KeyboardAdapter::Modifier::Ctrl));
