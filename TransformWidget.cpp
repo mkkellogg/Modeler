@@ -90,6 +90,13 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
     if (this->actionInProgress) return true;
     if (this->activeComponentID == -1) return false;
 
+    Core::Vector3r camDir = Core::Vector3r::Forward;
+    Core::WeakPointer<Core::Object3D> cameraObj = this->camera->getOwner();
+    Core::Transform& cameraTransform = cameraObj->getTransform();
+    cameraTransform.updateWorldMatrix();
+    cameraTransform.getWorldMatrix().transform(camDir);
+
+
     Core::Transform& widgetTransform = this->rootObject->getTransform();
     Core::Point3r widgetPosition;
     widgetTransform.updateWorldMatrix();
@@ -98,18 +105,17 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
     Core::Vector3r planeNormal;
     if (this->activeComponentID == this->xTranslateID) {
         this->actionNormal.set(1.0f, 0.0f, 0.0f);
-        planeNormal.set(0.0f, 0.0f, 1.0f);
     }
     else if (this->activeComponentID == this->yTranslateID) {
         this->actionNormal.set(0.0f, 1.0f, 0.0f);
-        planeNormal.set(0.0f, 0.0f, 1.0f);
     }
     else if (this->activeComponentID == this->zTranslateID) {
         this->actionNormal.set(0.0f, 0.0f, 1.0f);
-        planeNormal.set(0.0f, 1.0f, 0.0f);
     }
     widgetTransform.getWorldMatrix().transform(this->actionNormal);
-    widgetTransform.getWorldMatrix().transform(planeNormal);
+    Core::Vector3r tempNormal;
+    Core::Vector3r::cross(camDir, this->actionNormal, tempNormal);
+    Core::Vector3r::cross(tempNormal, this->actionNormal, planeNormal);
 
     Core::Real d = planeNormal.dot(widgetPosition);
     this->actionPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
