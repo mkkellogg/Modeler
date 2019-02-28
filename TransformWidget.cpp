@@ -60,6 +60,31 @@ void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
     this->camera = engine->createPerspectiveCamera(this->cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
 }
 
+void TransformWidget::updateTransformationForTargetObjects() {
+    if (this->targetObjects.size() > 0) {
+        Core::Point3r center;
+        Core::Point3r origin;
+        Core::Vector3r forward = Core::Vector3r::Forward;
+        Core::Vector3r up = Core::Vector3r::Up;
+        for (unsigned int i = 0; i < this->targetObjects.size(); i++) {
+            Core::WeakPointer<Core::Object3D> targetObject = this->targetObjects[i];
+            Core::Transform& objectTransform = targetObject->getTransform();
+            objectTransform.updateWorldMatrix();
+            Core::Point3r objectCenter;
+            objectTransform.getWorldMatrix().transform(objectCenter);
+            center = center + Core::Vector3r(objectCenter.x, objectCenter.y, objectCenter.z);
+            if (i == 0) {
+                objectTransform.getWorldMatrix().transform(origin);
+                objectTransform.getWorldMatrix().transform(forward);
+                objectTransform.getWorldMatrix().transform(up);
+            }
+        }
+        center = center * (1.0f / (float)this->targetObjects.size());
+        Core::Transform& widgetTransform = this->rootObject->getTransform();
+        widgetTransform.getLocalMatrix().lookAt(center, center + forward, up);
+    }
+}
+
 void TransformWidget::updateCamera() {
     this->camera->copyFrom(this->targetCamera);
     this->camera->setSkyboxEnabled(false);
@@ -144,7 +169,7 @@ bool TransformWidget::handleDrag(Core::Int32 x, Core::Int32 y) {
 void TransformWidget::addTargetObject(Core::WeakPointer<Core::Object3D> object) {
     if (this->hasTargetObject(object)) return;
     this->targetObjects.push_back(object);
-    this->update();
+    this->updateTransformationForTargetObjects();
 }
 
 void TransformWidget::removeTargetObject(Core::WeakPointer<Core::Object3D> object) {
@@ -170,34 +195,6 @@ bool TransformWidget::hasTargetObject(Core::WeakPointer<Core::Object3D> candidat
         if(targetObject.get() == candidateObject.get()) return true;
     }
     return false;
-}
-
-void TransformWidget::update() {
-
-    if (this->targetObjects.size() > 0) {
-        Core::Point3r center;
-        Core::Point3r origin;
-        Core::Vector3r forward = Core::Vector3r::Forward;
-        Core::Vector3r up = Core::Vector3r::Up;
-        for (unsigned int i = 0; i < this->targetObjects.size(); i++) {
-            Core::WeakPointer<Core::Object3D> targetObject = this->targetObjects[i];
-            Core::Transform& objectTransform = targetObject->getTransform();
-            objectTransform.updateWorldMatrix();
-            Core::Point3r objectCenter;
-            objectTransform.getWorldMatrix().transform(objectCenter);
-            center = center + Core::Vector3r(objectCenter.x, objectCenter.y, objectCenter.z);
-
-            if (i == 0) {
-                objectTransform.getWorldMatrix().transform(origin);
-                objectTransform.getWorldMatrix().transform(forward);
-                objectTransform.getWorldMatrix().transform(up);
-            }
-        }
-        center = center * (1.0f / (float)this->targetObjects.size());
-        Core::Transform& widgetTransform = this->rootObject->getTransform();
-        widgetTransform.getLocalMatrix().lookAt(center, center + forward, up);
-    }
-
 }
 
 void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {

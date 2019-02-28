@@ -14,6 +14,7 @@ class TransformWidget
 public:
     TransformWidget();
     void init(Core::WeakPointer<Core::Camera> targetCamera);
+    void updateTransformationForTargetObjects();
     void updateCamera();
     void render();
     bool startAction(Core::Int32 x, Core::Int32 y);
@@ -23,7 +24,6 @@ public:
     void addTargetObject(Core::WeakPointer<Core::Object3D> object);
     void removeTargetObject(Core::WeakPointer<Core::Object3D> object);
     bool hasTargetObject(Core::WeakPointer<Core::Object3D> candidateObject);
-    void update();
 
 private:
     void removeTargetObjectAtIndex(unsigned int index);

@@ -276,7 +276,7 @@ void ModelerApp::setupHighlightMaterials() {
 }
 
 void ModelerApp::preRenderCallback() {
-    this->transformWidget.update();
+    this->transformWidget.updateTransformationForTargetObjects();
 }
 
 void ModelerApp::postRenderCallback() {
