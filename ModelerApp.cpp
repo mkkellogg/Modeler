@@ -238,7 +238,7 @@ void ModelerApp::setupLights() {
     Core::WeakPointer<Core::PointLight> pointLight = this->engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
     pointLight->setColor(1.0f, 1.0f, 1.0f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    pointLight->setRadius(10.0f);
+    pointLight->setRadius(30.0f);
     this->pointLightObject->getTransform().translate(Core::Vector3r(5.0f, 10.0f, 5.0f));
     Core::Real pointLightSize = 0.35f;
     Core::WeakPointer<Core::Mesh> pointLightMesh = GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
@@ -251,6 +251,7 @@ void ModelerApp::setupLights() {
     this->directionalLightObject = this->engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
     this->coreScene.addObjectToScene(directionalLightObject);
+    //Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);

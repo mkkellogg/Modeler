@@ -74,7 +74,7 @@ Core::Int32 BasicRimShadowMaterial::getShaderLocation(Core::StandardAttribute at
             return this->faceNormalLocation;
         case Core::StandardAttribute::Color:
             return this->colorLocation;
-        case Core::StandardAttribute::UV0:
+        case Core::StandardAttribute::AlbedoUV:
             return this->uvLocation;
         default:
             return -1;

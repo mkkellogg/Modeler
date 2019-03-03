@@ -118,7 +118,7 @@ void MainGUI::setUpGUI() {
     mainLayout->addLayout(lowerLayout);
     setLayout(mainLayout);
 
-    this->setModelScaleEditText(0.05);
+    this->setModelScaleEditText(3.0);
     this->setModelSmoothingThresholdEditText(80);
     this->setModelZUpCheck(true);
 }
@@ -134,7 +134,7 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
     this->modelNameEdit->setStyleSheet(modelNameEditStyle);
 
     //TODO: Remove this debug code
-    this->modelNameEdit->setText("/home/mark/Development/GTE/resources/models/toonwarrior/character/warrior.fbx");
+    this->modelNameEdit->setText("/home/mark/Development/models/Metal_Water_Tank/Water_Tank_fbx.fbx");
 
     this->modelScaleEdit = new QLineEdit;
     this->modelScaleEdit->setObjectName("modelScaleEdit");
