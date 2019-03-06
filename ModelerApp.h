@@ -33,7 +33,7 @@ public:
     ModelerApp();
     void init();
     void setRenderWindow(RenderWindow* renderWindow);
-    void loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp);
+    void loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial);
     CoreScene& getCoreScene();
     void onUpdate(ModelerAppLifecycleEventCallback callback);
     std::shared_ptr<CoreSync> getCoreSync();

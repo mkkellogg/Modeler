@@ -72,7 +72,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     }
 }
 
-void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, const bool zUp) {
+void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial) {
    if (this->engineIsReady) {
        std::string sPath = path;
        std::string filePrefix("file://");
@@ -84,9 +84,9 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
        if (smoothingThreshold < 0 ) smoothingThreshold = 0;
        if (smoothingThreshold >= 90) smoothingThreshold = 90;
 
-       CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp](Core::WeakPointer<Core::Engine> engine) {
+       CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, usePhysicalMaterial](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
-           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true);
+           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true, usePhysicalMaterial);
            this->coreScene.addObjectToScene(rootObject);
 
            Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();

@@ -152,6 +152,8 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
     QLabel* scaleLabel = new QLabel(" Scale: ");
     QLabel* smoothingLabel = new QLabel(" Smoothing angle: ");
     QLabel* zUpLabel = new QLabel(" Z-up: ");
+    QLabel* physicalMaterialLabel = new QLabel(" Physical material: ");
+
 
     QPushButton *browseButton = new QPushButton(this);
     connect(browseButton, SIGNAL(clicked()), SLOT(browseForModel()));
@@ -163,6 +165,8 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
 
     this->modelZUpCheckBox = new QCheckBox;
 
+    this->physicalMaterialCheckBox = new QCheckBox;
+
     QHBoxLayout *loadModelHLayout = new QHBoxLayout;
     loadModelHLayout->addWidget(loadLabel);
     loadModelHLayout->addWidget(this->modelNameEdit);
@@ -173,6 +177,8 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
     loadModelHLayout->addWidget(this->modelSmoothingThresholdEdit);
     loadModelHLayout->addWidget(zUpLabel);
     loadModelHLayout->addWidget(this->modelZUpCheckBox);
+    loadModelHLayout->addWidget(physicalMaterialLabel);
+    loadModelHLayout->addWidget(this->physicalMaterialCheckBox);
     loadModelHLayout->addWidget(loadButton);
     loadModelFrame->setLayout(loadModelHLayout);
     return loadModelFrame;
@@ -370,6 +376,7 @@ void MainGUI::loadModel() {
     QString scaleQStr = this->modelScaleEdit->text();
     QString smoothingThresholdQStr = this->modelSmoothingThresholdEdit->text();
     bool zUp = this->modelZUpCheckBox->isChecked();
+    bool usePhysicalMaterial = this->physicalMaterialCheckBox->isChecked();
 
     float scale = 1.0f;
     try {
@@ -387,7 +394,7 @@ void MainGUI::loadModel() {
         smoothingThreshold = 80;
     }
 
-    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, zUp);
+    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, zUp, usePhysicalMaterial);
 }
 
 RenderWindow* MainGUI::getRenderWindow() {

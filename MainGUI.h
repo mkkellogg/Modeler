@@ -71,6 +71,7 @@ private:
     QLineEdit* modelScaleEdit;
     QLineEdit* modelSmoothingThresholdEdit;
     QCheckBox* modelZUpCheckBox;
+    QCheckBox* physicalMaterialCheckBox;
 
     QGroupBox* propertiesPlaceHolderFrame;
     QGroupBox* transformFrame;
