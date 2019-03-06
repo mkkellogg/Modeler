@@ -41,6 +41,7 @@ public:
 private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);
     void setupHighlightMaterials();
+    void setupEnvironmentMaps();
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
     void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject, bool multiSelect);

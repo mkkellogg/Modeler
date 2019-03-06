@@ -32,6 +32,7 @@
 #include "Core/image/RawImage.h"
 #include "Core/image/ImagePainter.h"
 #include "Core/material/BasicTexturedMaterial.h"
+#include "Core/material/EquirectangularMaterial.h"
 #include "Core/geometry/GeometryUtils.h"
 #include "Core/light/PointLight.h"
 #include "Core/light/AmbientLight.h"
@@ -136,6 +137,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->transformWidget.init(this->renderCamera);
     this->setupLights();
     this->setupHighlightMaterials();
+    this->setupEnvironmentMaps();
 
     this->coreScene.onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> selectedObject){
         if (selectedObject) {
@@ -187,7 +189,7 @@ void ModelerApp::setupRenderCamera() {
     cameraObj->getTransform().updateWorldMatrix();
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
 
-    std::vector<std::shared_ptr<Core::RawImage>> skyboxImages;
+    std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/front.png", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/back.png", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/up.png", true));
@@ -276,6 +278,26 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineMaterial->setColor(outlineColor);
 }
 
+void ModelerApp::setupEnvironmentMaps() {
+    Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
+    cameraObj->setName("Environment camera");
+    Core::WeakPointer<Core::Camera> equiCam = this->engine->createPerspectiveCamera(cameraObj, 90, 1.0, 0.1f, 10.0f);
+
+    std::shared_ptr<Core::HDRImage> equiImage = Core::ImageLoader::loadImageHDR("../../skyboxes/HDR/winter_evening_2k.hdr");
+    Core::WeakPointer<Core::EquirectangularMaterial> equiMaterial = this->engine->createMaterial<Core::EquirectangularMaterial>();
+    Core::TextureAttributes hdrAttributes;
+    hdrAttributes.Format = Core::TextureFormat::RGBA16F;
+    Core::WeakPointer<Core::Texture2D> hdrEquiMap = engine->createTexture2D(hdrAttributes);
+    hdrEquiMap->build(equiImage);
+    equiMaterial->setTexture(hdrEquiMap);
+
+    Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
+    Core::WeakPointer<Core::Mesh> cubeMesh = GeometryUtils::buildBoxMesh(1.0, 1.0, 1.0, cubeColor);
+    Core::WeakPointer<MeshContainer> cubeContainer = GeometryUtils::buildMeshContainer(cubeMesh, equiMaterial, "equiCube");
+
+    Core::WeakPointer<Core::CubeTexture> hdrCubeMap = engine->createCubeTexture(hdrAttributes);
+
+}
 void ModelerApp::preRenderCallback() {
     this->transformWidget.updateTransformationForTargetObjects();
 }
