@@ -7,6 +7,7 @@
 #include "Core/material/BasicTexturedMaterial.h"
 #include "Core/material/BasicColoredMaterial.h"
 #include "Core/material/BasicExtrusionMaterial.h"
+#include "Core/material/EquirectangularMaterial.h"
 #include "Core/material/OutlineMaterial.h"
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
@@ -59,12 +60,16 @@ private:
     bool engineIsReady = false;
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
+    Core::WeakPointer<Core::Camera> equiCam;
+    Core::WeakPointer<Core::EquirectangularMaterial> equiMaterial;
+    Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> centerCubeObj;
     Core::WeakPointer<Core::Engine> engine;
     Core::RayCaster sceneRaycaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
     Core::WeakPointer<Core::RenderableContainer<Core::Mesh>>  pointLightObject;
+    Core::WeakPointer<Core::RenderTargetCube> hdrCubeRenderTarget;
 
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;
