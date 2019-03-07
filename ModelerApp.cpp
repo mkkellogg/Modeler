@@ -204,9 +204,9 @@ void ModelerApp::setupRenderCamera() {
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = this->engine->createCubeTexture(skyboxTextureAttributes);
     skyboxTexture->build(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
 
-    //Core::WeakPointer<Core::CubeTexture> hdrCubeTexture = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->hdrCubeRenderTarget->getColorTexture());
-    //this->renderCamera->buildSkybox(hdrCubeTexture);
-    this->renderCamera->buildSkybox(skyboxTexture);
+    Core::WeakPointer<Core::CubeTexture> hdrCubeTexture = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->hdrCubeRenderTarget->getColorTexture());
+    this->renderCamera->buildSkybox(hdrCubeTexture, true);
+   // this->renderCamera->buildSkybox(skyboxTexture);
     this->renderCamera->setSkyboxEnabled(true);
 }
 
@@ -287,35 +287,35 @@ void ModelerApp::setupHighlightMaterials() {
 void ModelerApp::setupEnvironmentMaps() {
     Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
     cameraObj->setName("Environment camera");
-    this->equiCam = this->engine->createPerspectiveCamera(cameraObj, 90, 1.0, 0.1f, 100.0f);
+    this->equiCam = this->engine->createPerspectiveCamera(cameraObj, Core::Math::PI / 2.0f, 1.0, 0.1f, 100.0f);
 
-    /*std::shared_ptr<Core::HDRImage> equiImage = Core::ImageLoader::loadImageHDR("../../skyboxes/HDR/winter_evening_2k.hdr");
+    std::shared_ptr<Core::HDRImage> equiImage = Core::ImageLoader::loadImageHDR("../../skyboxes/HDR/cliffside_4k.hdr", true);
     Core::TextureAttributes hdrAttributes;
     hdrAttributes.Format = Core::TextureFormat::RGBA16F;
     Core::WeakPointer<Core::Texture2D> hdrEquiMap = engine->createTexture2D(hdrAttributes);
-    hdrEquiMap->build(equiImage);*/
+    hdrEquiMap->build(equiImage);
 
     this->equiMaterial = this->engine->createMaterial<Core::EquirectangularMaterial>();
-    //equiMaterial->setTexture(hdrEquiMap);
+    equiMaterial->setTexture(hdrEquiMap);
     //equiMaterial->setFaceCullingEnabled(false);
     equiMaterial->setCullFace(Core::RenderState::CullFace::Front);
 
     Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::WeakPointer<Core::Mesh> cubeMesh = GeometryUtils::buildBoxMesh(10.0, 10.0, 10.0, cubeColor);
+    Core::WeakPointer<Core::Mesh> cubeMesh = GeometryUtils::buildBoxMesh(1.0, 1.0, 1.0, cubeColor);
     this->centerCubeObj = GeometryUtils::buildMeshContainer(cubeMesh, equiMaterial, "equiCube");
 
-   /* Core::Vector2u size(1024, 1024);
+    Core::Vector2u size(2048, 2048);
     Core::TextureAttributes colorAttributes;
-    colorAttributes.Format = Core::TextureFormat::RGBA8;
+    colorAttributes.Format = Core::TextureFormat::RGBA16F;
     colorAttributes.FilterMode = Core::TextureFilter::Linear;
     Core::TextureAttributes depthAttributes;
     //depthAttributes.IsDepthTexture = true;
     this->hdrCubeRenderTarget = engine->getGraphicsSystem()->createRenderTargetCube(true, true, false, colorAttributes, depthAttributes, size);
-   // equiCam->setRenderTarget(this->hdrCubeRenderTarget);
+    equiCam->setRenderTarget(this->hdrCubeRenderTarget);
     equiCam->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
     equiCam->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
     this->centerCubeObj->getTransform().lookAt(Core::Point3r(0.f, 0.0f, -1.0f));
-    this->engine->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->centerCubeObj, equiCam, equiMaterial);*/
+    this->engine->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->centerCubeObj, equiCam, equiMaterial);
 
 
 }
@@ -384,10 +384,6 @@ void ModelerApp::postRenderCallback() {
         this->transformWidget.updateCamera();
         this->transformWidget.render();
     }
-
-    //this->equiCam->setRenderTarget(Core::WeakPointer<Core::RenderTarget>::nullPtr());
-   // this->equiCam->getOwner()->getTransform().lookAt(Core::Point3r(0.f, 0.0f, -1.0f));
-    this->engine->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->centerCubeObj, this->renderCamera);
 }
 
 void ModelerApp::gesture(GestureAdapter::GestureEvent event) {
