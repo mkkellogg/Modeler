@@ -24,8 +24,18 @@
 
 #include "Core/math/Quaternion.h"
 
+QLineEdit* modelImportScaleEdit;
+QLineEdit* modelImportSmoothingThresholdEdit;
+QCheckBox* modelImportZUpCheckBox;
+QCheckBox* modelImportphysicalMaterialCheckBox;
+
 MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
-  modelNameEdit(nullptr), modelScaleEdit(nullptr), modelSmoothingThresholdEdit(nullptr), modelZUpCheckBox(nullptr) {
+    modelImportScaleEdit(nullptr), modelImportSmoothingThresholdEdit(nullptr), modelImportZUpCheckBox(nullptr), modelImportphysicalMaterialCheckBox(nullptr) {
+    this->modelImportScale = 1.0f;
+    this->modelImportSmoothingThreshold = 80;
+    this->modelImportZUp = true;
+    this->modelImportPhsicalMaterial = false;
+
     this->renderWindow = new RenderWindow;
     this->renderWindow->setObjectName("renderWindow");
     setWindowTitle(tr("Modeler"));
@@ -118,9 +128,7 @@ void MainGUI::setUpGUI() {
     mainLayout->addLayout(lowerLayout);
     setLayout(mainLayout);
 
-    this->setModelScaleEditText(3.0);
-    this->setModelSmoothingThresholdEditText(80);
-    this->setModelZUpCheck(true);
+    this->buildModelImportSettingsDialog();
 }
 
 QGroupBox* MainGUI::buildLoadModelGUI() {
@@ -136,24 +144,7 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
     //TODO: Remove this debug code
     this->modelNameEdit->setText("/home/mark/Development/models/Metal_Water_Tank/Water_Tank_fbx.fbx");
 
-    this->modelScaleEdit = new QLineEdit;
-    this->modelScaleEdit->setObjectName("modelScaleEdit");
-    QString modelScaleEditStyle = QString("QLineEdit {width: 35px;}");
-    this->modelScaleEdit->setStyleSheet(modelScaleEditStyle);
-    this->modelScaleEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-    this->modelSmoothingThresholdEdit = new QLineEdit;
-    this->modelSmoothingThresholdEdit->setObjectName("modelSmoothingThresholdEdit");
-    QString modelSmoothingThresholdEditStyle = QString("QLineEdit {width: 25px;}");
-    this->modelSmoothingThresholdEdit->setStyleSheet(modelSmoothingThresholdEditStyle);
-    this->modelSmoothingThresholdEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
     QLabel* loadLabel = new QLabel("Path: ");
-    QLabel* scaleLabel = new QLabel(" Scale: ");
-    QLabel* smoothingLabel = new QLabel(" Smoothing angle: ");
-    QLabel* zUpLabel = new QLabel(" Z-up: ");
-    QLabel* physicalMaterialLabel = new QLabel(" Physical material: ");
-
 
     QPushButton *browseButton = new QPushButton(this);
     connect(browseButton, SIGNAL(clicked()), SLOT(browseForModel()));
@@ -163,23 +154,16 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
     connect(loadButton, SIGNAL(clicked()), SLOT(loadModel()));
     loadButton->setText(tr("Load"));
 
-    this->modelZUpCheckBox = new QCheckBox;
-
-    this->physicalMaterialCheckBox = new QCheckBox;
+    QPushButton *importSettingsButton = new QPushButton(this);
+    connect(importSettingsButton, SIGNAL(clicked()), SLOT(showImportSettings()));
+    importSettingsButton->setText(tr("Import Settings..."));
 
     QHBoxLayout *loadModelHLayout = new QHBoxLayout;
     loadModelHLayout->addWidget(loadLabel);
     loadModelHLayout->addWidget(this->modelNameEdit);
     loadModelHLayout->addWidget(browseButton);
-    loadModelHLayout->addWidget(scaleLabel);
-    loadModelHLayout->addWidget(this->modelScaleEdit);
-    loadModelHLayout->addWidget(smoothingLabel);
-    loadModelHLayout->addWidget(this->modelSmoothingThresholdEdit);
-    loadModelHLayout->addWidget(zUpLabel);
-    loadModelHLayout->addWidget(this->modelZUpCheckBox);
-    loadModelHLayout->addWidget(physicalMaterialLabel);
-    loadModelHLayout->addWidget(this->physicalMaterialCheckBox);
     loadModelHLayout->addWidget(loadButton);
+    loadModelHLayout->addWidget(importSettingsButton);
     loadModelFrame->setLayout(loadModelHLayout);
     return loadModelFrame;
 }
@@ -373,39 +357,45 @@ void MainGUI::browseForModel() {
 
 void MainGUI::loadModel() {
     QString nameQStr = this->modelNameEdit->text();
-    QString scaleQStr = this->modelScaleEdit->text();
-    QString smoothingThresholdQStr = this->modelSmoothingThresholdEdit->text();
-    bool zUp = this->modelZUpCheckBox->isChecked();
-    bool usePhysicalMaterial = this->physicalMaterialCheckBox->isChecked();
+    float scale = this->modelImportScale;
+    float smoothingThreshold = this->modelImportSmoothingThreshold;
+    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, this->modelImportPhsicalMaterial);
+}
 
-    float scale = 1.0f;
+void MainGUI::showImportSettings() {
+    this->modelImportScaleEdit->setText(QString::fromStdString(std::to_string(this->modelImportScale)));
+    this->modelImportSmoothingThresholdEdit->setText(QString::fromStdString(std::to_string(this->modelImportSmoothingThreshold)));
+    this->modelImportZUpCheckBox->setChecked(this->modelImportZUp);
+    this->modelImportphysicalMaterialCheckBox->setChecked(this->modelImportPhsicalMaterial);
+    this->modelImportSettingsDialog->setVisible(true);
+}
+
+void MainGUI::saveImportSettings() {
+    QString scaleQStr = this->modelImportScaleEdit->text();
+    QString smoothingThresholdQStr = this->modelImportSmoothingThresholdEdit->text();
+
     try {
-        scale = std::stof(scaleQStr.toStdString());
+        this->modelImportScale = std::stof(scaleQStr.toStdString());
     }
     catch (const std::invalid_argument& ia) {
-        scale = 1.0f;
+        this->modelImportScale = 1.0f;
     }
 
-    float smoothingThreshold = 80;
     try {
-        smoothingThreshold = std::stof(smoothingThresholdQStr.toStdString());
+        this->modelImportSmoothingThreshold = std::stof(smoothingThresholdQStr.toStdString());
     }
     catch (const std::invalid_argument& ia) {
-        smoothingThreshold = 80;
+        this->modelImportSmoothingThreshold  = 80;
     }
 
-    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, zUp, usePhysicalMaterial);
+    this->modelImportZUp = this->modelImportZUpCheckBox->isChecked();
+    this->modelImportPhsicalMaterial = this->modelImportphysicalMaterialCheckBox->isChecked();
+
+    this->modelImportSettingsDialog->setVisible(false);
 }
 
 RenderWindow* MainGUI::getRenderWindow() {
     return this->renderWindow;
-}
-
-void MainGUI::setModelScaleEditText(float scale) {
-    std::ostringstream ss;
-    ss << scale;
-    std::string scaleText(ss.str());
-    this->modelScaleEdit->setText(QString::fromStdString(scaleText));
 }
 
 void MainGUI::updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added) {
@@ -421,17 +411,6 @@ void MainGUI::updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> objec
             mappedItem->setSelected(false);
         }
     }
-}
-
-void MainGUI::setModelSmoothingThresholdEditText(float angle) {
-    std::ostringstream ss;
-    ss << angle;
-    std::string scaleAngle(ss.str());
-    this->modelSmoothingThresholdEdit->setText(QString::fromStdString(scaleAngle));
-}
-
-void MainGUI::setModelZUpCheck(bool checked) {
-    this->modelZUpCheckBox->setChecked(checked);
 }
 
 void MainGUI::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
@@ -469,4 +448,56 @@ void MainGUI::expandAllAbove(SceneTreeWidgetItem* item) {
         curItem->setExpanded(true);
         curItem = curItem->parent();
     }
+}
+
+void MainGUI::buildModelImportSettingsDialog() {
+    this->modelImportSettingsDialog = new QDialog(this, 0);
+    this->modelImportSettingsDialog->setWindowTitle("Import settings");
+    QString modelImportSettingsDialogStyle = QString("QGroupBox {margin: 10px;}");
+    this->modelImportSettingsDialog->setStyleSheet(modelImportSettingsDialogStyle);
+    this->modelImportSettingsDialog->setWindowModality(Qt::ApplicationModal);
+    this->modelImportSettingsDialog->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->modelImportSettingsDialog->setFixedSize(238, 200);
+
+    QVBoxLayout * modelImportSettingsDialogLayout = new QVBoxLayout;
+    this->modelImportSettingsDialog->setLayout(modelImportSettingsDialogLayout);
+
+    QGroupBox* modeImportSettingsFrame = new QGroupBox ("", this );
+    modeImportSettingsFrame->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    modeImportSettingsFrame->setObjectName("importSettingsFrame");
+    QGridLayout* modelImportSettingsFrameLayout = new QGridLayout;
+    modeImportSettingsFrame->setLayout(modelImportSettingsFrameLayout);
+
+    QLabel* modelImportScaleLabel = new QLabel("Scale: ");
+    this->modelImportScaleEdit = new QLineEdit;
+    this->modelImportScaleEdit->setObjectName("modelImportScale");
+    this->modelImportScaleEdit->setStyleSheet(QString("QLineEdit {width: 55px;}"));
+    this->modelImportScaleEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QLabel* modelImportSmoothingThresholdLabel = new QLabel("Smoothing threshold: ");
+    this->modelImportSmoothingThresholdEdit = new QLineEdit;
+    this->modelImportSmoothingThresholdEdit->setObjectName("modelImportSmoothingThreshold");
+    this->modelImportSmoothingThresholdEdit->setStyleSheet(QString("QLineEdit {width: 55px;}"));
+    this->modelImportSmoothingThresholdEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QLabel* modelImportZUpLabel = new QLabel(" Z-up: ");
+    QLabel* modelImportPhysicalMaterialLabel = new QLabel(" Physical material: ");
+    this->modelImportZUpCheckBox = new QCheckBox;
+    this->modelImportphysicalMaterialCheckBox = new QCheckBox;
+
+    modelImportSettingsFrameLayout->addWidget (modelImportScaleLabel, 0, 0);
+    modelImportSettingsFrameLayout->addWidget (this->modelImportScaleEdit, 0, 1);
+    modelImportSettingsFrameLayout->addWidget (modelImportSmoothingThresholdLabel, 1, 0);
+    modelImportSettingsFrameLayout->addWidget (this->modelImportSmoothingThresholdEdit, 1, 1);
+    modelImportSettingsFrameLayout->addWidget (modelImportZUpLabel, 2, 0);
+    modelImportSettingsFrameLayout->addWidget (this->modelImportZUpCheckBox, 2, 1);
+    modelImportSettingsFrameLayout->addWidget (modelImportPhysicalMaterialLabel, 3, 0);
+    modelImportSettingsFrameLayout->addWidget (this->modelImportphysicalMaterialCheckBox, 3, 1);
+
+    QPushButton *saveButton = new QPushButton(this);
+    connect(saveButton, SIGNAL(clicked()), SLOT(saveImportSettings()));
+    saveButton->setText(tr("Save"));
+
+    modelImportSettingsDialogLayout->addWidget(modeImportSettingsFrame);
+    modelImportSettingsDialogLayout->addWidget(saveButton);
 }

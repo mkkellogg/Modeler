@@ -34,14 +34,12 @@ public:
     void setQtApp(QApplication* qtApp);
     RenderWindow* getRenderWindow();
 
-    void setModelScaleEditText(float scale);
-    void setModelSmoothingThresholdEditText(float angle);
-    void setModelZUpCheck(bool checked);
-
 protected slots:
     void sceneTreeSelectionChanged(const QItemSelection& oldItem,const QItemSelection& newItem);
     void browseForModel();
     void loadModel();
+    void showImportSettings();
+    void saveImportSettings();
 
 private:
     class SceneTreeWidgetItem: public QTreeWidgetItem {
@@ -59,6 +57,7 @@ private:
     void populateSceneTree(QTreeWidget* sceneObjectTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
     void refreshSceneTree();
     void expandAllAbove(SceneTreeWidgetItem* item);
+    void buildModelImportSettingsDialog();
 
     ModelerApp* modelerApp;
     QApplication* qtApp;
@@ -68,10 +67,7 @@ private:
     MainWindow *mainWindow;
     SceneTreeWidget* sceneObjectTree;
     QLineEdit* modelNameEdit;
-    QLineEdit* modelScaleEdit;
-    QLineEdit* modelSmoothingThresholdEdit;
-    QCheckBox* modelZUpCheckBox;
-    QCheckBox* physicalMaterialCheckBox;
+    QDialog* modelImportSettingsDialog;
 
     QGroupBox* propertiesPlaceHolderFrame;
     QGroupBox* transformFrame;
@@ -89,4 +85,15 @@ private:
 
     QString appStyle;
     QString titleLabelStyle;
+
+    float modelImportScale;
+    unsigned int modelImportSmoothingThreshold;
+    bool modelImportZUp;
+    bool modelImportPhsicalMaterial;
+
+    QLineEdit* modelImportScaleEdit;
+    QLineEdit* modelImportSmoothingThresholdEdit;
+    QCheckBox* modelImportZUpCheckBox;
+    QCheckBox* modelImportphysicalMaterialCheckBox;
+
 };
