@@ -6,7 +6,7 @@
 #include "Core/color/Color.h"
 
 #include "BasicRimShadowMaterial.h"
-#include "GeometryUtils.h"
+#include "Core/geometry/GeometryUtils.h"
 #include "CoreScene.h"
 
 class TransformWidget

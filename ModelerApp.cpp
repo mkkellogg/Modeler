@@ -1,6 +1,5 @@
 #include "ModelerApp.h"
 #include "RenderWindow.h"
-#include "GeometryUtils.h"
 #include "SceneUtils.h"
 #include "KeyboardAdapter.h"
 
@@ -24,6 +23,7 @@
 #include "Core/material/BasicMaterial.h"
 #include "Core/material/BasicLitMaterial.h"
 #include "Core/material/StandardAttributes.h"
+#include "Core/material/SkyboxMaterial.h"
 #include "Core/image/RawImage.h"
 #include "Core/image/CubeTexture.h"
 #include "Core/image/Texture2D.h"
@@ -202,11 +202,11 @@ void ModelerApp::setupRenderCamera() {
     skyboxTextureAttributes.FilterMode = Core::TextureFilter::BiLinear;
     skyboxTextureAttributes.MipMapLevel = 0;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = this->engine->createCubeTexture(skyboxTextureAttributes);
-    skyboxTexture->build(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
+    skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
 
     Core::WeakPointer<Core::CubeTexture> hdrCubeTexture = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->hdrCubeRenderTarget->getColorTexture());
-    this->renderCamera->buildSkybox(hdrCubeTexture, true);
-   // this->renderCamera->buildSkybox(skyboxTexture);
+    //this->renderCamera->getSkybox().build(hdrCubeTexture, true, 2.7f);
+    this->renderCamera->getSkybox().build(skyboxTexture, false);
     this->renderCamera->setSkyboxEnabled(true);
 }
 
@@ -214,7 +214,7 @@ void ModelerApp::setupDefaultObjects() {
 
     Core::WeakPointer<Core::BasicLitMaterial> cubeMaterial = this->engine->createMaterial<Core::BasicLitMaterial>();
     Core::Color slabColor(0.6f, 0.45f, 0.45f, 1.0f);
-    Core::WeakPointer<Core::Mesh> slab = GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
+    Core::WeakPointer<Core::Mesh> slab = Core::GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
     slab->calculateNormals(75.0f);
 
     Core::WeakPointer<MeshContainer> bottomSlabObj(this->engine->createObject3D<MeshContainer>());
@@ -227,6 +227,13 @@ void ModelerApp::setupDefaultObjects() {
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
+
+    Core::WeakPointer<Core::Object3D> reflectionProbeObject = engine->createObject3D();
+    reflectionProbeObject->setName("Reflection probe");
+    this->centerProbe = engine->createReflectionProbe(reflectionProbeObject);
+    this->centerProbe->setNeedsUpdate(true);
+    reflectionProbeObject->getTransform().getLocalMatrix().translate(0.0f, 10.0f, 0.0f);
+    this->coreScene.addObjectToScene(reflectionProbeObject);
 
 }
 
@@ -248,7 +255,7 @@ void ModelerApp::setupLights() {
     this->pointLightObject->getTransform().translate(Core::Vector3r(5.0f, 10.0f, 5.0f));
     Core::Real pointLightSize = 0.35f;
 
-    Core::WeakPointer<Core::Mesh> pointLightMesh = GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    Core::WeakPointer<Core::Mesh> pointLightMesh = Core::GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
     Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = this->engine->createMaterial<Core::BasicMaterial>();
     Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(this->engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
     pointLightRenderer->setCastShadows(false);
@@ -262,7 +269,7 @@ void ModelerApp::setupLights() {
     Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    this->directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, 1.0f));
+    this->directionalLightObject->getTransform().lookAt(Core::Point3r(-1.0f, -1.0f, -1.0f));
 
 }
 
@@ -293,7 +300,7 @@ void ModelerApp::setupEnvironmentMaps() {
     Core::TextureAttributes hdrAttributes;
     hdrAttributes.Format = Core::TextureFormat::RGBA16F;
     Core::WeakPointer<Core::Texture2D> hdrEquiMap = engine->createTexture2D(hdrAttributes);
-    hdrEquiMap->build(equiImage);
+    hdrEquiMap->buildFromImage(equiImage);
 
     this->equiMaterial = this->engine->createMaterial<Core::EquirectangularMaterial>();
     equiMaterial->setTexture(hdrEquiMap);
@@ -301,8 +308,8 @@ void ModelerApp::setupEnvironmentMaps() {
     equiMaterial->setCullFace(Core::RenderState::CullFace::Front);
 
     Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::WeakPointer<Core::Mesh> cubeMesh = GeometryUtils::buildBoxMesh(1.0, 1.0, 1.0, cubeColor);
-    this->centerCubeObj = GeometryUtils::buildMeshContainer(cubeMesh, equiMaterial, "equiCube");
+    Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(1.0, 1.0, 1.0, cubeColor);
+    this->centerCubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, equiMaterial, "equiCube");
 
     Core::Vector2u size(2048, 2048);
     Core::TextureAttributes colorAttributes;
@@ -316,8 +323,6 @@ void ModelerApp::setupEnvironmentMaps() {
     equiCam->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
     this->centerCubeObj->getTransform().lookAt(Core::Point3r(0.f, 0.0f, -1.0f));
     this->engine->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->centerCubeObj, equiCam, equiMaterial);
-
-
 }
 void ModelerApp::preRenderCallback() {
     this->transformWidget.updateTransformationForTargetObjects();
@@ -384,6 +389,24 @@ void ModelerApp::postRenderCallback() {
         this->transformWidget.updateCamera();
         this->transformWidget.render();
     }
+
+    if (this->frameCount == 1) {
+        Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
+        Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
+        //Core::WeakPointer<Core::CubeTexture> irridianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrridianceMap()->getColorTexture());
+        Core::WeakPointer<Core::CubeTexture> irridianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
+        cubeMaterial->setTexture(irridianceMap);
+        Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
+
+        this->getCoreScene().addObjectToScene(cubeObj);
+        this->addObjectToSceneRaycaster(cubeObj, cubeMesh);
+        cubeObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
+        cubeObj->getTransform().updateWorldMatrix();
+    }
+    this->centerProbe->setNeedsUpdate(true);
+
+    this->frameCount++;
 }
 
 void ModelerApp::gesture(GestureAdapter::GestureEvent event) {

@@ -12,6 +12,7 @@
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
 #include "Core/color/Color.h"
+#include "Core/render/ReflectionProbe.h"
 
 #include "CoreScene.h"
 #include "CoreSync.h"
@@ -87,4 +88,7 @@ private:
 
     TransformWidget transformWidget;
 
+    Core::WeakPointer<Core::ReflectionProbe> centerProbe;
+
+    unsigned int frameCount = 0;
 };

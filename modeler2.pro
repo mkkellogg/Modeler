@@ -12,7 +12,6 @@ HEADERS       = \
     CoreScene.h \
     Exception.h \
     MainGUI.h \
-    GeometryUtils.h \
     BasicRimShadowMaterial.h \
     TransformWidget.h \
     SceneTreeWidget.h \
@@ -32,7 +31,6 @@ SOURCES       = \
     CoreScene.cpp \
     Exception.cpp \
     MainGUI.cpp \
-    GeometryUtils.cpp \
     BasicRimShadowMaterial.cpp \
     TransformWidget.cpp \
     SceneTreeWidget.cpp \

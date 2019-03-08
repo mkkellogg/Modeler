@@ -29,25 +29,25 @@ void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
     Core::Real baseLength = 2.0f;
     Core::Real coneLength = 0.4f;
     Core::Real halfLength = (baseLength + coneLength) / 2.0f;
-    Core::WeakPointer<Core::Mesh> arrowMesh = GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, highlightColor);
-    Core::WeakPointer<Core::Mesh> arrowColliderMesh = GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, highlightColor);
+    Core::WeakPointer<Core::Mesh> arrowMesh = Core::GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, highlightColor);
+    Core::WeakPointer<Core::Mesh> arrowColliderMesh = Core::GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, highlightColor);
 
     xColor.set(1.0f, 0.0f, 0.0f, 1.0f);
     xMaterial->setHighlightColor(xColor);
-    Core::WeakPointer<MeshContainer> xArrow = GeometryUtils::buildMeshContainer(arrowMesh, xMaterial, "XArrow");
+    Core::WeakPointer<MeshContainer> xArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, xMaterial, "XArrow");
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
     xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
     this->xTranslateID = this->raycaster.addObject(xArrow, arrowColliderMesh);
 
     yColor.set(0.0f, 1.0f, 0.0f, 1.0f);
     yMaterial->setHighlightColor(yColor);
-    Core::WeakPointer<MeshContainer> yArrow = GeometryUtils::buildMeshContainer(arrowMesh, yMaterial, "YArrow");
+    Core::WeakPointer<MeshContainer> yArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, yMaterial, "YArrow");
     yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
     this->yTranslateID = this->raycaster.addObject(yArrow, arrowColliderMesh);
 
     zColor.set(0.0f, 0.0f, 1.0f, 1.0f);
     zMaterial->setHighlightColor(zColor);
-    Core::WeakPointer<MeshContainer> zArrow = GeometryUtils::buildMeshContainer(arrowMesh, zMaterial, "ZArrow");
+    Core::WeakPointer<MeshContainer> zArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, zMaterial, "ZArrow");
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
     zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
     this->zTranslateID = this->raycaster.addObject(zArrow, arrowColliderMesh);
