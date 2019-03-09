@@ -234,6 +234,7 @@ void ModelerApp::setupDefaultObjects() {
     this->centerProbe->setNeedsUpdate(true);
     reflectionProbeObject->getTransform().getLocalMatrix().translate(0.0f, 10.0f, 0.0f);
     this->coreScene.addObjectToScene(reflectionProbeObject);
+    this->centerProbe->setSkybox(this->renderCamera->getSkybox());
 
 }
 
@@ -390,12 +391,13 @@ void ModelerApp::postRenderCallback() {
         this->transformWidget.render();
     }
 
-    if (this->frameCount == 1) {
+    // TODO: remove this code (it displays a cube that shows the irridiance map)
+    /*if (this->frameCount == 1) {
         Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
         Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
         Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
-        //Core::WeakPointer<Core::CubeTexture> irridianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrridianceMap()->getColorTexture());
-        Core::WeakPointer<Core::CubeTexture> irridianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
+        Core::WeakPointer<Core::CubeTexture> irridianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrridianceMap()->getColorTexture());
+        //Core::WeakPointer<Core::CubeTexture> irridianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
         cubeMaterial->setTexture(irridianceMap);
         Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
 
@@ -403,8 +405,7 @@ void ModelerApp::postRenderCallback() {
         this->addObjectToSceneRaycaster(cubeObj, cubeMesh);
         cubeObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
         cubeObj->getTransform().updateWorldMatrix();
-    }
-    this->centerProbe->setNeedsUpdate(true);
+    }*/
 
     this->frameCount++;
 }
