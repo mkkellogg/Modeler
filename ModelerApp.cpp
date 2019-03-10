@@ -27,10 +27,11 @@
 #include "Core/image/RawImage.h"
 #include "Core/image/CubeTexture.h"
 #include "Core/image/Texture2D.h"
-#include "Core/util/WeakPointer.h"
-#include "Core/asset/ModelLoader.h"
 #include "Core/image/RawImage.h"
 #include "Core/image/ImagePainter.h"
+#include "Core/image/TextureUtils.h"
+#include "Core/util/WeakPointer.h"
+#include "Core/asset/ModelLoader.h"
 #include "Core/material/BasicTexturedMaterial.h"
 #include "Core/geometry/GeometryUtils.h"
 #include "Core/light/PointLight.h"
@@ -133,7 +134,6 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->coreScene.setSceneRoot(scene->getRoot());
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
 
-    this->setupEnvironmentMaps();
     this->setupRenderCamera();
     this->setupDefaultObjects();
     this->transformWidget.init(this->renderCamera);
@@ -204,9 +204,9 @@ void ModelerApp::setupRenderCamera() {
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = this->engine->createCubeTexture(skyboxTextureAttributes);
     skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
 
-    Core::WeakPointer<Core::CubeTexture> hdrCubeTexture = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->hdrCubeRenderTarget->getColorTexture());
-    //this->renderCamera->getSkybox().build(hdrCubeTexture, true, 2.7f);
-    this->renderCamera->getSkybox().build(skyboxTexture, false);
+    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("../../skyboxes/HDR/cliffside_4k.hdr", true);
+    this->renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
+    //this->renderCamera->getSkybox().build(skyboxTexture, false);
     this->renderCamera->setSkyboxEnabled(true);
 }
 
@@ -292,39 +292,6 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineMaterial->setColor(outlineColor);
 }
 
-void ModelerApp::setupEnvironmentMaps() {
-    Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
-    cameraObj->setName("Environment camera");
-    this->equiCam = this->engine->createPerspectiveCamera(cameraObj, Core::Math::PI / 2.0f, 1.0, 0.1f, 100.0f);
-
-    std::shared_ptr<Core::HDRImage> equiImage = Core::ImageLoader::loadImageHDR("../../skyboxes/HDR/cliffside_4k.hdr", true);
-    Core::TextureAttributes hdrAttributes;
-    hdrAttributes.Format = Core::TextureFormat::RGBA16F;
-    Core::WeakPointer<Core::Texture2D> hdrEquiMap = engine->createTexture2D(hdrAttributes);
-    hdrEquiMap->buildFromImage(equiImage);
-
-    this->equiMaterial = this->engine->createMaterial<Core::EquirectangularMaterial>();
-    equiMaterial->setTexture(hdrEquiMap);
-    //equiMaterial->setFaceCullingEnabled(false);
-    equiMaterial->setCullFace(Core::RenderState::CullFace::Front);
-
-    Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(1.0, 1.0, 1.0, cubeColor);
-    this->centerCubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, equiMaterial, "equiCube");
-
-    Core::Vector2u size(2048, 2048);
-    Core::TextureAttributes colorAttributes;
-    colorAttributes.Format = Core::TextureFormat::RGBA16F;
-    colorAttributes.FilterMode = Core::TextureFilter::Linear;
-    Core::TextureAttributes depthAttributes;
-    //depthAttributes.IsDepthTexture = true;
-    this->hdrCubeRenderTarget = engine->getGraphicsSystem()->createRenderTargetCube(true, true, false, colorAttributes, depthAttributes, size);
-    equiCam->setRenderTarget(this->hdrCubeRenderTarget);
-    equiCam->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
-    equiCam->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
-    this->centerCubeObj->getTransform().lookAt(Core::Point3r(0.f, 0.0f, -1.0f));
-    this->engine->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->centerCubeObj, equiCam, equiMaterial);
-}
 void ModelerApp::preRenderCallback() {
     this->transformWidget.updateTransformationForTargetObjects();
 }
@@ -392,7 +359,7 @@ void ModelerApp::postRenderCallback() {
     }
 
     // TODO: remove this code (it displays a cube that shows the irridiance map)
-    /*if (this->frameCount == 1) {
+    if (this->frameCount == 1) {
         Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
         Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
         Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
@@ -405,7 +372,7 @@ void ModelerApp::postRenderCallback() {
         this->addObjectToSceneRaycaster(cubeObj, cubeMesh);
         cubeObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
         cubeObj->getTransform().updateWorldMatrix();
-    }*/
+    }
 
     this->frameCount++;
 }
