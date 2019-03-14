@@ -88,6 +88,7 @@ void TransformWidget::updateTransformationForTargetObjects() {
 void TransformWidget::updateCamera() {
     this->camera->copyFrom(this->targetCamera);
     this->camera->setSkyboxEnabled(false);
+    this->camera->setHDREnabled(false);
 
     Core::Point3r widgetPosition = this->rootObject->getTransform().getWorldPosition();
     Core::Transform& targetCameraTransform = this->targetCamera->getOwner()->getTransform();
