@@ -414,6 +414,7 @@ void MainGUI::updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> objec
 }
 
 void MainGUI::populateSceneTree(QTreeWidget* sceneTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> object) {
+    if (this->modelerApp->isSceneObjectHidden(object)) return;
     SceneTreeWidgetItem* childItem = new SceneTreeWidgetItem();
     childItem->sceneObject = object;
     childItem->setText(0, QString::fromStdString(object->getName()));

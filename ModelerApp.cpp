@@ -127,6 +127,14 @@ std::shared_ptr<CoreSync> ModelerApp::getCoreSync() {
     return this->coreSync;
 }
 
+bool ModelerApp::isSceneObjectHidden(Core::WeakPointer<Core::Object3D> object) {
+    return this->hiddenSceneObjects[object->getObjectID()];
+}
+
+void ModelerApp::setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, bool hidden) {
+    this->hiddenSceneObjects[object->getObjectID()] = hidden;
+}
+
 void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->engineIsReady = true;
@@ -138,8 +146,8 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->setupRenderCamera();
     this->setupDefaultObjects();
-    this->transformWidget.init(this->renderCamera);
     this->setupLights();
+    this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
 
     this->coreScene.onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> selectedObject){
@@ -176,9 +184,10 @@ void ModelerApp::setupRenderCamera() {
     cameraObj->setName("Main camera");
     this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
     this->renderCamera->setHDREnabled(true);
-    this->renderCamera->setHDRToneMapTypeExposure();
-    this->renderCamera->setExposure(2.0f);
+    this->renderCamera->setHDRToneMapTypeExposure(2.5f);
+    this->renderCamera->setHDRGamma(1.9f);
     this->coreScene.addObjectToScene(cameraObj);
+    this->setSceneObjectHidden(cameraObj, true);
 
     Core::Quaternion qA;
     qA.fromAngleAxis(0.0, 0, 1, 0);
@@ -209,7 +218,7 @@ void ModelerApp::setupRenderCamera() {
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = this->engine->createCubeTexture(skyboxTextureAttributes);
     skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
 
-    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("../../skyboxes/HDR/museum_of_ethnography_8k.hdr", true);
+    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("../../skyboxes/HDR/mealie_road_8k.hdr", true);
     this->renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
     //this->renderCamera->getSkybox().build(skyboxTexture, false);
     this->renderCamera->setSkyboxEnabled(true);
@@ -275,12 +284,13 @@ void ModelerApp::setupLights() {
 
     this->directionalLightObject = this->engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
-    //this->coreScene.addObjectToScene(directionalLightObject);
+    this->coreScene.addObjectToScene(directionalLightObject);
     //Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
+    directionalLight->setIntensity(0.5f);
+    directionalLight->setColor(1.0, 1.0, 0.6, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    this->directionalLightObject->getTransform().lookAt(Core::Point3r(-1.0f, -1.0f, -1.0f));
+    this->directionalLightObject->getTransform().lookAt(Core::Point3r(.75f, -1.0f, 1.25f));
 
 }
 

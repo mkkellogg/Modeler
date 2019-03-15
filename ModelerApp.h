@@ -39,6 +39,8 @@ public:
     CoreScene& getCoreScene();
     void onUpdate(ModelerAppLifecycleEventCallback callback);
     std::shared_ptr<CoreSync> getCoreSync();
+    bool isSceneObjectHidden(Core::WeakPointer<Core::Object3D> object);
+    void setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, bool hidden);
 
 private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);
@@ -58,10 +60,12 @@ private:
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;
+    Core::WeakPointer<Core::Engine> engine;
+
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
+    std::unordered_map<Core::UInt64, bool> hiddenSceneObjects;
 
-    Core::WeakPointer<Core::Engine> engine;
     Core::RayCaster sceneRaycaster;
     std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
