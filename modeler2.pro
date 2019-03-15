@@ -17,7 +17,8 @@ HEADERS       = \
     SceneTreeWidget.h \
     KeyboardAdapter.h \
     SceneUtils.h \
-    Scene/CornfieldScene.h
+    Scene/CornfieldScene.h \
+    Scene/Scene.h
 SOURCES       = \
                 main.cpp \
     ModelerApp.cpp \
@@ -37,7 +38,8 @@ SOURCES       = \
     SceneTreeWidget.cpp \
     KeyboardAdapter.cpp \
     SceneUtils.cpp \
-    Scene/CornfieldScene.cpp
+    Scene/CornfieldScene.cpp \
+    Scene/Scene.cpp
 
 QT           += widgets
 

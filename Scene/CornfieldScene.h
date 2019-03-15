@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Scene/Scene.h"
 #include "CoreScene.h"
 
 #include "Core/common/types.h"
@@ -8,17 +9,19 @@
 #include "Core/render/Camera.h"
 #include "Core/scene/Scene.h"
 
-class CornfieldScene
+class CornfieldScene : public Scene
 {
 public:
     CornfieldScene();
     void setupScene(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene,
                     Core::WeakPointer<Core::Camera> renderCamera);
+    void update() override;
 private:
     void setupSkyboxes(Core::WeakPointer<Core::Camera> renderCamera);
-    void setupDefaultObjects();
+    void setupDefaultObjects(Core::WeakPointer<Core::Camera> renderCamera);
     void setupLights();
 
+    unsigned int frameCount;
     CoreScene * coreScene;
     Core::WeakPointer<Core::Engine> engine;
     Core::WeakPointer<Core::Object3D> ambientLightObject;

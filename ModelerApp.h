@@ -14,6 +14,7 @@
 #include "Core/color/Color.h"
 #include "Core/render/ReflectionProbe.h"
 
+#include "Scene/Scene.h"
 #include "CoreScene.h"
 #include "CoreSync.h"
 #include "MouseAdapter.h"
@@ -49,9 +50,6 @@ private:
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
     void setupRenderCamera();
     void loadScene();
-    void setupSkyboxes();
-    void setupDefaultObjects();
-    void setupLights();
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();
@@ -61,13 +59,10 @@ private:
     bool engineIsReady = false;
     Core::WeakPointer<Core::Engine> engine;
 
+    std::shared_ptr<Scene> scene;
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
     std::unordered_map<Core::UInt64, bool> hiddenSceneObjects;
-
-    Core::WeakPointer<Core::Object3D> ambientLightObject;
-    Core::WeakPointer<Core::Object3D> directionalLightObject;
-    Core::WeakPointer<Core::RenderableContainer<Core::Mesh>>  pointLightObject;
 
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;
@@ -84,8 +79,6 @@ private:
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
 
     TransformWidget transformWidget;
-
-    Core::WeakPointer<Core::ReflectionProbe> centerProbe;
 
     unsigned int frameCount = 0;
 };
