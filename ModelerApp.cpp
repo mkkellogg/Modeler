@@ -2,6 +2,7 @@
 #include "RenderWindow.h"
 #include "SceneUtils.h"
 #include "KeyboardAdapter.h"
+#include "Scene/CornfieldScene.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -101,7 +102,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
                if (meshContainer) {
                    std::vector<Core::WeakPointer<Core::Mesh>> meshes = meshContainer->getRenderables();
                    for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
-                       this->addObjectToSceneRaycaster(obj, mesh);
+                       this->coreScene.addObjectToSceneRaycaster(obj, mesh);
                    }
                }
            });
@@ -138,15 +139,20 @@ void ModelerApp::setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, 
 void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->engineIsReady = true;
-
     Core::WeakPointer<Core::Scene> scene(engine->createScene());
     engine->setActiveScene(scene);
+    this->coreScene.setEngine(engine);
     this->coreScene.setSceneRoot(scene->getRoot());
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
 
     this->setupRenderCamera();
+
+    this->setupSkyboxes();
     this->setupDefaultObjects();
     this->setupLights();
+    //this->loadScene();
+
+
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
 
@@ -183,11 +189,12 @@ void ModelerApp::setupRenderCamera() {
     Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
     cameraObj->setName("Main camera");
     this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
+    this->coreScene.addObjectToScene(cameraObj);
+    this->setSceneObjectHidden(cameraObj, true);
+
     this->renderCamera->setHDREnabled(true);
     this->renderCamera->setHDRToneMapTypeExposure(2.5f);
     this->renderCamera->setHDRGamma(1.9f);
-    this->coreScene.addObjectToScene(cameraObj);
-    this->setSceneObjectHidden(cameraObj, true);
 
     Core::Quaternion qA;
     qA.fromAngleAxis(0.0, 0, 1, 0);
@@ -203,7 +210,14 @@ void ModelerApp::setupRenderCamera() {
     cameraObj->getTransform().translate(5, 0, 0);
     cameraObj->getTransform().updateWorldMatrix();
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
+}
 
+void ModelerApp::loadScene() {
+    CornfieldScene cornfieldScene;
+    cornfieldScene.setupScene(this->engine, this->coreScene, this->renderCamera);
+}
+
+void ModelerApp::setupSkyboxes() {
     std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/front.png", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/back.png", true));
@@ -239,8 +253,7 @@ void ModelerApp::setupDefaultObjects() {
     Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(this->engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
     this->coreScene.addObjectToScene(bottomSlabObj);
-    this->addObjectToSceneRaycaster(bottomSlabObj, slab);
-    // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
+    this->coreScene.addObjectToSceneRaycaster(bottomSlabObj, slab);
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
@@ -280,7 +293,7 @@ void ModelerApp::setupLights() {
     Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(this->engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
     pointLightRenderer->setCastShadows(false);
     this->pointLightObject->addRenderable(pointLightMesh);
-    this->addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
+    this->coreScene.addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
     this->directionalLightObject = this->engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
@@ -393,7 +406,7 @@ void ModelerApp::postRenderCallback() {
         cubeMaterial->setTexture(irradianceMap);
         Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
         this->getCoreScene().addObjectToScene(cubeObj);
-        this->addObjectToSceneRaycaster(cubeObj, cubeMesh);
+        this->coreScene.addObjectToSceneRaycaster(cubeObj, cubeMesh);
         cubeObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
         cubeObj->getTransform().updateWorldMatrix();
     }
@@ -424,7 +437,7 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
             this->orbitControls->resetMove();
             if (button == 1) {
                 if (!this->transformWidget.startAction(x, y)) {
-                    this->rayCastForObjectSelection(x, y, true, KeyboardAdapter::isModifierActive(KeyboardAdapter::Modifier::Ctrl));
+                    this->coreScene.rayCastForObjectSelection(this->renderCamera, x, y, true, KeyboardAdapter::isModifierActive(KeyboardAdapter::Modifier::Ctrl));
                 }
             }
         break;
@@ -434,40 +447,11 @@ void ModelerApp::mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 but
     }
 }
 
-void ModelerApp::rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject,  bool multiSelect) {
-    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = this->renderCamera->getRay(viewport, x, y);
-    std::vector<Core::Hit> hits;
-    Core::Bool hitOccurred = this->sceneRaycaster.castRay(ray, hits);
-
-    if (hitOccurred) {
-        Core::Hit& hit = hits[0];
-        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
-        Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
-
-        if (setSelectedObject) {
-            if (multiSelect) {
-                this->coreScene.addSelectedObject(rootObject);
-            }
-            else {
-                this->coreScene.clearSelectedObjects();
-                this->coreScene.addSelectedObject(rootObject);
-            }
-        }
-    }
-}
-
 void ModelerApp::resolveOnUpdateCallbacks() {
     QMutexLocker ml(&this->onUpdateMutex);
     for (ModelerAppLifecycleEventCallback callback : this->onUpdates) {
         callback();
     }
-}
-
-void ModelerApp::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh) {
-    this->sceneRaycaster.addObject(object, mesh);
-    this->meshToObjectMap[mesh->getObjectID()] = object;
 }
 
 void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material) {

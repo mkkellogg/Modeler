@@ -47,13 +47,12 @@ private:
     void setupHighlightMaterials();
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
-    void rayCastForObjectSelection(Core::Int32 x, Core::Int32 y, bool setSelectedObject, bool multiSelect);
     void setupRenderCamera();
+    void loadScene();
+    void setupSkyboxes();
     void setupDefaultObjects();
     void setupLights();
-    void updateLights();
     void resolveOnUpdateCallbacks();
-    void addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh);
     void preRenderCallback();
     void postRenderCallback();
     void renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material);
@@ -66,8 +65,6 @@ private:
     Core::WeakPointer<Core::Camera> renderCamera;
     std::unordered_map<Core::UInt64, bool> hiddenSceneObjects;
 
-    Core::RayCaster sceneRaycaster;
-    std::unordered_map<Core::UInt64, Core::WeakPointer<Core::Object3D>> meshToObjectMap;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
     Core::WeakPointer<Core::RenderableContainer<Core::Mesh>>  pointLightObject;

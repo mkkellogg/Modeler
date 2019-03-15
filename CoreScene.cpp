@@ -1,11 +1,13 @@
 #include "CoreScene.h"
 
+#include "Core/render/Camera.h"
+
 CoreScene::CoreScene() {
 
 }
 
-CoreScene::CoreScene(Core::WeakPointer<Core::Object3D> sceneRoot) {
-    this->setSceneRoot(sceneRoot);
+void CoreScene::setEngine(Core::WeakPointer<Core::Engine> engine) {
+    this->engine = engine;
 }
 
 Core::WeakPointer<Core::Object3D> CoreScene::getSceneRoot() const {
@@ -86,4 +88,33 @@ bool CoreScene::isObjectSelected(Core::WeakPointer<Core::Object3D> candidateObje
         if(selectedObject.get() == candidateObject.get()) return true;
     }
     return false;
+}
+
+void CoreScene::rayCastForObjectSelection(Core::WeakPointer<Core::Camera> camera, Core::Int32 x, Core::Int32 y, bool setSelectedObject,  bool multiSelect) {
+    Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
+    Core::Vector4u viewport = graphics->getViewport();
+    Core::Ray ray = camera->getRay(viewport, x, y);
+    std::vector<Core::Hit> hits;
+    Core::Bool hitOccurred = this->sceneRaycaster.castRay(ray, hits);
+
+    if (hitOccurred) {
+        Core::Hit& hit = hits[0];
+        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+        Core::WeakPointer<Core::Object3D> rootObject =this->meshToObjectMap[hitObject->getObjectID()];
+
+        if (setSelectedObject) {
+            if (multiSelect) {
+                this->addSelectedObject(rootObject);
+            }
+            else {
+                this->clearSelectedObjects();
+                this->addSelectedObject(rootObject);
+            }
+        }
+    }
+}
+
+void CoreScene::addObjectToSceneRaycaster(Core::WeakPointer<Core::Object3D> object, Core::WeakPointer<Core::Mesh> mesh) {
+    this->sceneRaycaster.addObject(object, mesh);
+    this->meshToObjectMap[mesh->getObjectID()] = object;
 }
