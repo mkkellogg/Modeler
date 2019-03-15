@@ -13,14 +13,22 @@
 #include "Core/material/BasicMaterial.h"
 #include "Core/material/BasicCubeMaterial.h"
 
+#include <QDir>
+
 CornfieldScene::CornfieldScene(): coreScene(nullptr) {
     this->frameCount = 0;
 }
 
-void CornfieldScene::setupScene(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene,
+void CornfieldScene::setupScene(Core::WeakPointer<Core::Engine> engine, ModelerApp& modelerApp, CoreScene& coreScene,
                                 Core::WeakPointer<Core::Camera> renderCamera) {
     this->engine = engine;
+    this->modelerApp = &modelerApp;
     this->coreScene = &coreScene;
+
+    renderCamera->setHDREnabled(true);
+    renderCamera->setHDRToneMapTypeExposure(2.5f);
+    renderCamera->setHDRGamma(1.9f);
+
     this->setupSkyboxes(renderCamera);
     this->setupDefaultObjects(renderCamera);
     this->setupLights();
@@ -95,6 +103,14 @@ void CornfieldScene::setupDefaultObjects(Core::WeakPointer<Core::Camera> renderC
     this->centerProbe->setSkybox(renderCamera->getSkybox());
     this->centerProbe->setSkyboxOnly(true);
     Core::WeakPointer<Core::AmbientIBLLight> iblLight = engine->createLight<Core::AmbientIBLLight>(reflectionProbeObject);
+
+    this->modelerApp->loadModel("Assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
+        rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
+    });
+
+    this->modelerApp->loadModel("Assets/models/toonwarrior/character/warrior.fbx", .075f, 80, true, false, [this](Core::WeakPointer<Core::Object3D> rootObject){
+        rootObject->getTransform().translate(0.0f, 0.0f, -11.0f, Core::TransformationSpace::World);
+    });
 }
 
 void CornfieldScene::setupLights() {

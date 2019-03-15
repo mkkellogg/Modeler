@@ -78,7 +78,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     }
 }
 
-void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial) {
+void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial, ModelerAppLoadModelCallback callback) {
    if (this->engineIsReady) {
        std::string sPath = path;
        std::string filePrefix("file://");
@@ -90,7 +90,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
        if (smoothingThreshold < 0 ) smoothingThreshold = 0;
        if (smoothingThreshold >= 90) smoothingThreshold = 90;
 
-       CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, usePhysicalMaterial](Core::WeakPointer<Core::Engine> engine) {
+       CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, usePhysicalMaterial, callback](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
            Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true, usePhysicalMaterial);
            this->coreScene.addObjectToScene(rootObject);
@@ -110,6 +110,8 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
            if (zUp) {
                rootObject->getTransform().rotate(1.0f, 0.0f, 0.0f, -Core::Math::PI / 2.0);
            }
+
+           callback(rootObject);
        };
        this->coreSync->run(runnable);
    }
@@ -188,10 +190,6 @@ void ModelerApp::setupRenderCamera() {
     this->coreScene.addObjectToScene(cameraObj);
     this->setSceneObjectHidden(cameraObj, true);
 
-    this->renderCamera->setHDREnabled(true);
-    this->renderCamera->setHDRToneMapTypeExposure(2.5f);
-    this->renderCamera->setHDRGamma(1.9f);
-
     Core::Quaternion qA;
     qA.fromAngleAxis(0.0, 0, 1, 0);
     Core::Matrix4x4 rotationMatrixA;
@@ -210,7 +208,7 @@ void ModelerApp::setupRenderCamera() {
 
 void ModelerApp::loadScene() {
     std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>();
-    cornfieldScene->setupScene(this->engine, this->coreScene, this->renderCamera);
+    cornfieldScene->setupScene(this->engine, *this, this->coreScene, this->renderCamera);
     this->scene = cornfieldScene;
 }
 

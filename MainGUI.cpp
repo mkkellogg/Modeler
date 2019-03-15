@@ -359,7 +359,7 @@ void MainGUI::loadModel() {
     QString nameQStr = this->modelNameEdit->text();
     float scale = this->modelImportScale;
     float smoothingThreshold = this->modelImportSmoothingThreshold;
-    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, this->modelImportPhsicalMaterial);
+    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, this->modelImportPhsicalMaterial, [](Core::WeakPointer<Core::Object3D>){});
 }
 
 void MainGUI::showImportSettings() {
