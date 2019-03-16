@@ -14,7 +14,7 @@
 #include "Core/color/Color.h"
 #include "Core/render/ReflectionProbe.h"
 
-#include "Scene/Scene.h"
+#include "Scene/ModelerScene.h"
 #include "CoreScene.h"
 #include "CoreSync.h"
 #include "MouseAdapter.h"
@@ -60,7 +60,7 @@ private:
     bool engineIsReady = false;
     Core::WeakPointer<Core::Engine> engine;
 
-    std::shared_ptr<Scene> scene;
+    std::shared_ptr<ModelerScene> modelerScene;
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
     std::unordered_map<Core::UInt64, bool> hiddenSceneObjects;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene/Scene.h"
+#include "Scene/ModelerScene.h"
 #include "CoreScene.h"
 #include "ModelerApp.h"
 
@@ -10,13 +10,15 @@
 #include "Core/render/Camera.h"
 #include "Core/scene/Scene.h"
 
-class CornfieldScene : public Scene
+class CornfieldScene : public ModelerScene
 {
 public:
     CornfieldScene();
-    void setupScene(Core::WeakPointer<Core::Engine> engine, ModelerApp& modelerApp, CoreScene& coreScene,
-                    Core::WeakPointer<Core::Camera> renderCamera);
+    void load(Core::WeakPointer<Core::Engine> engine, ModelerApp& modelerApp, CoreScene& coreScene,
+              Core::WeakPointer<Core::Camera> renderCamera) override;
+    void unload() override;
     void update() override;
+
 private:
     void setupSkyboxes(Core::WeakPointer<Core::Camera> renderCamera);
     void setupDefaultObjects(Core::WeakPointer<Core::Camera> renderCamera);

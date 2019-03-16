@@ -3,6 +3,7 @@
 #include "SceneUtils.h"
 #include "KeyboardAdapter.h"
 #include "Scene/CornfieldScene.h"
+#include "Scene/RedSkyScene.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -146,8 +147,8 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     this->coreScene.setEngine(engine);
     this->coreScene.setSceneRoot(scene->getRoot());
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
-
     this->setupRenderCamera();
+
     this->loadScene();
 
     this->transformWidget.init(this->renderCamera);
@@ -177,7 +178,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
         auto vp = this->engine->getGraphicsSystem()->getCurrentRenderTarget()->getViewport();
         this->renderCamera->setAspectRatioFromDimensions(vp.z, vp.w);
         this->resolveOnUpdateCallbacks();
-        this->scene->update();
+        this->modelerScene->update();
     }, true);
 
 }
@@ -207,9 +208,13 @@ void ModelerApp::setupRenderCamera() {
 }
 
 void ModelerApp::loadScene() {
-    std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>();
-    cornfieldScene->setupScene(this->engine, *this, this->coreScene, this->renderCamera);
-    this->scene = cornfieldScene;
+    //std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>();
+    //cornfieldScene->setupScene(this->engine, *this, this->coreScene, this->renderCamera);
+    //this->scene = cornfieldScene;
+
+    std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>();
+    redSkyScene->load(this->engine, *this, this->coreScene, this->renderCamera);
+    this->modelerScene = redSkyScene;
 }
 
 void ModelerApp::setupHighlightMaterials() {

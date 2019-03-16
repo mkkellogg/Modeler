@@ -1,5 +1,5 @@
-#include "Scene.h"
+#include "ModelerScene.h"
 
-Scene::Scene(){
+ModelerScene::ModelerScene(){
 
 }

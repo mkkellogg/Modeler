@@ -19,8 +19,8 @@ CornfieldScene::CornfieldScene(): coreScene(nullptr) {
     this->frameCount = 0;
 }
 
-void CornfieldScene::setupScene(Core::WeakPointer<Core::Engine> engine, ModelerApp& modelerApp, CoreScene& coreScene,
-                                Core::WeakPointer<Core::Camera> renderCamera) {
+void CornfieldScene::load(Core::WeakPointer<Core::Engine> engine, ModelerApp& modelerApp, CoreScene& coreScene,
+                          Core::WeakPointer<Core::Camera> renderCamera) {
     this->engine = engine;
     this->modelerApp = &modelerApp;
     this->coreScene = &coreScene;
@@ -32,6 +32,10 @@ void CornfieldScene::setupScene(Core::WeakPointer<Core::Engine> engine, ModelerA
     this->setupSkyboxes(renderCamera);
     this->setupDefaultObjects(renderCamera);
     this->setupLights();
+}
+
+void CornfieldScene::unload() {
+
 }
 
 void CornfieldScene::update() {
@@ -54,23 +58,8 @@ void CornfieldScene::update() {
 }
 
 void CornfieldScene::setupSkyboxes(Core::WeakPointer<Core::Camera> renderCamera) {
-    std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/front.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/back.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/up.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/down.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/left.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/right.png", true));
-
-    Core::TextureAttributes skyboxTextureAttributes;
-    skyboxTextureAttributes.FilterMode = Core::TextureFilter::BiLinear;
-    skyboxTextureAttributes.MipMapLevel = 0;
-    Core::WeakPointer<Core::CubeTexture> skyboxTexture = this->engine->createCubeTexture(skyboxTextureAttributes);
-    skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
-
     Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("../../skyboxes/HDR/mealie_road_8k.hdr", true);
     renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
-    //this->renderCamera->getSkybox().build(skyboxTexture, false);
     renderCamera->setSkyboxEnabled(true);
 }
 
@@ -89,7 +78,6 @@ void CornfieldScene::setupDefaultObjects(Core::WeakPointer<Core::Camera> renderC
     bottomSlabObj->addRenderable(slab);
     this->coreScene->addObjectToScene(bottomSlabObj);
     this->coreScene->addObjectToSceneRaycaster(bottomSlabObj, slab);
-    // this->meshToObjectMap[slab->getObjectID()] = Core::WeakPointer<MeshContainer>::dynamicPointerCast<Core::Object3D>( bottomSlabObj);
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
