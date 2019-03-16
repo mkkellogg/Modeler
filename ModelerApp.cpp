@@ -139,6 +139,14 @@ void ModelerApp::setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, 
     this->hiddenSceneObjects[object->getObjectID()] = hidden;
 }
 
+Core::WeakPointer<Core::Camera> ModelerApp::getRenderCamera() {
+    return this->renderCamera;
+}
+
+Core::WeakPointer<Core::Engine> ModelerApp::getEngine() {
+    return this->engine;
+}
+
 void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->engineIsReady = true;
@@ -212,8 +220,8 @@ void ModelerApp::loadScene() {
     //cornfieldScene->setupScene(this->engine, *this, this->coreScene, this->renderCamera);
     //this->scene = cornfieldScene;
 
-    std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>();
-    redSkyScene->load(this->engine, *this, this->coreScene, this->renderCamera);
+    std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
+    redSkyScene->load();
     this->modelerScene = redSkyScene;
 }
 

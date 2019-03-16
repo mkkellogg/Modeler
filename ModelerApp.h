@@ -43,6 +43,8 @@ public:
     std::shared_ptr<CoreSync> getCoreSync();
     bool isSceneObjectHidden(Core::WeakPointer<Core::Object3D> object);
     void setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, bool hidden);
+    Core::WeakPointer<Core::Camera> getRenderCamera();
+    Core::WeakPointer<Core::Engine> getEngine();
 
 private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);

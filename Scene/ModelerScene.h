@@ -8,9 +8,13 @@ class CoreScene;
 
 class ModelerScene {
 public:
-    ModelerScene();
-    virtual void load(Core::WeakPointer<Core::Engine> engine, ModelerApp& modelerApp, CoreScene& coreScene,
-                      Core::WeakPointer<Core::Camera> renderCamera) = 0;
-    virtual void unload() = 0;
+    ModelerScene(ModelerApp& modelerApp);
+    virtual void load();
     virtual void update() = 0;
+
+protected:
+    ModelerApp& modelerApp;
+
+private:
+    bool loadComplete;
 };
