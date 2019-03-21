@@ -101,7 +101,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
                Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer =
                        Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
                if (meshContainer) {
-                   std::vector<Core::WeakPointer<Core::Mesh>> meshes = meshContainer->getRenderables();
+                   const std::vector<Core::PersistentWeakPointer<Core::Mesh>>& meshes = meshContainer->getRenderables();
                    for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
                        this->coreScene.addObjectToSceneRaycaster(obj, mesh);
                    }
@@ -216,13 +216,13 @@ void ModelerApp::setupRenderCamera() {
 }
 
 void ModelerApp::loadScene() {
-    //std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>();
-    //cornfieldScene->setupScene(this->engine, *this, this->coreScene, this->renderCamera);
-    //this->scene = cornfieldScene;
+    std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
+    cornfieldScene->load();
+    this->modelerScene = cornfieldScene;
 
-    std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
-    redSkyScene->load();
-    this->modelerScene = redSkyScene;
+   // std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
+   // redSkyScene->load();
+   // this->modelerScene = redSkyScene;
 }
 
 void ModelerApp::setupHighlightMaterials() {
@@ -241,6 +241,11 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineMaterial = this->engine->createMaterial<Core::OutlineMaterial>();
     this->outlineMaterial->setLit(false);
     this->outlineMaterial->setColor(outlineColor);
+    this->outlineMaterial->setEdgeWidth(.01f);
+    this->outlineMaterial->setAbsExtend(.004f);
+    this->outlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
+    this->outlineMaterial->setSourceBlendingMethod(Core::RenderState::BlendingMethod::SrcAlpha);
+    this->outlineMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
 }
 
 void ModelerApp::preRenderCallback() {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SceneHelper.h"
+
 #include "Core/Engine.h"
 #include "Core/render/Camera.h"
 
@@ -14,6 +16,7 @@ public:
 
 protected:
     ModelerApp& modelerApp;
+    SceneHelper sceneHelper;
 
 private:
     bool loadComplete;

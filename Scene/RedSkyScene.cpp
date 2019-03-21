@@ -23,8 +23,12 @@ void RedSkyScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
     renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(1.5f);
+    renderCamera->setHDRToneMapTypeExposure(2.0f);
     renderCamera->setHDRGamma(1.0f);
+
+    /*renderCamera->setHDREnabled(true);
+    renderCamera->setHDRToneMapTypeExposure(1.25f);
+    renderCamera->setHDRGamma(1.5f);*/
 
     this->setupSkyboxes();
     this->setupDefaultObjects();
@@ -81,41 +85,14 @@ void RedSkyScene::setupDefaultObjects() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
 
-    Core::WeakPointer<Core::StandardPhysicalMaterial> cubeMaterial = engine->createMaterial<Core::StandardPhysicalMaterial>();
-    cubeMaterial->setMetallic(0.05f);
-    cubeMaterial->setRoughness(0.1f);
-    cubeMaterial->setAmbientOcclusion(1.0f);
-    Core::Color slabColor(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::WeakPointer<Core::Mesh> slab = Core::GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
-    slab->calculateNormals(75.0f);
-
-    Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> bottomSlabObj(engine->createObject3D<Core::RenderableContainer<Core::Mesh>>());
-    bottomSlabObj->setName("Base platform");
-    Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
-    bottomSlabObj->addRenderable(slab);
-    coreScene.addObjectToScene(bottomSlabObj);
-    coreScene.addObjectToSceneRaycaster(bottomSlabObj, slab);
-    bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
-    bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
-    bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
-
-    Core::WeakPointer<Core::Object3D> reflectionProbeObject = engine->createObject3D();
-    reflectionProbeObject->setName("Reflection probe");
-    this->centerProbe = engine->createReflectionProbe(reflectionProbeObject);
-    this->centerProbe->setNeedsUpdate(true);
-    reflectionProbeObject->getTransform().getLocalMatrix().translate(0.0f, 10.0f, 0.0f);
-    coreScene.addObjectToScene(reflectionProbeObject);
-    this->centerProbe->setSkybox(renderCamera->getSkybox());
-    this->centerProbe->setSkyboxOnly(true);
-    Core::WeakPointer<Core::AmbientIBLLight> iblLight = engine->createLight<Core::AmbientIBLLight>(reflectionProbeObject);
+    this->sceneHelper.createBasePlatform();
+    this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
     this->modelerApp.loadModel("Assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });
 
-    this->modelerApp.loadModel("Assets/models/toonwarrior/character/warrior.fbx", .075f, 80, true, false, [this](Core::WeakPointer<Core::Object3D> rootObject){
-        rootObject->getTransform().translate(0.0f, 0.0f, -11.0f, Core::TransformationSpace::World);
-    });
+   this->sceneHelper.loadWarrior(true, 0.0f);
 }
 
 void RedSkyScene::setupLights() {
@@ -151,7 +128,7 @@ void RedSkyScene::setupLights() {
     coreScene.addObjectToScene(directionalLightObject);
     //Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(0.85f);
+    directionalLight->setIntensity(1.85f);
     directionalLight->setColor(1.0, 1.0, 0.6, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, -1.0f));
