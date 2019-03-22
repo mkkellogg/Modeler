@@ -48,7 +48,7 @@ void RedSkyScene::update() {
         cubeMaterial->setLit(false);
         Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrradianceMap()->getColorTexture());
         //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
-        cubeMaterial->setTexture(irradianceMap);
+        cubeMaterial->setCubeTexture(irradianceMap);
         Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
         coreScene.addObjectToScene(cubeObj);
         coreScene.addObjectToSceneRaycaster(cubeObj, cubeMesh);
@@ -72,8 +72,8 @@ void RedSkyScene::setupSkyboxes() {
     skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/right.png", true));
 
     Core::TextureAttributes skyboxTextureAttributes;
-    skyboxTextureAttributes.FilterMode = Core::TextureFilter::BiLinear;
-    skyboxTextureAttributes.MipMapLevel = 0;
+    skyboxTextureAttributes.FilterMode = Core::TextureFilter::Linear;
+    skyboxTextureAttributes.MipLevels = 2;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
     skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
     renderCamera->getSkybox().build(skyboxTexture, false);

@@ -59,8 +59,8 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
                                 physicalMaterial->setRoughness(0.5f);
                             }
                             else {
-                                physicalMaterial->setMetallic(0.65f);
-                                physicalMaterial->setRoughness(0.35f);
+                                physicalMaterial->setMetallic(0.85f);
+                                physicalMaterial->setRoughness(0.3f);
                             }
                         }
                     }

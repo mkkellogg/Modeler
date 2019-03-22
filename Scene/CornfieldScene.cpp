@@ -1,6 +1,7 @@
 #include "CornfieldScene.h"
 
 #include "Core/image/TextureUtils.h"
+#include "Core/image/Texture2D.h"
 #include "Core/material/StandardPhysicalMaterial.h"
 #include "Core/geometry/GeometryUtils.h"
 #include "Core/geometry/Mesh.h"
@@ -8,6 +9,7 @@
 #include "Core/render/MeshRenderer.h"
 #include "Core/render/ReflectionProbe.h"
 #include "Core/render/RenderTargetCube.h"
+#include "Core/render/RenderTarget2D.h"
 #include "Core/light/AmbientIBLLight.h"
 #include "Core/light/AmbientLight.h"
 #include "Core/material/BasicMaterial.h"
@@ -30,6 +32,11 @@ void CornfieldScene::load() {
     renderCamera->setHDRToneMapTypeExposure(2.5f);
     renderCamera->setHDRGamma(1.2f);
 
+    Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
+    cameraObj->getTransform().translate(-30, 10, -40, Core::TransformationSpace::World);
+    cameraObj->getTransform().updateWorldMatrix();
+    cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
+
     this->setupSkyboxes();
     this->setupDefaultObjects();
     this->setupLights();
@@ -46,9 +53,12 @@ void CornfieldScene::update() {
         Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
         Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
         cubeMaterial->setLit(false);
-        Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrradianceMap()->getColorTexture());
+        //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrradianceMap()->getColorTexture());
+        Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSpecularIBLPreFilteredMap()->getColorTexture());
         //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
-        cubeMaterial->setTexture(irradianceMap);
+        Core::WeakPointer<Core::Texture2D> brdfMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::Texture2D>(this->centerProbe->getSpecularIBLBRDFMap()->getColorTexture());
+        cubeMaterial->setRectTexture(brdfMap);
+        cubeMaterial->setCubeTexture(irradianceMap);
         Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
         coreScene.addObjectToScene(cubeObj);
         coreScene.addObjectToSceneRaycaster(cubeObj, cubeMesh);
@@ -113,7 +123,7 @@ void CornfieldScene::setupLights() {
     coreScene.addObjectToScene(directionalLightObject);
     //Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(0.45f);
+    directionalLight->setIntensity(1.25f);
     directionalLight->setColor(1.0, 1.0, 0.45, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(.75f, -1.0f, 1.25f));
