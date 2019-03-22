@@ -209,10 +209,6 @@ void ModelerApp::setupRenderCamera() {
     worldMatrix.translate(0, 0, 12);
     worldMatrix.translate(0, 5, 0);
 
-    cameraObj->getTransform().getLocalMatrix().copy(worldMatrix);
-    cameraObj->getTransform().translate(5, 0, 0);
-    cameraObj->getTransform().updateWorldMatrix();
-    cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
 }
 
 void ModelerApp::loadScene() {

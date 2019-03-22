@@ -33,7 +33,7 @@ void CornfieldScene::load() {
     renderCamera->setHDRGamma(1.2f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
-    cameraObj->getTransform().translate(-30, 10, -40, Core::TransformationSpace::World);
+    cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
     cameraObj->getTransform().updateWorldMatrix();
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
 
@@ -70,7 +70,7 @@ void CornfieldScene::update() {
 
 void CornfieldScene::setupSkyboxes() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
-    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("../../skyboxes/HDR/mealie_road_8k.hdr", true);
+    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("Assets/skyboxes/HDR/mealie_road_8k.hdr", true);
     renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
     renderCamera->setSkyboxEnabled(true);
 }

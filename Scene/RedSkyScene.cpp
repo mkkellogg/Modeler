@@ -1,6 +1,7 @@
 #include "RedSkyScene.h"
 
 #include "Core/image/TextureUtils.h"
+#include "Core/image/Texture2D.h"
 #include "Core/material/StandardPhysicalMaterial.h"
 #include "Core/geometry/GeometryUtils.h"
 #include "Core/geometry/Mesh.h"
@@ -8,10 +9,12 @@
 #include "Core/render/MeshRenderer.h"
 #include "Core/render/ReflectionProbe.h"
 #include "Core/render/RenderTargetCube.h"
+#include "Core/render/RenderTarget2D.h"
 #include "Core/light/AmbientIBLLight.h"
 #include "Core/light/AmbientLight.h"
 #include "Core/material/BasicMaterial.h"
 #include "Core/material/BasicCubeMaterial.h"
+
 
 #include <QDir>
 
@@ -30,6 +33,11 @@ void RedSkyScene::load() {
     renderCamera->setHDRToneMapTypeExposure(1.25f);
     renderCamera->setHDRGamma(1.5f);*/
 
+    Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
+    cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
+    cameraObj->getTransform().updateWorldMatrix();
+    cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
+
     this->setupSkyboxes();
     this->setupDefaultObjects();
     this->setupLights();
@@ -46,9 +54,11 @@ void RedSkyScene::update() {
         Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
         Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
         cubeMaterial->setLit(false);
-        Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrradianceMap()->getColorTexture());
+        Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSpecularIBLPreFilteredMap()->getColorTexture());
         //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
         cubeMaterial->setCubeTexture(irradianceMap);
+        Core::WeakPointer<Core::Texture2D> brdfMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::Texture2D>(this->centerProbe->getSpecularIBLBRDFMap()->getColorTexture());
+        cubeMaterial->setRectTexture(brdfMap);
         Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
         coreScene.addObjectToScene(cubeObj);
         coreScene.addObjectToSceneRaycaster(cubeObj, cubeMesh);
@@ -64,12 +74,12 @@ void RedSkyScene::setupSkyboxes() {
     CoreScene& coreSene = this->modelerApp.getCoreScene();
 
     std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/front.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/back.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/up.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/down.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/left.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("../../skyboxes/redorange/fixed/right.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/front.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/back.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/up.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/down.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/left.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/right.png", true));
 
     Core::TextureAttributes skyboxTextureAttributes;
     skyboxTextureAttributes.FilterMode = Core::TextureFilter::Linear;
