@@ -14,7 +14,7 @@ Dynamic versions of the above libraries are required.
 
 ## External asset dependencies:
 
-The application uses some model & texture assets by default, they can be downloaded <a href="projects.markkellogg.org/downloads/Assets.zip">here</a>. Place the uncompressed folder in the build directory for the application.
+The application uses some model & texture assets by default, they can be downloaded <a href="http://projects.markkellogg.org/downloads/Assets.zip">here</a>. Place the uncompressed folder in the build directory for the application.
 
 ## Building
 
