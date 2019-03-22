@@ -1,7 +1,10 @@
 # Modeler
-Goal: A 3D modeling tool built on QT widgets. Still very much a work-in-progress, and with very limited functionality!
+Goal: A 3D scene staging tool and physically-based rendering sandbox built on QT widgets. Makes use of my own custom rendering engine (Core), and serves as a great utility to test ongoing feature development in the engine. Still very much a work-in-progress!
 
-# External library dependencies:
+## Current functionality:
+A built-in scene that showcases the current state of the physically-based rendering capabilities of Core will be loaded by default. Additional models can be imported into the scene and repositioned. Modifiable model import settings include scale, normal smoothing threshold, and material type (physically-based or "legacy"). 
+
+## External library dependencies:
 
 - Core: My own custom graphics/rendering library (need to build from source)
 - Assimp (Asset Import Library)
@@ -9,11 +12,11 @@ Goal: A 3D modeling tool built on QT widgets. Still very much a work-in-progress
 
 Dynamic versions of the above libraries are required.
 
-# External asset dependencies:
+## External asset dependencies:
 
 The application uses some model & texture assets by default, they can be downloaded <a href="projects.markkellogg.org/downloads/Assets.zip">here</a>. Place the uncompressed folder in the build directory for the application.
 
-# Building
+## Building
 
 It is recommended that you build inside QT Creator. You will need to modify the locations of the Core, Assimp, and DevIL libraries in modeler2.pro. 
 
