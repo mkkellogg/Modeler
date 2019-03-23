@@ -140,10 +140,6 @@ QGroupBox* MainGUI::buildLoadModelGUI() {
     this->modelNameEdit = new QLineEdit;
     QString modelNameEditStyle = QString("QLineEdit {width: 300px;}");
     this->modelNameEdit->setStyleSheet(modelNameEditStyle);
-
-    //TODO: Remove this debug code
-    this->modelNameEdit->setText("/home/mark/Development/models/Metal_Water_Tank/Water_Tank_fbx.fbx");
-
     QLabel* loadLabel = new QLabel("Path: ");
 
     QPushButton *browseButton = new QPushButton(this);

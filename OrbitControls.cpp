@@ -59,34 +59,29 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         Core::WeakPointer<Core::Object3D> cameraObjPtr = this->targetCamera->getOwner();
 
         cameraObjPtr->getTransform().updateWorldMatrix();
-        Core::Matrix4x4 viewMat = cameraObjPtr->getTransform().getWorldMatrix();
-        Core::Matrix4x4 viewMatInv = viewMat;
-        viewMatInv.invert();
+        Core::Matrix4x4 camWorldMat = cameraObjPtr->getTransform().getWorldMatrix();
 
         Core::Point3r worldStartP = viewStartP;
         Core::Point3r worldEndP = viewEndP;
-        viewMat.transform(worldStartP);
-        viewMat.transform(worldEndP);
+        camWorldMat.transform(worldStartP);
+        camWorldMat.transform(worldEndP);
 
-        Core::Point3r camPos;
-        cameraObjPtr->getTransform().getWorldMatrix().transform(camPos);
+        Core::Point3r cameraPos;
+        camWorldMat.transform(cameraPos);
 
-        Core::Vector3r toOrigin = this->origin - camPos;
+        Core::Vector3r toOrigin = this->origin - cameraPos;
         toOrigin.normalize();
         toOrigin = toOrigin * 5.0f;
+        Core::Point3r tempOrigin = cameraPos + toOrigin;
+        Core::Vector3r adjustedWorldStartV = worldStartP - tempOrigin;
+        Core::Vector3r adjustedWorldEndV = worldEndP - tempOrigin;
 
-        Core::Point3r tempOrigin = camPos + toOrigin;
+        Core::Vector3r adjustedWorldStartVN = Core::Vector3r(adjustedWorldStartV.x, adjustedWorldStartV.y, adjustedWorldStartV.z);
+        adjustedWorldStartVN.normalize();
+        Core::Vector3r adjustedWorldEndVN = Core::Vector3r(adjustedWorldEndV.x, adjustedWorldEndV.y, adjustedWorldEndV.z);
+        adjustedWorldEndVN.normalize();
 
-        Core::Vector3r viewStart = worldStartP - tempOrigin;
-        Core::Vector3r viewEnd = worldEndP - tempOrigin;
-
-        Core::Vector3r viewStartN = Core::Vector3r(viewStart.x, viewStart.y, viewStart.z);
-        viewStartN.normalize();
-
-        Core::Vector3r viewEndN = Core::Vector3r(viewEnd.x, viewEnd.y, viewEnd.z);
-        viewEndN.normalize();
-
-        Core::Real dot = Core::Vector3r::dot(viewStartN, viewEndN);
+        Core::Real dot = Core::Vector3r::dot(adjustedWorldStartVN, adjustedWorldEndVN);
         Core::Real angle = 0.0f;
         if (dot < 1.0f && dot > -1.0f) {
             angle = Core::Math::aCos(dot);
@@ -96,20 +91,17 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         }
 
         Core::Vector3r rotAxis;
-        Core::Vector3r::cross(viewEnd, viewStart, rotAxis);
+        Core::Vector3r::cross(adjustedWorldEndV, adjustedWorldStartV, rotAxis);
         rotAxis.normalize();
 
-        Core::Point3r cameraPos;
-        cameraPos.set(0, 0, 0);
-        cameraObjPtr->getTransform().applyTransformationTo(cameraPos);
-        cameraPos.set(cameraPos.x - this->origin.x, cameraPos.y - this->origin.y, cameraPos.z - this->origin.z);
-        Core::Real distanceFromOrigin = cameraPos.magnitude();
+        Core::Point3r cameraRelativePos(cameraPos.x - this->origin.x, cameraPos.y - this->origin.y, cameraPos.z - this->origin.z);
+        Core::Real distanceFromOrigin = cameraRelativePos.magnitude();
 
         if (eventPointer == GestureAdapter::GesturePointer::Secondary) {
             if (angle > 0.0f) {
 
                 cameraObjPtr->getTransform().updateWorldMatrix();
-                Core::Vector3r cameraPosVec(cameraPos.x, cameraPos.y, cameraPos.z);
+                Core::Vector3r cameraPosVec(cameraRelativePos.x, cameraRelativePos.y, cameraRelativePos.z);
                 cameraPosVec.normalize();
                 Core::Vector3r up(0.0f, 1.0f, 0.0f);
                 Core::Real curDot = up.dot(cameraPosVec);
@@ -181,7 +173,7 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         }
         else if (eventPointer == GestureAdapter::GesturePointer::Tertiary) {
             Core::Real translationScaleFactor = distanceFromOrigin;
-            Core::Vector3r viewDragVector = viewEnd - viewStart;
+            Core::Vector3r viewDragVector = adjustedWorldEndV - adjustedWorldStartV;
             viewDragVector.invert();
             viewDragVector = viewDragVector * translationScaleFactor;
             this->origin = this->origin + viewDragVector;
