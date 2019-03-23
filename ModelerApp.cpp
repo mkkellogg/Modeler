@@ -4,6 +4,7 @@
 #include "KeyboardAdapter.h"
 #include "Scene/CornfieldScene.h"
 #include "Scene/RedSkyScene.h"
+#include "Util/FileUtil.h"
 
 #include "Core/util/Time.h"
 #include "Core/scene/Scene.h"
@@ -81,23 +82,20 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
 
 void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial, ModelerAppLoadModelCallback callback) {
    if (this->engineIsReady) {
-       std::string sPath = path;
-       std::string filePrefix("file://");
-       std::string pathPrefix = sPath.substr(0, 7) ;
-       if (pathPrefix == filePrefix) {
-           sPath = sPath.substr(7);
-       }
+        std::string sPath = path;
+        sPath = FileUtil::removePrefix(sPath, "file://");
+        std::string abbrevName = FileUtil::extractFileNameFromPath(sPath, true);
 
-       if (smoothingThreshold < 0 ) smoothingThreshold = 0;
-       if (smoothingThreshold >= 90) smoothingThreshold = 90;
+        if (smoothingThreshold < 0 ) smoothingThreshold = 0;
+        if (smoothingThreshold >= 90) smoothingThreshold = 90;
 
-       CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, usePhysicalMaterial, callback](Core::WeakPointer<Core::Engine> engine) {
+        CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, usePhysicalMaterial, abbrevName, callback](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
            Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true, usePhysicalMaterial);
            this->coreScene.addObjectToScene(rootObject);
-
+           rootObject->setName(abbrevName);
            Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
-           scene->visitScene(rootObject, [this, &rootObject](Core::WeakPointer<Core::Object3D> obj){
+           scene->visitScene(rootObject, [this, rootObject](Core::WeakPointer<Core::Object3D> obj){
                Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer =
                        Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
                if (meshContainer) {

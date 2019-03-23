@@ -20,9 +20,10 @@ HEADERS       = \
     Scene/CornfieldScene.h \
     Scene/RedSkyScene.h \
     Scene/ModelerScene.h \
-    Scene/SceneHelper.h
+    Scene/SceneHelper.h \
+    Util/FileUtil.h
 SOURCES       = \
-                main.cpp \
+    main.cpp \
     ModelerApp.cpp \
     RenderWindow.cpp \
     MainWindow.cpp \
@@ -43,7 +44,8 @@ SOURCES       = \
     Scene/CornfieldScene.cpp \
     Scene/RedSkyScene.cpp \
     Scene/ModelerScene.cpp \
-    Scene/SceneHelper.cpp
+    Scene/SceneHelper.cpp \
+    Util/FileUtil.cpp
 
 QT           += widgets
 
