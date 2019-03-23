@@ -210,13 +210,13 @@ void ModelerApp::setupRenderCamera() {
 }
 
 void ModelerApp::loadScene() {
-    std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
-    cornfieldScene->load();
-    this->modelerScene = cornfieldScene;
+    //std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
+    //cornfieldScene->load();
+    //this->modelerScene = cornfieldScene;
 
-   // std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
-   // redSkyScene->load();
-   // this->modelerScene = redSkyScene;
+   std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
+   redSkyScene->load();
+   this->modelerScene = redSkyScene;
 }
 
 void ModelerApp::setupHighlightMaterials() {
