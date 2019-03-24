@@ -155,7 +155,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
     this->setupRenderCamera();
 
-    this->loadScene();
+    this->loadScene(1);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
@@ -193,7 +193,7 @@ void ModelerApp::setupRenderCamera() {
 
     Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
     cameraObj->setName("Main camera");
-    this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
+    this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 500);
     this->coreScene.addObjectToScene(cameraObj);
     this->setSceneObjectHidden(cameraObj, true);
 
@@ -205,14 +205,23 @@ void ModelerApp::setupRenderCamera() {
 
 }
 
-void ModelerApp::loadScene() {
-    //std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
-    //cornfieldScene->load();
-    //this->modelerScene = cornfieldScene;
-
-   std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
-   redSkyScene->load();
-   this->modelerScene = redSkyScene;
+void ModelerApp::loadScene(int scene) {
+    switch(scene) {
+        case 0:
+        {
+            std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
+            cornfieldScene->load();
+            this->modelerScene = cornfieldScene;
+        }
+        break;
+        default:
+        {
+            std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
+            redSkyScene->load();
+            this->modelerScene = redSkyScene;
+        }
+        break;
+    }
 }
 
 void ModelerApp::setupHighlightMaterials() {

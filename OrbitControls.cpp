@@ -102,7 +102,7 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
                 Core::Real oldDot =  startVec.dot(up);
                 Core::Real newDot =  endVec.dot(up);
 
-                 Core::Real rotationScaleFactor = 30.0f * (1.0f - curDot/2.0f);
+                Core::Real rotationScaleFactor = 30.0f * (1.0f - curDot/2.0f);
                 if (curDot <= .999 || newDot  > oldDot) {
 
                     Core::Quaternion qA = Core::Quaternion::fromAngleAxis(rotationAngle * rotationScaleFactor, rotAxis);

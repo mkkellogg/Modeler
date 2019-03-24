@@ -12,6 +12,36 @@
 SceneHelper::SceneHelper(ModelerApp& modelerApp): modelerApp(modelerApp) {
 
 }
+
+void SceneHelper::createDemoSpheres() {
+    Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+    CoreScene& coreScene = this->modelerApp.getCoreScene();
+    Core::UInt32 iterations = 6;
+    for (Core::UInt32 m = 0; m < iterations; m++) {
+        for (Core::UInt32 r = 0; r < iterations; r++) {
+            Core::Real metallic = (Core::Real)m / (Core::Real)(iterations - 1);
+            Core::Real roughness = (Core::Real)r / (Core::Real)(iterations - 1);
+            Core::Color sphereColor(1.0f, 1.0f, 1.0f, 1.0f);
+            Core::WeakPointer<Core::Mesh> sphereMesh = Core::GeometryUtils::buildSphereMesh(3.0f, 32, sphereColor);
+            Core::WeakPointer<Core::StandardPhysicalMaterial> sphereMaterial = engine->createMaterial<Core::StandardPhysicalMaterial>();
+            sphereMaterial->setLit(true);
+            sphereMaterial->setRoughness(1.0 - (roughness * 0.9f));
+            sphereMaterial->setMetallic(metallic);
+            //sphereMaterial->setCullFace(Core::RenderState::CullFace::Front);
+            sphereMaterial->setAlbedo(Core::Color(1.0f, 1.0f, 1.0f ,1.0f));
+
+            Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> sphereObj = Core::GeometryUtils::buildMeshContainer(sphereMesh, sphereMaterial, "physical sphere");
+            Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(sphereObj->getRenderer());
+            meshRenderer->setCastShadows(false);
+            coreScene.addObjectToScene(sphereObj);
+            coreScene.addObjectToSceneRaycaster(sphereObj, sphereMesh);
+            sphereObj->getTransform().getLocalMatrix().translate((Core::Real)m * 10.0f, (Core::Real)r * 10.0f, -(Core::Real)m * 10.0f  + 50.0f);
+            sphereObj->getTransform().updateWorldMatrix();
+
+        }
+    }
+}
+
 Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProbe(float x, float y, float z) {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
@@ -20,7 +50,7 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
     Core::WeakPointer<Core::Object3D> reflectionProbeObject = engine->createObject3D();
     reflectionProbeObject->setName("Reflection probe");
     Core::WeakPointer<Core::ReflectionProbe> reflectionProbe = engine->createReflectionProbe(reflectionProbeObject);
-    reflectionProbe->setNeedsUpdate(true);
+    reflectionProbe->setNeedsFullUpdate(true);
     reflectionProbeObject->getTransform().getLocalMatrix().translate(x, y, z);
     coreScene.addObjectToScene(reflectionProbeObject);
     reflectionProbe->setSkybox(renderCamera->getSkybox());
@@ -63,6 +93,9 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
                                 physicalMaterial->setRoughness(0.3f);
                             }
                         }
+                        Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                        mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
+                        mesh->update();
                     }
                 }
             }

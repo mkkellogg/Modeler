@@ -88,6 +88,8 @@ void CornfieldScene::setupDefaultObjects() {
     });
 
     this->sceneHelper.loadWarrior(true, -Core::Math::PI / 2.0f);
+
+    this->sceneHelper.createDemoSpheres();
 }
 
 void CornfieldScene::setupLights() {

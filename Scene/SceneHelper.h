@@ -11,6 +11,7 @@ public:
     Core::WeakPointer<Core::ReflectionProbe> createSkyboxReflectionProbe(float x, float y, float z);
     void loadWarrior(bool usePhysicalMaterial, float rotation);
     void createBasePlatform();
+    void createDemoSpheres();
 
 private:
     ModelerApp& modelerApp;

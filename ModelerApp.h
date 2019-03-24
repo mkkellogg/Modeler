@@ -52,7 +52,7 @@ private:
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
     void setupRenderCamera();
-    void loadScene();
+    void loadScene(int scene);
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();

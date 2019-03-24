@@ -51,19 +51,21 @@ void RedSkyScene::update() {
     // TODO: remove this code (it displays a cube that shows the irradiance map)
     if (this->frameCount == 1) {
         Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
-        Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
-        Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
-        cubeMaterial->setLit(false);
+       // Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
+        Core::WeakPointer<Core::Mesh> testMesh = Core::GeometryUtils::buildSphereMesh(3.0f, 32, cubeColor);
+        Core::WeakPointer<Core::BasicCubeMaterial> testMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
+        testMaterial->setLit(false);
+        testMaterial->setCullFace(Core::RenderState::CullFace::Front);
         Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSpecularIBLPreFilteredMap()->getColorTexture());
         //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
-        cubeMaterial->setCubeTexture(irradianceMap);
+        testMaterial->setCubeTexture(irradianceMap);
         Core::WeakPointer<Core::Texture2D> brdfMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::Texture2D>(this->centerProbe->getSpecularIBLBRDFMap()->getColorTexture());
-        cubeMaterial->setRectTexture(brdfMap);
-        Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
-        coreScene.addObjectToScene(cubeObj);
-        coreScene.addObjectToSceneRaycaster(cubeObj, cubeMesh);
-        cubeObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
-        cubeObj->getTransform().updateWorldMatrix();
+        testMaterial->setRectTexture(brdfMap);
+        Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> testObj = Core::GeometryUtils::buildMeshContainer(testMesh, testMaterial, "testCube");
+        coreScene.addObjectToScene(testObj);
+        coreScene.addObjectToSceneRaycaster(testObj, testMesh);
+        testObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
+        testObj->getTransform().updateWorldMatrix();
     }
     this->frameCount++;
 }
@@ -102,7 +104,9 @@ void RedSkyScene::setupDefaultObjects() {
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });
 
-   this->sceneHelper.loadWarrior(true, 0.0f);
+    this->sceneHelper.loadWarrior(true, 0.0f);
+
+    this->sceneHelper.createDemoSpheres();
 }
 
 void RedSkyScene::setupLights() {
