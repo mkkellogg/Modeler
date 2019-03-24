@@ -197,13 +197,9 @@ void ModelerApp::setupRenderCamera() {
     this->coreScene.addObjectToScene(cameraObj);
     this->setSceneObjectHidden(cameraObj, true);
 
-    Core::Quaternion qA;
-    qA.fromAngleAxis(0.0, 0, 1, 0);
-    Core::Matrix4x4 rotationMatrixA;
-    qA.rotationMatrix(rotationMatrixA);
-
+    Core::Quaternion qA = Core::Quaternion::fromAngleAxis(0.0, 0, 1, 0);
     Core::Matrix4x4 worldMatrix;
-    worldMatrix.multiply(rotationMatrixA);
+    worldMatrix.multiply(qA.rotationMatrix());
     worldMatrix.translate(0, 0, 12);
     worldMatrix.translate(0, 5, 0);
 
