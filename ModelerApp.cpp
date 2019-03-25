@@ -155,7 +155,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
     this->setupRenderCamera();
 
-    this->loadScene(1);
+    this->loadScene(0);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();

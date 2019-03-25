@@ -17,6 +17,8 @@ void SceneHelper::createDemoSpheres() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
     Core::UInt32 iterations = 6;
+    Core::WeakPointer<Core::Object3D> rootObject = engine->createObject3D();
+    rootObject->setName("Spheres");
     for (Core::UInt32 m = 0; m < iterations; m++) {
         for (Core::UInt32 r = 0; r < iterations; r++) {
             Core::Real metallic = (Core::Real)m / (Core::Real)(iterations - 1);
@@ -32,13 +34,14 @@ void SceneHelper::createDemoSpheres() {
             Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> sphereObj = Core::GeometryUtils::buildMeshContainer(sphereMesh, sphereMaterial, "physical sphere");
             Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(sphereObj->getRenderer());
             meshRenderer->setCastShadows(false);
-            coreScene.addObjectToScene(sphereObj);
+            rootObject->addChild(sphereObj);
             coreScene.addObjectToSceneRaycaster(sphereObj, sphereMesh);
             sphereObj->getTransform().getLocalMatrix().translate((Core::Real)m * 10.0f, (Core::Real)r * 10.0f, -(Core::Real)m * 10.0f  + 50.0f);
             sphereObj->getTransform().updateWorldMatrix();
 
         }
     }
+    coreScene.addObjectToScene(rootObject);
 }
 
 Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProbe(float x, float y, float z) {
