@@ -128,5 +128,5 @@ void CornfieldScene::setupLights() {
     directionalLight->setIntensity(1.25f);
     directionalLight->setColor(1.0, 1.0, 0.45, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    this->directionalLightObject->getTransform().lookAt(Core::Point3r(.75f, -1.0f, 1.25f));
+    this->directionalLightObject->getTransform().lookAt(Core::Point3r(.75f, -.5f, 1.25f));
 }
