@@ -27,7 +27,6 @@ void SceneHelper::createDemoSpheres() {
             sphereMaterial->setLit(true);
             sphereMaterial->setRoughness(1.0 - (roughness * 0.9f));
             sphereMaterial->setMetallic(metallic);
-            //sphereMaterial->setCullFace(Core::RenderState::CullFace::Front);
             sphereMaterial->setAlbedo(Core::Color(1.0f, 1.0f, 1.0f ,1.0f));
 
             Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> sphereObj = Core::GeometryUtils::buildMeshContainer(sphereMesh, sphereMaterial, "physical sphere");
