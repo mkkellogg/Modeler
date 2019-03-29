@@ -7,6 +7,8 @@
 #include "Core/render/MeshRenderer.h"
 #include "Core/scene/Object3D.h"
 #include "Core/scene/Scene.h"
+#include "Core/image/TextureUtils.h"
+#include "Core/image/Texture2D.h"
 #include "Core/light/AmbientIBLLight.h"
 
 SceneHelper::SceneHelper(ModelerApp& modelerApp): modelerApp(modelerApp) {
@@ -59,6 +61,65 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
     reflectionProbe->setSkyboxOnly(true);
     Core::WeakPointer<Core::AmbientIBLLight> iblLight = engine->createLight<Core::AmbientIBLLight>(reflectionProbeObject);
     return reflectionProbe;
+}
+
+void SceneHelper::loadGun(float rotation, float x, float y, float z) {
+    this->modelerApp.loadModel("Assets/models/gun/gun.fbx", .25f, 80, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+        rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(x, y, z, Core::TransformationSpace::World);
+
+        Core::TextureAttributes texAttributes;
+        texAttributes.FilterMode = Core::TextureFilter::TriLinear;
+        texAttributes.MipLevels = 6;
+        texAttributes.WrapMode = Core::TextureWrap::Clamp;
+        texAttributes.Format = Core::TextureFormat::RGBA8;
+
+        Core::TextureAttributes texAttributesSingleChannel;
+        texAttributesSingleChannel.FilterMode = Core::TextureFilter::TriLinear;
+        texAttributesSingleChannel.MipLevels = 6;
+        texAttributesSingleChannel.WrapMode = Core::TextureWrap::Clamp;
+        texAttributesSingleChannel.Format = Core::TextureFormat::R32F;
+
+        std::shared_ptr<Core::StandardImage> normalImage = Core::ImageLoader::loadImageU("Assets/models/gun/Cerberus_N.tga");
+        Core::WeakPointer<Core::Texture2D> normalMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
+        normalMap->buildFromImage(normalImage);
+
+        std::shared_ptr<Core::StandardImage> roughnessImage = Core::ImageLoader::loadImageU("Assets/models/gun/Cerberus_R.tga");
+        Core::WeakPointer<Core::Texture2D> roughnessMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
+        roughnessMap->buildFromImage(roughnessImage);
+
+        std::shared_ptr<Core::StandardImage> metallicImage = Core::ImageLoader::loadImageU("Assets/models/gun/Cerberus_M.tga");
+        Core::WeakPointer<Core::Texture2D> metallicMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
+        metallicMap->buildFromImage(metallicImage);
+
+        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
+        scene->visitScene(rootObject, [this, &rootObject, &normalMap, &roughnessMap, &metallicMap](Core::WeakPointer<Core::Object3D> obj){
+
+            Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
+            if (meshContainer) {
+                Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
+                if (objectRenderer) {
+                    Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
+                    if (meshRenderer) {
+                        Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
+                        Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
+                        if (physicalMaterial) {
+                            physicalMaterial->setNormalMapEnabled(true);
+                            physicalMaterial->setNormalMap(normalMap);
+                            physicalMaterial->setRoughnessMapEnabled(true);
+                            physicalMaterial->setRoughnessMap(roughnessMap);
+                            physicalMaterial->setMetallicMapEnabled(true);
+                            physicalMaterial->setMetallicMap(metallicMap);
+                        }
+                        Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                    }
+                }
+            }
+        });
+
+
+    });
 }
 
 void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {

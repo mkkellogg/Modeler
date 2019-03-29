@@ -40,6 +40,7 @@ protected slots:
     void loadModel();
     void showImportSettings();
     void saveImportSettings();
+    void updateModelImportPhysicalSettingsVisibility(bool checked);
 
 private:
     class SceneTreeWidgetItem: public QTreeWidgetItem {
@@ -89,11 +90,16 @@ private:
     float modelImportScale;
     unsigned int modelImportSmoothingThreshold;
     bool modelImportZUp;
-    bool modelImportPhsicalMaterial;
+    bool modelImportPhysicalMaterial;
+    float modelImportPhysicalMetallic = 0.0f;
+    float modelImportPhysicalRoughness = 0.9f;
 
     QLineEdit* modelImportScaleEdit;
     QLineEdit* modelImportSmoothingThresholdEdit;
     QCheckBox* modelImportZUpCheckBox;
     QCheckBox* modelImportphysicalMaterialCheckBox;
+    QGroupBox* modeImportPhysicalSettingsFrame;
+    QLineEdit* modelImportPhysicalMetallicEdit;
+    QLineEdit* modelImportPhysicalRoughnessEdit;
 
 };

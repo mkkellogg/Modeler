@@ -127,6 +127,6 @@ void CornfieldScene::setupLights() {
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setIntensity(1.25f);
     directionalLight->setColor(1.0, 1.0, 0.45, 1.0f);
-    directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
+    directionalLight->setShadowSoftness(Core::ShadowLight::Softness::Soft);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(.75f, -.5f, 1.25f));
 }

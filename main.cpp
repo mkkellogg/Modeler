@@ -30,8 +30,9 @@ int main(int argc, char *argv[])
     QSurfaceFormat fmt;
     fmt.setStencilBufferSize(8);
     fmt.setDepthBufferSize(24);
-    if (parser.isSet(multipleSampleOption))
+    if (parser.isSet(multipleSampleOption)) {
         fmt.setSamples(4);
+    }
     //if (parser.isSet(coreProfileOption)) {
     fmt.setVersion(3, 3);
     fmt.setProfile(QSurfaceFormat::CoreProfile);
