@@ -66,6 +66,11 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
         Core::Vector3r cameraToOrigin = this->origin - cameraPos;
         Core::Point3r originRelativeCameraPos(-cameraToOrigin.x, -cameraToOrigin.y, -cameraToOrigin.z);
 
+        Core::Vector3r cameraPosVec(originRelativeCameraPos.x, originRelativeCameraPos.y, originRelativeCameraPos.z);
+        cameraPosVec.normalize();
+        Core::Vector3r up = Core::Vector3r::Up;
+        Core::Real curDot = up.dot(cameraPosVec);
+
         Core::Vector3r cameraToAdjustedOrigin = cameraToOrigin;
         cameraToAdjustedOrigin.normalize();
         cameraToAdjustedOrigin = cameraToAdjustedOrigin * 5.0f;
@@ -81,39 +86,29 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
 
         if (eventPointer == GestureAdapter::GesturePointer::Secondary) {
 
+            Core::Real oldDot =  adjustedWorldStartVN.dot(up);
+            Core::Real newDot =  adjustedWorldEndVN.dot(up);
+
+            if (!(curDot <= .999 || newDot  > oldDot)) {
+                adjustedWorldStartVN.y = 0.0f;
+                adjustedWorldStartVN.normalize();
+                adjustedWorldEndVN.y = 0.0f;
+                adjustedWorldEndVN.normalize();
+            }
+
             Core::Real cosRotationAngle = Core::Vector3r::dot(adjustedWorldStartVN, adjustedWorldEndVN);
             Core::Real rotationAngle = 0.0f;
             if (cosRotationAngle < 1.0f && cosRotationAngle > -1.0f) {
                 rotationAngle = Core::Math::aCos(cosRotationAngle);
             }
             Core::Vector3r rotAxis;
-            Core::Vector3r::cross(adjustedWorldEndV, adjustedWorldStartV, rotAxis);
+            Core::Vector3r::cross(adjustedWorldEndVN, adjustedWorldStartVN, rotAxis);
             rotAxis.normalize();
 
             if (rotationAngle > 0.0f) {
 
-                Core::Vector3r cameraPosVec(originRelativeCameraPos.x, originRelativeCameraPos.y, originRelativeCameraPos.z);
-                cameraPosVec.normalize();
-                Core::Vector3r up(0.0f, 1.0f, 0.0f);
-                Core::Real curDot = up.dot(cameraPosVec);
-
-                Core::Real oldDot =  adjustedWorldStartVN.dot(up);
-                Core::Real newDot =  adjustedWorldEndVN.dot(up);
                 Core::Real rotationScaleFactor = 30.0f * (1.0f - curDot/1.5f);
-
-                if (!(curDot <= .999 || newDot  > oldDot)) {
-                    Core::Vector3r camUp = Core::Vector3r::Up;
-                    camWorldMat.transform(camUp);
-                    camUp = camUp * .01;
-                    rotAxis = Core::Vector3r::Up + camUp;
-                    rotAxis.normalize();
-
-                    Core::Vector3r crossDir;
-                    Core::Vector3r::cross(adjustedWorldEndVN, adjustedWorldStartVN, crossDir);
-                    Core::Real dirFactor = crossDir.y > 0 ? 1.0f : -1.0f;
-                    rotationScaleFactor *= dirFactor;
-                    rotationScaleFactor *= 1.5f;
-                }
+                rotationScaleFactor = 20.0f;
 
                 Core::Quaternion qA = Core::Quaternion::fromAngleAxis(rotationAngle * rotationScaleFactor, rotAxis);
                 Core::Matrix4x4 rot = qA.rotationMatrix();
