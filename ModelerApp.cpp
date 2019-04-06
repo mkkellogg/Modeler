@@ -145,6 +145,14 @@ Core::WeakPointer<Core::Engine> ModelerApp::getEngine() {
     return this->engine;
 }
 
+void ModelerApp::setTransformModeTranslation() {
+    this->transformWidget.activateTranslationMode();
+}
+
+void ModelerApp::setTransformModeRotation() {
+    this->transformWidget.activateRotationMode();
+}
+
 void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->engineIsReady = true;

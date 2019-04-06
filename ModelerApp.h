@@ -45,6 +45,8 @@ public:
     void setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, bool hidden);
     Core::WeakPointer<Core::Camera> getRenderCamera();
     Core::WeakPointer<Core::Engine> getEngine();
+    void setTransformModeTranslation();
+    void setTransformModeRotation();
 
 private:
     void engineReady(Core::WeakPointer<Core::Engine> engine);

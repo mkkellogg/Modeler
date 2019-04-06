@@ -13,6 +13,7 @@
 #include "Core/light/AmbientIBLLight.h"
 #include "Core/light/AmbientLight.h"
 #include "Core/material/BasicMaterial.h"
+#include "Core/material/BasicLitMaterial.h"
 #include "Core/material/BasicCubeMaterial.h"
 
 #include <QDir>

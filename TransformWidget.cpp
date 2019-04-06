@@ -12,7 +12,6 @@ TransformWidget::TransformWidget(): coreScene(nullptr) {
 
 void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
-
     this->targetCamera = targetCamera;
 
     xMaterial = engine->createMaterial<BasicRimShadowMaterial>();
@@ -22,42 +21,23 @@ void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
     yMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(xMaterial->clone());
     zMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<BasicRimShadowMaterial>(xMaterial->clone());
 
+    xColor.set(1.0f, 0.0f, 0.0f, 1.0f);
+    xMaterial->setHighlightColor(xColor);
+    yColor.set(0.0f, 1.0f, 0.0f, 1.0f);
+    yMaterial->setHighlightColor(yColor);
+    zColor.set(0.0f, 0.0f, 1.0f, 1.0f);
+    zMaterial->setHighlightColor(zColor);
+
     this->rootObject = engine->createObject3D();
     this->rootObject->setName("TransformWidget");
 
-    highlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
-    Core::Real baseLength = 2.0f;
-    Core::Real coneLength = 0.4f;
-    Core::Real halfLength = (baseLength + coneLength) / 2.0f;
-    Core::WeakPointer<Core::Mesh> arrowMesh = Core::GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, highlightColor);
-    Core::WeakPointer<Core::Mesh> arrowColliderMesh = Core::GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, highlightColor);
-
-    xColor.set(1.0f, 0.0f, 0.0f, 1.0f);
-    xMaterial->setHighlightColor(xColor);
-    Core::WeakPointer<MeshContainer> xArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, xMaterial, "XArrow");
-    xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
-    xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
-    this->xTranslateID = this->raycaster.addObject(xArrow, arrowColliderMesh);
-
-    yColor.set(0.0f, 1.0f, 0.0f, 1.0f);
-    yMaterial->setHighlightColor(yColor);
-    Core::WeakPointer<MeshContainer> yArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, yMaterial, "YArrow");
-    yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
-    this->yTranslateID = this->raycaster.addObject(yArrow, arrowColliderMesh);
-
-    zColor.set(0.0f, 0.0f, 1.0f, 1.0f);
-    zMaterial->setHighlightColor(zColor);
-    Core::WeakPointer<MeshContainer> zArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, zMaterial, "ZArrow");
-    zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
-    zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
-    this->zTranslateID = this->raycaster.addObject(zArrow, arrowColliderMesh);
-
-    this->rootObject->addChild(xArrow);
-    this->rootObject->addChild(yArrow);
-    this->rootObject->addChild(zArrow);
+    this->buildTranslationObject();
+    this->buildRotationObject();
 
     this->cameraObj = engine->createObject3D();
     this->camera = engine->createPerspectiveCamera(this->cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 100);
+
+    this->activateTranslationMode();
 }
 
 void TransformWidget::updateTransformationForTargetObjects() {
@@ -129,28 +109,49 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
     widgetTransform.getWorldMatrix().transform(widgetPosition);
 
     Core::Vector3r planeNormal;
-    if (this->activeComponentID == this->xTranslateID) {
-        this->actionNormal.set(1.0f, 0.0f, 0.0f);
-    }
-    else if (this->activeComponentID == this->yTranslateID) {
-        this->actionNormal.set(0.0f, 1.0f, 0.0f);
-    }
-    else if (this->activeComponentID == this->zTranslateID) {
-        this->actionNormal.set(0.0f, 0.0f, 1.0f);
-    }
-    widgetTransform.getWorldMatrix().transform(this->actionNormal);
-    Core::Vector3r tempNormal;
-    Core::Vector3r::cross(camDir, this->actionNormal, tempNormal);
-    Core::Vector3r::cross(tempNormal, this->actionNormal, planeNormal);
 
-    Core::Real d = planeNormal.dot(widgetPosition);
-    this->actionPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
+    if (currentMode == TransformationMode::Translation) {
+        if (this->activeComponentID == this->xTranslateID) {
+            this->actionNormal.set(1.0f, 0.0f, 0.0f);
+        }
+        else if (this->activeComponentID == this->yTranslateID) {
+            this->actionNormal.set(0.0f, 1.0f, 0.0f);
+        }
+        else if (this->activeComponentID == this->zTranslateID) {
+            this->actionNormal.set(0.0f, 0.0f, 1.0f);
+        }
+        widgetTransform.getWorldMatrix().transform(this->actionNormal);
 
-    bool validTarget = this->getTranslationTargetPosition(x, y, widgetPosition, this->actionStartPosition);
-    if (!validTarget) return false;
-    this->actionOffset = widgetPosition - this->actionStartPosition;
-    this->actionInProgress = true;
-    return true;
+        Core::Vector3r tempNormal;
+        Core::Vector3r::cross(camDir, this->actionNormal, tempNormal);
+        Core::Vector3r::cross(tempNormal, this->actionNormal, planeNormal);
+
+        Core::Real d = planeNormal.dot(widgetPosition);
+        this->actionPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
+
+        bool validTarget = this->getTranslationTargetPosition(x, y, widgetPosition, this->actionStartPosition);
+        if (!validTarget) return false;
+        this->actionOffset = widgetPosition - this->actionStartPosition;
+        this->actionInProgress = true;
+        return true;
+    }
+    else if (currentMode == TransformationMode::Rotation) {
+        this->actionStartPosition = widgetPosition;
+        if (this->activeComponentID == this->xRotateID) {
+            this->actionNormal.set(1.0f, 0.0f, 0.0f);
+        }
+        else if (this->activeComponentID == this->yRotateID) {
+            this->actionNormal.set(0.0f, 1.0f, 0.0f);
+        }
+        else if (this->activeComponentID == this->zRotateID) {
+            this->actionNormal.set(0.0f, 0.0f, 1.0f);
+        }
+        widgetTransform.getWorldMatrix().transform(this->actionNormal);
+
+        this->actionInProgress = true;
+        return true;
+    }
+    return false;
 }
 
 void TransformWidget::endAction(Core::Int32 x, Core::Int32 y) {
@@ -185,6 +186,71 @@ void TransformWidget::removeTargetObject(Core::WeakPointer<Core::Object3D> objec
     }
 }
 
+void TransformWidget::buildTranslationObject() {
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
+
+    highlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
+    Core::Real baseLength = 2.0f;
+    Core::Real coneLength = 0.4f;
+    Core::Real halfLength = (baseLength + coneLength) / 2.0f;
+    Core::WeakPointer<Core::Mesh> arrowMesh = Core::GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, highlightColor);
+    Core::WeakPointer<Core::Mesh> arrowColliderMesh = Core::GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, highlightColor);
+
+    Core::WeakPointer<MeshContainer> xArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, xMaterial, "XArrow");
+    xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
+    xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
+    this->xTranslateID = this->raycaster.addObject(xArrow, arrowColliderMesh);
+
+    Core::WeakPointer<MeshContainer> yArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, yMaterial, "YArrow");
+    yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
+    this->yTranslateID = this->raycaster.addObject(yArrow, arrowColliderMesh);
+
+    Core::WeakPointer<MeshContainer> zArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, zMaterial, "ZArrow");
+    zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
+    zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
+    this->zTranslateID = this->raycaster.addObject(zArrow, arrowColliderMesh);
+
+    this->rootTranslateObject = engine->createObject3D();
+    this->rootTranslateObject->setName("TranslationWidget");
+
+    this->rootTranslateObject->addChild(xArrow);
+    this->rootTranslateObject->addChild(yArrow);
+    this->rootTranslateObject->addChild(zArrow);
+
+    this->rootObject->addChild(this->rootTranslateObject);
+}
+
+void TransformWidget::buildRotationObject() {
+    Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
+
+    highlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);
+
+    Core::Real torusRadius = 1.5f;
+    Core::Real torusTubeRadius = 0.05f;
+    Core::WeakPointer<Core::Mesh> torusMesh = Core::GeometryUtils::buildTorusMesh(torusRadius, torusTubeRadius, 32, 16, highlightColor);
+    Core::WeakPointer<Core::Mesh> torusColliderMesh = Core::GeometryUtils::buildTorusMesh(torusRadius, torusTubeRadius * 2.0f, 32, 16, highlightColor);
+
+    Core::WeakPointer<MeshContainer> xRing = Core::GeometryUtils::buildMeshContainer(torusMesh, xMaterial, "XRing");
+    xRing->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, -1.0f, Core::Math::PI / 2.0f);
+    this->xRotateID = this->raycaster.addObject(xRing, torusColliderMesh);
+
+    Core::WeakPointer<MeshContainer> yRing = Core::GeometryUtils::buildMeshContainer(torusMesh, yMaterial, "YRing");
+    this->yRotateID = this->raycaster.addObject(yRing, torusColliderMesh);
+
+    Core::WeakPointer<MeshContainer> zRing = Core::GeometryUtils::buildMeshContainer(torusMesh, zMaterial, "ZRing");
+    zRing->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
+    this->zRotateID = this->raycaster.addObject(zRing, torusColliderMesh);
+
+    this->rootRotateObject = engine->createObject3D();
+    this->rootRotateObject->setName("RotationWidget");
+
+    this->rootRotateObject->addChild(xRing);
+    this->rootRotateObject->addChild(yRing);
+    this->rootRotateObject->addChild(zRing);
+
+    this->rootObject->addChild(this->rootRotateObject);
+}
+
 void TransformWidget::removeTargetObjectAtIndex(unsigned int index) {
      this->targetObjects[index] = this->targetObjects[this->targetObjects.size() - 1];
      this->targetObjects.pop_back();
@@ -196,6 +262,18 @@ bool TransformWidget::hasTargetObject(Core::WeakPointer<Core::Object3D> candidat
         if(targetObject.get() == candidateObject.get()) return true;
     }
     return false;
+}
+
+void TransformWidget::activateTranslationMode() {
+    this->currentMode = TransformationMode::Translation;
+    this->setChildObjectsActive(this->rootTranslateObject, true);
+    this->setChildObjectsActive(this->rootRotateObject, false);
+}
+
+void TransformWidget::activateRotationMode() {
+    this->currentMode = TransformationMode::Rotation;
+    this->setChildObjectsActive(this->rootTranslateObject, false);
+    this->setChildObjectsActive(this->rootRotateObject, true);
 }
 
 void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
@@ -212,13 +290,22 @@ void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
         if (this->activeComponentID != hit.ID) {
             this->resetColors();
             this->activeComponentID = hit.ID;
-            if (hit.ID == this->xTranslateID) {
+
+            if (hit.ID == this->xTranslateID || hit.ID == this->yTranslateID || hit.ID == this->zTranslateID) {
+
+
+            }
+            else if (hit.ID == this->xRotateID || hit.ID == this->yRotateID || hit.ID == this->zRotateID) {
+
+            }
+
+            if (hit.ID == this->xTranslateID || hit.ID == this->xRotateID) {
                 this->xMaterial->setHighlightColor(this->highlightColor);
             }
-            else if (hit.ID == this->yTranslateID) {
+            else if (hit.ID == this->yTranslateID || hit.ID == this->yRotateID) {
                 this->yMaterial->setHighlightColor(this->highlightColor);
             }
-            else if (hit.ID == this->zTranslateID) {
+            else if (hit.ID == this->zTranslateID || hit.ID == this->zRotateID) {
                 this->zMaterial->setHighlightColor(this->highlightColor);
             }
         }
@@ -237,29 +324,43 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     roots.resize(0);
 
     if (!this->actionInProgress) return;
-    Core::Point3r targetPosition;
-    bool validTarget = this->getTranslationTargetPosition(x, y, this->actionStartPosition, targetPosition);
-
-    if (!validTarget) return;
 
     Core::Transform& widgetTransform = this->rootObject->getTransform();
-    Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
 
-    Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
+    if (this->currentMode == TransformationMode::Translation) {
 
-    SceneUtils::getRootObjects(this->targetObjects, roots);
+        Core::Point3r targetPosition;
+        bool validTarget = this->getTranslationTargetPosition(x, y, this->actionStartPosition, targetPosition);
 
-    for (unsigned int i = 0; i < roots.size(); i ++) {
-        Core::Transform& transform = roots[i]->getTransform();
-        newPositions.push_back(transform.getWorldPosition() + translation);
+        if (!validTarget) return;
+
+        Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
+        Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
+        SceneUtils::getRootObjects(this->targetObjects, roots);
+
+        for (unsigned int i = 0; i < roots.size(); i ++) {
+            Core::Transform& transform = roots[i]->getTransform();
+            newPositions.push_back(transform.getWorldPosition() + translation);
+        }
+
+        for (unsigned int i = 0; i < roots.size(); i ++) {
+            Core::Transform& transform = roots[i]->getTransform();
+            transform.setWorldPosition(newPositions[i]);
+        }
+        widgetTransform.translate(translation, Core::TransformationSpace::World);
+
     }
+    else if (this->currentMode == TransformationMode::Rotation) {
+        SceneUtils::getRootObjects(this->targetObjects, roots);
 
-    for (unsigned int i = 0; i < roots.size(); i ++) {
-        Core::Transform& transform = roots[i]->getTransform();
-        transform.setWorldPosition(newPositions[i]);
+        for (unsigned int i = 0; i < roots.size(); i ++) {
+            Core::Transform& transform = roots[i]->getTransform();
+            transform.rotateAround(this->actionNormal, this->actionStartPosition, .1f);
+        }
+
+        widgetTransform.rotateAround(this->actionNormal, this->actionStartPosition, .1f);
+
     }
-    widgetTransform.translate(translation, Core::TransformationSpace::World);
-
 
 }
 
@@ -286,5 +387,12 @@ void TransformWidget::resetColors() {
     this->xMaterial->setHighlightColor(xColor);
     this->yMaterial->setHighlightColor(yColor);
     this->zMaterial->setHighlightColor(zColor);
+}
+
+void TransformWidget::setChildObjectsActive(Core::WeakPointer<Core::Object3D> parent, bool active) {
+    Core::UInt32 childCount = parent->childCount();
+    for (Core::UInt32 i = 0; i < childCount; i++) {
+        parent->getChild(i)->setActive(active);
+    }
 }
 

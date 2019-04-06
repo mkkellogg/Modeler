@@ -120,6 +120,7 @@ void MainGUI::setUpGUI() {
     QHBoxLayout * lowerLayout = new QHBoxLayout;
     QVBoxLayout * leftLayout = this->buildLeftLayout();
     QVBoxLayout * rightLayout = this->buildRightLayout();
+    QHBoxLayout * sceneToolsLayout = this->buildSceneToolsLayout();
     QVBoxLayout * centerLayout = new QVBoxLayout;
     centerLayout->addWidget(this->renderWindow);
     lowerLayout->addLayout(leftLayout);
@@ -128,6 +129,7 @@ void MainGUI::setUpGUI() {
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(loadModelFrame);
+    mainLayout->addLayout(sceneToolsLayout);
     mainLayout->addLayout(lowerLayout);
     setLayout(mainLayout);
 
@@ -269,6 +271,35 @@ QVBoxLayout* MainGUI::buildRightLayout() {
     rightLayout->addWidget(transformFrame);
     rightLayout->addWidget(propertiesPlaceHolderFrame);
     return rightLayout;
+}
+
+QHBoxLayout* MainGUI::buildSceneToolsLayout() {
+    QHBoxLayout *sceneToolsLayout = new QHBoxLayout;
+    sceneToolsLayout->setAlignment(Qt::AlignLeft);
+
+    QPushButton *translationButton = new QPushButton(this);
+    connect(translationButton, SIGNAL(clicked()), SLOT(setTransformModeTranslation()));
+    QPushButton *rotationButton = new QPushButton(this);
+    connect(rotationButton, SIGNAL(clicked()), SLOT(setTransformModeRotation()));
+
+    QPixmap movePixmap("Assets/icons/move_reduced.png");
+    QIcon moveIcon(movePixmap);
+    translationButton->setIcon(moveIcon);
+    translationButton->setIconSize(movePixmap.rect().size());
+    translationButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    translationButton->setFixedSize(movePixmap.rect().size());
+
+    QPixmap rotationPixmap("Assets/icons/rotate_reduced.png");
+    QIcon rotationIcon(rotationPixmap);
+    rotationButton->setIcon(rotationIcon);
+    rotationButton->setIconSize(rotationPixmap.rect().size());
+    rotationButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    rotationButton->setFixedSize(rotationPixmap.rect().size());
+
+    sceneToolsLayout->addWidget(translationButton);
+    sceneToolsLayout->addWidget(rotationButton);
+    return sceneToolsLayout;
+
 }
 
 void MainGUI::updateSelectedSceneObjectsProperties() {
@@ -557,4 +588,12 @@ void MainGUI::buildModelImportSettingsDialog() {
 
 void MainGUI::updateModelImportPhysicalSettingsVisibility(bool checked) {
     this->modeImportPhysicalSettingsFrame->setEnabled(checked);
+}
+
+void MainGUI::setTransformModeTranslation() {
+    this->modelerApp->setTransformModeTranslation();
+}
+
+void MainGUI::setTransformModeRotation() {
+    this->modelerApp->setTransformModeRotation();
 }

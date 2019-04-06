@@ -14,6 +14,7 @@ class QPushButton;
 class QTreeWidgetItem;
 class QTreeWidget;
 class QVBoxLayout;
+class QHBoxLayout;
 class QGroupBox;
 class QItemSelection;
 class QCheckBox;
@@ -41,6 +42,8 @@ protected slots:
     void showImportSettings();
     void saveImportSettings();
     void updateModelImportPhysicalSettingsVisibility(bool checked);
+    void setTransformModeTranslation();
+    void setTransformModeRotation();
 
 private:
     class SceneTreeWidgetItem: public QTreeWidgetItem {
@@ -53,6 +56,7 @@ private:
     QGroupBox* buildLoadModelGUI();
     QVBoxLayout* buildLeftLayout();
     QVBoxLayout* buildRightLayout();
+    QHBoxLayout* buildSceneToolsLayout();
     void updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added);
     void updateSelectedSceneObjectsProperties();
     void populateSceneTree(QTreeWidget* sceneObjectTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
