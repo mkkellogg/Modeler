@@ -96,33 +96,34 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
     if (this->actionInProgress) return true;
     if (this->activeComponentID == -1) return false;
 
+    Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
+
     Core::Vector3r camDir = Core::Vector3r::Forward;
     Core::WeakPointer<Core::Object3D> cameraObj = this->camera->getOwner();
     Core::Transform& cameraTransform = cameraObj->getTransform();
     cameraTransform.updateWorldMatrix();
     cameraTransform.getWorldMatrix().transform(camDir);
 
-
     Core::Transform& widgetTransform = this->rootObject->getTransform();
     Core::Point3r widgetPosition;
     widgetTransform.updateWorldMatrix();
     widgetTransform.getWorldMatrix().transform(widgetPosition);
 
-    Core::Vector3r planeNormal;
+    if (this->activeComponentID == this->xTranslateID || this->activeComponentID == this->xRotateID) {
+        this->actionNormal.set(1.0f, 0.0f, 0.0f);
+    }
+    else if (this->activeComponentID == this->yTranslateID || this->activeComponentID == this->yRotateID) {
+        this->actionNormal.set(0.0f, 1.0f, 0.0f);
+    }
+    else if (this->activeComponentID == this->zTranslateID || this->activeComponentID == this->zRotateID) {
+        this->actionNormal.set(0.0f, 0.0f, -1.0f);
+    }
+    widgetTransform.getWorldMatrix().transform(this->actionNormal);
 
     if (currentMode == TransformationMode::Translation) {
-        if (this->activeComponentID == this->xTranslateID) {
-            this->actionNormal.set(1.0f, 0.0f, 0.0f);
-        }
-        else if (this->activeComponentID == this->yTranslateID) {
-            this->actionNormal.set(0.0f, 1.0f, 0.0f);
-        }
-        else if (this->activeComponentID == this->zTranslateID) {
-            this->actionNormal.set(0.0f, 0.0f, 1.0f);
-        }
-        widgetTransform.getWorldMatrix().transform(this->actionNormal);
 
         Core::Vector3r tempNormal;
+        Core::Vector3r planeNormal;
         Core::Vector3r::cross(camDir, this->actionNormal, tempNormal);
         Core::Vector3r::cross(tempNormal, this->actionNormal, planeNormal);
 
@@ -136,20 +137,25 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
         return true;
     }
     else if (currentMode == TransformationMode::Rotation) {
-        this->actionStartPosition = widgetPosition;
-        if (this->activeComponentID == this->xRotateID) {
-            this->actionNormal.set(1.0f, 0.0f, 0.0f);
-        }
-        else if (this->activeComponentID == this->yRotateID) {
-            this->actionNormal.set(0.0f, 1.0f, 0.0f);
-        }
-        else if (this->activeComponentID == this->zRotateID) {
-            this->actionNormal.set(0.0f, 0.0f, 1.0f);
-        }
-        widgetTransform.getWorldMatrix().transform(this->actionNormal);
 
-        this->actionInProgress = true;
-        return true;
+        Core::Vector3r planeNormal = this->actionNormal;
+        Core::Real d = planeNormal.dot(widgetPosition);
+        this->actionPlane.set(planeNormal.x, planeNormal.y, planeNormal.z, -d);
+
+        Core::Vector4u viewport = graphics->getViewport();
+        Core::Ray ray = this->camera->getRay(viewport, x, y);
+
+        std::vector<Core::Hit> hits;
+        Core::Bool hitOccurred = this->raycaster.castRay(ray, hits);
+
+        for (unsigned int i=0; i < hits.size(); i++) {
+            if(hits[i].ID = this->activeComponentID) {
+                this->actionStartVector = hits[0].Origin - widgetPosition;
+                this->actionStartVector.normalize();
+                this->actionInProgress = true;
+                return true;
+            }
+        }
     }
     return false;
 }
@@ -286,18 +292,10 @@ void TransformWidget::rayCastForSelection(Core::Int32 x, Core::Int32 y) {
 
     if (hitOccurred) {
         Core::Hit& hit = hits[0];
-        Core::WeakPointer<Core::Mesh> hitObject = hit.Object;
+        this->activeComponentMesh = hit.Object;
         if (this->activeComponentID != hit.ID) {
             this->resetColors();
             this->activeComponentID = hit.ID;
-
-            if (hit.ID == this->xTranslateID || hit.ID == this->yTranslateID || hit.ID == this->zTranslateID) {
-
-
-            }
-            else if (hit.ID == this->xRotateID || hit.ID == this->yRotateID || hit.ID == this->zRotateID) {
-
-            }
 
             if (hit.ID == this->xTranslateID || hit.ID == this->xRotateID) {
                 this->xMaterial->setHighlightColor(this->highlightColor);
@@ -325,7 +323,12 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
 
     if (!this->actionInProgress) return;
 
+    Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
+    Core::Vector3r camDir = Core::Vector3r::Forward;
+    Core::WeakPointer<Core::Object3D> cameraObj = this->camera->getOwner();
+    Core::Transform& cameraTransform = cameraObj->getTransform();
     Core::Transform& widgetTransform = this->rootObject->getTransform();
+    Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
 
     if (this->currentMode == TransformationMode::Translation) {
 
@@ -334,7 +337,6 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
 
         if (!validTarget) return;
 
-        Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
         Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
         SceneUtils::getRootObjects(this->targetObjects, roots);
 
@@ -351,15 +353,46 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
 
     }
     else if (this->currentMode == TransformationMode::Rotation) {
-        SceneUtils::getRootObjects(this->targetObjects, roots);
 
-        for (unsigned int i = 0; i < roots.size(); i ++) {
-            Core::Transform& transform = roots[i]->getTransform();
-            transform.rotateAround(this->actionNormal, this->actionStartPosition, .1f);
+        Core::Vector4u viewport = graphics->getViewport();
+        Core::Ray ray = this->camera->getRay(viewport, x, y);
+        Core::Hit hit;
+        Core::Bool hitOccurred = ray.intersectPlane(this->actionPlane, hit);
+
+        Core::Point3r planeIntersectionPoint = hit.Origin;
+        Core::Vector3r planeNormal(actionPlane.x, actionPlane.y, actionPlane.z);
+        Core::Real rayDot = ray.Direction.dot(planeNormal);
+        if(rayDot > -0.1f && rayDot < 0.1f) {
+            planeIntersectionPoint = ray.Origin;
+            Core::Plane::projectPoint(this->actionPlane, planeIntersectionPoint);
         }
 
-        widgetTransform.rotateAround(this->actionNormal, this->actionStartPosition, .1f);
+        Core::Point3r cameraPos = cameraTransform.getWorldPosition();
 
+        Core::Vector3r currentActionVector = planeIntersectionPoint - widgetPosition;
+        currentActionVector.normalize();
+
+        Core::Real angle = Core::Math::aCos(Core::Math::clamp(currentActionVector.dot(this->actionStartVector), 0.0f, 1.0f));
+
+        if (angle >= 0.0f) {
+
+            Core::Vector3r crossDir = currentActionVector.cross(this->actionStartVector);
+            Core::Real dirFactor = crossDir.dot(this->actionNormal) > 0.0f ? -1.0f : 1.0f;
+
+            Core::Vector3r cameraToWidget = widgetPosition - cameraPos;
+            angle *= dirFactor;
+
+            SceneUtils::getRootObjects(this->targetObjects, roots);
+
+            for (unsigned int i = 0; i < roots.size(); i ++) {
+                Core::Transform& transform = roots[i]->getTransform();
+                transform.rotateAround(this->actionNormal, widgetPosition, angle);
+            }
+
+            widgetTransform.rotateAround(this->actionNormal, widgetPosition, angle);
+
+            this->actionStartVector = currentActionVector;
+        }
     }
 
 }
