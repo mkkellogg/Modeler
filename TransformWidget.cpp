@@ -150,9 +150,45 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
 
         for (unsigned int i=0; i < hits.size(); i++) {
             if(hits[i].ID = this->activeComponentID) {
-                this->actionStartVector = hits[0].Origin - widgetPosition;
+                this->actionStartVector = hits[i].Origin - widgetPosition;
                 this->actionStartVector.normalize();
+                this->actionStartPosition = hits[i].Origin;
+                this->actionPerpendicularVector = this->actionStartVector.cross(this->actionNormal);
+                this->actionPerpendicularPosition = widgetPosition + this->actionPerpendicularVector;
                 this->actionInProgress = true;
+
+
+                Core::Vector4u viewport = graphics->getViewport();
+                Core::Matrix4x4 camMatrix = cameraTransform.getWorldMatrix();
+                camMatrix.invert();
+
+                Core::Point3r projectedWidgetPosition = widgetPosition;
+                camMatrix.transform(projectedWidgetPosition);
+
+                Core::Point3r projecteActionPerpPosition = this->actionPerpendicularPosition;
+                camMatrix.transform(projecteActionPerpPosition);
+
+                this->targetCamera->project(projectedWidgetPosition);
+                this->targetCamera->project(projecteActionPerpPosition);
+
+                Core::Real widgetScreenPosX = ((projectedWidgetPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
+                Core::Real widgetScreenPosY = (Core::Real)viewport.w - (((projectedWidgetPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
+
+                Core::Real actionPerpScreenPosX = ((projecteActionPerpPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
+                Core::Real actionPerpScreenPosY = (Core::Real)viewport.w - (((projecteActionPerpPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
+
+                Core::Vector2r actionVec((Core::Real)x - widgetScreenPosX,  widgetScreenPosY - (Core::Real)y);
+
+                Core::Vector2r perpVec(actionPerpScreenPosX - widgetScreenPosX, widgetScreenPosY - actionPerpScreenPosY);
+                perpVec.normalize();
+
+                Core::Real actionDot = actionVec.dot(perpVec);
+
+
+                Core::Real angle = (-actionDot / 100.0f);
+
+
+                this->actionLastRotation = angle;
                 return true;
             }
         }
@@ -355,44 +391,44 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     else if (this->currentMode == TransformationMode::Rotation) {
 
         Core::Vector4u viewport = graphics->getViewport();
-        Core::Ray ray = this->camera->getRay(viewport, x, y);
-        Core::Hit hit;
-        Core::Bool hitOccurred = ray.intersectPlane(this->actionPlane, hit);
+        Core::Matrix4x4 camMatrix = cameraTransform.getWorldMatrix();
+        camMatrix.invert();
 
-        Core::Point3r planeIntersectionPoint = hit.Origin;
-        Core::Vector3r planeNormal(actionPlane.x, actionPlane.y, actionPlane.z);
-        Core::Real rayDot = ray.Direction.dot(planeNormal);
-        if(rayDot > -0.1f && rayDot < 0.1f) {
-            planeIntersectionPoint = ray.Origin;
-            Core::Plane::projectPoint(this->actionPlane, planeIntersectionPoint);
+        Core::Transform& widgetTransform = this->rootObject->getTransform();
+        Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
+        Core::Point3r projectedWidgetPosition = widgetPosition;
+        camMatrix.transform(projectedWidgetPosition);
+
+        Core::Point3r projecteActionPerpPosition = this->actionPerpendicularPosition;
+        camMatrix.transform(projecteActionPerpPosition);
+
+        this->targetCamera->project(projectedWidgetPosition);
+        this->targetCamera->project(projecteActionPerpPosition);
+
+        Core::Real widgetScreenPosX = ((projectedWidgetPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
+        Core::Real widgetScreenPosY = (Core::Real)viewport.w - (((projectedWidgetPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
+
+        Core::Real actionPerpScreenPosX = ((projecteActionPerpPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
+        Core::Real actionPerpScreenPosY = (Core::Real)viewport.w - (((projecteActionPerpPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
+
+        Core::Vector2r actionVec((Core::Real)x - widgetScreenPosX,  widgetScreenPosY - (Core::Real)y);
+
+        Core::Vector2r perpVec(actionPerpScreenPosX - widgetScreenPosX, widgetScreenPosY - actionPerpScreenPosY);
+        perpVec.normalize();
+
+        Core::Real actionDot = actionVec.dot(perpVec);
+
+
+        Core::Real angle = (-actionDot / 100.0f);
+        Core::Real angleDiff = angle - this->actionLastRotation;
+        SceneUtils::getRootObjects(this->targetObjects, roots);
+
+        for (unsigned int i = 0; i < roots.size(); i ++) {
+            Core::Transform& transform = roots[i]->getTransform();
+            transform.rotateAround(this->actionNormal, widgetPosition, angleDiff);
         }
-
-        Core::Point3r cameraPos = cameraTransform.getWorldPosition();
-
-        Core::Vector3r currentActionVector = planeIntersectionPoint - widgetPosition;
-        currentActionVector.normalize();
-
-        Core::Real angle = Core::Math::aCos(Core::Math::clamp(currentActionVector.dot(this->actionStartVector), 0.0f, 1.0f));
-
-        if (angle >= 0.0f) {
-
-            Core::Vector3r crossDir = currentActionVector.cross(this->actionStartVector);
-            Core::Real dirFactor = crossDir.dot(this->actionNormal) > 0.0f ? -1.0f : 1.0f;
-
-            Core::Vector3r cameraToWidget = widgetPosition - cameraPos;
-            angle *= dirFactor;
-
-            SceneUtils::getRootObjects(this->targetObjects, roots);
-
-            for (unsigned int i = 0; i < roots.size(); i ++) {
-                Core::Transform& transform = roots[i]->getTransform();
-                transform.rotateAround(this->actionNormal, widgetPosition, angle);
-            }
-
-            widgetTransform.rotateAround(this->actionNormal, widgetPosition, angle);
-
-            this->actionStartVector = currentActionVector;
-        }
+        widgetTransform.rotateAround(this->actionNormal, widgetPosition, angleDiff);
+        this->actionLastRotation = angle;
     }
 
 }
