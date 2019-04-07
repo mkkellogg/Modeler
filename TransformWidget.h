@@ -39,6 +39,7 @@ private:
     void buildRotationObject();
     void removeTargetObjectAtIndex(unsigned int index);
     void updateAction(Core::Int32 x, Core::Int32 y);
+    Core::Real getRotationAngleFromScreenPosition(Core::Int32 x, Core::Int32 y, Core::Point3r perpStartPos, Core::Point3r perpEndPos);
     bool getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out);
     void resetColors();
     void setChildObjectsActive(Core::WeakPointer<Core::Object3D> parent, bool active);

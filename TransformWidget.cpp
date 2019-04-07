@@ -156,39 +156,7 @@ bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {
                 this->actionPerpendicularVector = this->actionStartVector.cross(this->actionNormal);
                 this->actionPerpendicularPosition = widgetPosition + this->actionPerpendicularVector;
                 this->actionInProgress = true;
-
-
-                Core::Vector4u viewport = graphics->getViewport();
-                Core::Matrix4x4 camMatrix = cameraTransform.getWorldMatrix();
-                camMatrix.invert();
-
-                Core::Point3r projectedWidgetPosition = widgetPosition;
-                camMatrix.transform(projectedWidgetPosition);
-
-                Core::Point3r projecteActionPerpPosition = this->actionPerpendicularPosition;
-                camMatrix.transform(projecteActionPerpPosition);
-
-                this->targetCamera->project(projectedWidgetPosition);
-                this->targetCamera->project(projecteActionPerpPosition);
-
-                Core::Real widgetScreenPosX = ((projectedWidgetPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
-                Core::Real widgetScreenPosY = (Core::Real)viewport.w - (((projectedWidgetPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
-
-                Core::Real actionPerpScreenPosX = ((projecteActionPerpPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
-                Core::Real actionPerpScreenPosY = (Core::Real)viewport.w - (((projecteActionPerpPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
-
-                Core::Vector2r actionVec((Core::Real)x - widgetScreenPosX,  widgetScreenPosY - (Core::Real)y);
-
-                Core::Vector2r perpVec(actionPerpScreenPosX - widgetScreenPosX, widgetScreenPosY - actionPerpScreenPosY);
-                perpVec.normalize();
-
-                Core::Real actionDot = actionVec.dot(perpVec);
-
-
-                Core::Real angle = (-actionDot / 100.0f);
-
-
-                this->actionLastRotation = angle;
+                this->actionLastRotation = this->getRotationAngleFromScreenPosition(x, y, widgetPosition, this->actionPerpendicularPosition);
                 return true;
             }
         }
@@ -390,36 +358,8 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     }
     else if (this->currentMode == TransformationMode::Rotation) {
 
-        Core::Vector4u viewport = graphics->getViewport();
-        Core::Matrix4x4 camMatrix = cameraTransform.getWorldMatrix();
-        camMatrix.invert();
+        Core::Real angle = this->getRotationAngleFromScreenPosition(x, y, widgetPosition, this->actionPerpendicularPosition);
 
-        Core::Transform& widgetTransform = this->rootObject->getTransform();
-        Core::Point3r widgetPosition = widgetTransform.getWorldPosition();
-        Core::Point3r projectedWidgetPosition = widgetPosition;
-        camMatrix.transform(projectedWidgetPosition);
-
-        Core::Point3r projecteActionPerpPosition = this->actionPerpendicularPosition;
-        camMatrix.transform(projecteActionPerpPosition);
-
-        this->targetCamera->project(projectedWidgetPosition);
-        this->targetCamera->project(projecteActionPerpPosition);
-
-        Core::Real widgetScreenPosX = ((projectedWidgetPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
-        Core::Real widgetScreenPosY = (Core::Real)viewport.w - (((projectedWidgetPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
-
-        Core::Real actionPerpScreenPosX = ((projecteActionPerpPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
-        Core::Real actionPerpScreenPosY = (Core::Real)viewport.w - (((projecteActionPerpPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
-
-        Core::Vector2r actionVec((Core::Real)x - widgetScreenPosX,  widgetScreenPosY - (Core::Real)y);
-
-        Core::Vector2r perpVec(actionPerpScreenPosX - widgetScreenPosX, widgetScreenPosY - actionPerpScreenPosY);
-        perpVec.normalize();
-
-        Core::Real actionDot = actionVec.dot(perpVec);
-
-
-        Core::Real angle = (-actionDot / 100.0f);
         Core::Real angleDiff = angle - this->actionLastRotation;
         SceneUtils::getRootObjects(this->targetObjects, roots);
 
@@ -431,6 +371,42 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
         this->actionLastRotation = angle;
     }
 
+}
+
+Core::Real TransformWidget::getRotationAngleFromScreenPosition(Core::Int32 x, Core::Int32 y, Core::Point3r perpStartPos, Core::Point3r perpEndPos) {
+    Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
+    Core::WeakPointer<Core::Object3D> cameraObj = this->camera->getOwner();
+    Core::Transform& cameraTransform = cameraObj->getTransform();
+    Core::Vector4u viewport = graphics->getViewport();
+
+    Core::Matrix4x4 camMatrix = cameraTransform.getWorldMatrix();
+    camMatrix.invert();
+
+    Core::Point3r projectedWidgetPosition = perpStartPos;
+    camMatrix.transform(projectedWidgetPosition);
+
+    Core::Point3r projecteActionPerpPosition = perpEndPos;
+    camMatrix.transform(projecteActionPerpPosition);
+
+    this->targetCamera->project(projectedWidgetPosition);
+    this->targetCamera->project(projecteActionPerpPosition);
+
+    Core::Real widgetScreenPosX = ((projectedWidgetPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
+    Core::Real widgetScreenPosY = (Core::Real)viewport.w - (((projectedWidgetPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
+
+    Core::Real actionPerpScreenPosX = ((projecteActionPerpPosition.x + 1.0f) / 2.0f) * (Core::Real)viewport.z;
+    Core::Real actionPerpScreenPosY = (Core::Real)viewport.w - (((projecteActionPerpPosition.y + 1.0f) / 2.0f) * (Core::Real)viewport.w);
+
+    Core::Vector2r actionVec((Core::Real)x - widgetScreenPosX,  widgetScreenPosY - (Core::Real)y);
+
+    Core::Vector2r perpVec(actionPerpScreenPosX - widgetScreenPosX, widgetScreenPosY - actionPerpScreenPosY);
+    perpVec.normalize();
+
+    Core::Real actionDot = actionVec.dot(perpVec);
+
+    Core::Real angle = (-actionDot / 100.0f);
+
+    return angle;
 }
 
 bool TransformWidget::getTranslationTargetPosition(Core::Int32 x, Core::Int32 y, Core::Point3r origin, Core::Point3r& out) {
