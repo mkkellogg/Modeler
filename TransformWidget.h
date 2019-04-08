@@ -77,8 +77,6 @@ private:
     bool actionInProgress;
     Core::Point3r actionStartPosition;
     Core::Point3r actionPerpendicularPosition;
-    Core::Vector3r actionStartVector;
-    Core::Vector3r actionPerpendicularVector;
     Core::Vector3r actionNormal;
     Core::Vector3r actionOffset;
     Core::Vector4r actionPlane;

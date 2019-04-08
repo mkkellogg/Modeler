@@ -92,8 +92,7 @@ bool CoreScene::isObjectSelected(Core::WeakPointer<Core::Object3D> candidateObje
 
 void CoreScene::rayCastForObjectSelection(Core::WeakPointer<Core::Camera> camera, Core::Int32 x, Core::Int32 y, bool setSelectedObject,  bool multiSelect) {
     Core::WeakPointer<Core::Graphics> graphics = this->engine->getGraphicsSystem();
-    Core::Vector4u viewport = graphics->getViewport();
-    Core::Ray ray = camera->getRay(viewport, x, y);
+    Core::Ray ray = camera->getRay(x, y);
     std::vector<Core::Hit> hits;
     Core::Bool hitOccurred = this->sceneRaycaster.castRay(ray, hits);
 

@@ -89,18 +89,10 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
             }
         }
         else if (eventPointer == GestureAdapter::GesturePointer::Tertiary) {
-
-            Core::Vector4u viewport = graphics->getViewport();
-            Core::Real ndcStartX = (Core::Real)eventStartX / (Core::Real)viewport.z * 2.0f - 1.0f;
-            Core::Real ndcStartY = (Core::Real)eventStartY / (Core::Real)viewport.w * 2.0f - 1.0f;
-            Core::Real ndcEndX = (Core::Real)eventEndX / (Core::Real)viewport.z * 2.0f - 1.0f;
-            Core::Real ndcEndY = (Core::Real)eventEndY / (Core::Real)viewport.w * 2.0f - 1.0f;
             Core::Real ndcZ = eventPointer == GestureAdapter::GesturePointer::Tertiary ? 0.5f : 0.0f;
 
-            Core::Point3r worldStartP(ndcStartX, ndcEndY, ndcZ);
-            Core::Point3r worldEndP(ndcEndX, ndcStartY, ndcZ);
-            this->targetCamera->unProject(worldStartP);
-            this->targetCamera->unProject(worldEndP);
+            Core::Point3r worldStartP = this->targetCamera->unProject(eventStartX, eventStartY, ndcZ);
+            Core::Point3r worldEndP = this->targetCamera->unProject(eventEndX, eventEndY, ndcZ);
             camWorldMat.transform(worldStartP);
             camWorldMat.transform(worldEndP);
 
