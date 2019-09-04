@@ -7,6 +7,7 @@
 #include "Core/Engine.h"
 #include "Core/scene/Object3D.h"
 #include "Core/scene/RayCaster.h"
+#include "Core/geometry/Mesh.h"
 
 class CoreScene {
 public:

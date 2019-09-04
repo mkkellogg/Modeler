@@ -330,15 +330,13 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
     if (this->currentMode == TransformationMode::Translation) {
         Core::Point3r targetPosition;
         if (!this->getTranslationTargetPosition(x, y, this->actionStartPosition, targetPosition)) return;
-
         Core::Vector3r translation = targetPosition - widgetPosition +  this->actionOffset;
-        SceneUtils::getRootObjects(this->targetObjects, roots);
 
+        SceneUtils::getRootObjects(this->targetObjects, roots);
         for (unsigned int i = 0; i < roots.size(); i ++) {
             Core::Transform& transform = roots[i]->getTransform();
             newPositions.push_back(transform.getWorldPosition() + translation);
         }
-
         for (unsigned int i = 0; i < roots.size(); i ++) {
             Core::Transform& transform = roots[i]->getTransform();
             transform.setWorldPosition(newPositions[i]);
@@ -347,12 +345,10 @@ void TransformWidget::updateAction(Core::Int32 x, Core::Int32 y) {
 
     }
     else if (this->currentMode == TransformationMode::Rotation) {
-
         Core::Real angle = this->getRotationAngleFromScreenPosition(x, y, widgetPosition, this->actionPerpendicularPosition);
-
         Core::Real angleDiff = angle - this->actionLastRotation;
-        SceneUtils::getRootObjects(this->targetObjects, roots);
 
+        SceneUtils::getRootObjects(this->targetObjects, roots);
         for (unsigned int i = 0; i < roots.size(); i ++) {
             Core::Transform& transform = roots[i]->getTransform();
             transform.rotateAround(this->actionNormal, widgetPosition, angleDiff);
@@ -371,10 +367,8 @@ Core::Real TransformWidget::getRotationAngleFromScreenPosition(Core::Int32 x, Co
 
     Core::Matrix4x4 camMatrix = cameraTransform.getWorldMatrix();
     camMatrix.invert();
-
     Core::Point3r projectedWidgetPosition = perpStartPos;
     camMatrix.transform(projectedWidgetPosition);
-
     Core::Point3r projecteActionPerpPosition = perpEndPos;
     camMatrix.transform(projecteActionPerpPosition);
 
