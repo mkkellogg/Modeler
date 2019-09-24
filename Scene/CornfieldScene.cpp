@@ -53,7 +53,7 @@ void CornfieldScene::update() {
         Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
         Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
         Core::WeakPointer<Core::BasicCubeMaterial> cubeMaterial = engine->createMaterial<Core::BasicCubeMaterial>();
-        cubeMaterial->setLit(false);
+        cubeMaterial->setLit(true);
         //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getIrradianceMap()->getColorTexture());
         Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSpecularIBLPreFilteredMap()->getColorTexture());
         //Core::WeakPointer<Core::CubeTexture> irradianceMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::CubeTexture>(this->centerProbe->getSceneRenderTarget()->getColorTexture());
@@ -71,7 +71,7 @@ void CornfieldScene::update() {
 
 void CornfieldScene::setupSkyboxes() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
-    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("Assets/skyboxes/HDR/mealie_road_8k.hdr", true);
+    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/mealie_road_8k.hdr", true);
     renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
     renderCamera->setSkyboxEnabled(true);
 }
@@ -81,16 +81,19 @@ void CornfieldScene::setupDefaultObjects() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
 
-    this->sceneHelper.createBasePlatform();
     this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
-    this->modelerApp.loadModel("Assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
+    this->sceneHelper.createBasePlatform();
+
+    this->modelerApp.loadModel("assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });
 
-    this->sceneHelper.loadWarrior(true, -Core::Math::PI / 2.0f);
+    //this->sceneHelper.loadWarrior(false, -Core::Math::PI / 2.0f);
 
-    this->sceneHelper.createDemoSpheres();
+   // this->sceneHelper.createDemoSpheres();
+
+
 }
 
 void CornfieldScene::setupLights() {
@@ -128,6 +131,6 @@ void CornfieldScene::setupLights() {
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setIntensity(1.25f);
     directionalLight->setColor(1.0, 1.0, 0.45, 1.0f);
-    directionalLight->setShadowSoftness(Core::ShadowLight::Softness::Soft);
+    directionalLight->setShadowSoftness(Core::ShadowLight::Softness::Hard);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(.75f, -.5f, 1.25f));
 }

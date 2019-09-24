@@ -6,6 +6,8 @@
 #include <QOpenGLShaderProgram>
 #include <QCoreApplication>
 #include <QTimer>
+#include <QApplication>
+#include <QDesktopWidget>
 
 bool RenderWindow::m_transparent = false;
 
@@ -87,7 +89,10 @@ void RenderWindow::paintGL()
 }
 
 void RenderWindow::resizeGL(int w, int h) {
-    engine->setRenderSize(w, h, true);
+    float dpr = QApplication::desktop()->devicePixelRatio();
+    Core::UInt32 scaledW = static_cast<unsigned int>(static_cast<float>(w) * dpr);
+    Core::UInt32 scaledH = static_cast<unsigned int>(static_cast<float>(h) * dpr);
+    engine->setRenderSize(scaledW, scaledH, true);
 }
 
 void RenderWindow::init() {

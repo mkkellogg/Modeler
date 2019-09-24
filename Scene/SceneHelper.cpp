@@ -64,7 +64,7 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
 }
 
 void SceneHelper::loadGun(float rotation, float x, float y, float z) {
-    this->modelerApp.loadModel("Assets/models/gun/gun.fbx", .25f, 80, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/gun/gun.fbx", .25f, 80, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
         rootObject->getTransform().translate(x, y, z, Core::TransformationSpace::World);
@@ -81,15 +81,15 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
         texAttributesSingleChannel.WrapMode = Core::TextureWrap::Clamp;
         texAttributesSingleChannel.Format = Core::TextureFormat::R32F;
 
-        std::shared_ptr<Core::StandardImage> normalImage = Core::ImageLoader::loadImageU("Assets/models/gun/Cerberus_N.tga");
+        std::shared_ptr<Core::StandardImage> normalImage = Core::ImageLoader::loadImageU("assets/models/gun/Cerberus_N.tga");
         Core::WeakPointer<Core::Texture2D> normalMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
         normalMap->buildFromImage(normalImage);
 
-        std::shared_ptr<Core::StandardImage> roughnessImage = Core::ImageLoader::loadImageU("Assets/models/gun/Cerberus_R.tga");
+        std::shared_ptr<Core::StandardImage> roughnessImage = Core::ImageLoader::loadImageU("assets/models/gun/Cerberus_R.tga");
         Core::WeakPointer<Core::Texture2D> roughnessMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
         roughnessMap->buildFromImage(roughnessImage);
 
-        std::shared_ptr<Core::StandardImage> metallicImage = Core::ImageLoader::loadImageU("Assets/models/gun/Cerberus_M.tga");
+        std::shared_ptr<Core::StandardImage> metallicImage = Core::ImageLoader::loadImageU("assets/models/gun/Cerberus_M.tga");
         Core::WeakPointer<Core::Texture2D> metallicMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
         metallicMap->buildFromImage(metallicImage);
 
@@ -123,7 +123,7 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
 }
 
 void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
-    this->modelerApp.loadModel("Assets/models/toonwarrior/character/warrior.fbx", .075f, 80, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", .075f, 80, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
         rootObject->getTransform().translate(0.0f, 0.0f, -11.0f, Core::TransformationSpace::World);
 

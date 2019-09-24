@@ -3,6 +3,8 @@
 #include "MouseAdapter.h"
 #include "Settings.h"
 
+#include <QApplication>
+#include <QDesktopWidget>
 
 MouseAdapter::MouseAdapter() {
 
@@ -35,7 +37,7 @@ void MouseAdapter::onMouseButtonClicked(ButtonEventCallback callback) {
 }
 
 bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {
-
+    float dpr = QApplication::desktop()->devicePixelRatio();
     auto eventType = event->type();
     if (eventType == QEvent::MouseButtonPress ||
         eventType == QEvent::MouseButtonRelease ||
@@ -44,7 +46,10 @@ bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {
         const QMouseEvent* const mouseEvent = static_cast<const QMouseEvent*>( event );
 
         QPoint qMousePos = mouseEvent->pos();
-        Core::Vector2i mousePos(qMousePos.x(), qMousePos.y());
+        Core::Int32 scaledX = static_cast<int>(static_cast<float>(qMousePos.x()) * dpr);
+        Core::Int32 scaledY = static_cast<int>(static_cast<float>(qMousePos.y()) * dpr);
+        Core::Vector2i mousePos(scaledX, scaledY);
+
         MouseEventType mouseEventType;
         switch(eventType) {
             case QEvent::MouseButtonPress:

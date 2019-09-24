@@ -76,12 +76,12 @@ void RedSkyScene::setupSkyboxes() {
     CoreScene& coreSene = this->modelerApp.getCoreScene();
 
     std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/front.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/back.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/up.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/down.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/left.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("Assets/skyboxes/redorange/fixed/right.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/redorange/fixed/front.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/redorange/fixed/back.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/redorange/fixed/up.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/redorange/fixed/down.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/redorange/fixed/left.png", true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/redorange/fixed/right.png", true));
 
     Core::TextureAttributes skyboxTextureAttributes;
     skyboxTextureAttributes.FilterMode = Core::TextureFilter::Linear;
@@ -100,7 +100,7 @@ void RedSkyScene::setupDefaultObjects() {
     this->sceneHelper.createBasePlatform();
     this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
-    this->modelerApp.loadModel("Assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });
 

@@ -24,12 +24,12 @@ int main(int argc, char *argv[])
     QCommandLineOption coreProfileOption("coreprofile", "Use core profile");
     parser.addOption(coreProfileOption);
     QCommandLineOption transparentOption("transparent", "Transparent window");
-    parser.addOption(transparentOption);
+   // parser.addOption(transparentOption);
     parser.process(app);
 
     QSurfaceFormat fmt;
     fmt.setStencilBufferSize(8);
-    fmt.setDepthBufferSize(24);
+    fmt.setDepthBufferSize(32);
     if (parser.isSet(multipleSampleOption)) {
         fmt.setSamples(4);
     }

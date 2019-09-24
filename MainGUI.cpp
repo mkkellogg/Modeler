@@ -282,14 +282,14 @@ QHBoxLayout* MainGUI::buildSceneToolsLayout() {
     QPushButton *rotationButton = new QPushButton(this);
     connect(rotationButton, SIGNAL(clicked()), SLOT(setTransformModeRotation()));
 
-    QPixmap movePixmap("Assets/icons/move_reduced.png");
+    QPixmap movePixmap("assets/icons/move_reduced.png");
     QIcon moveIcon(movePixmap);
     translationButton->setIcon(moveIcon);
     translationButton->setIconSize(movePixmap.rect().size());
     translationButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     translationButton->setFixedSize(movePixmap.rect().size());
 
-    QPixmap rotationPixmap("Assets/icons/rotate_reduced.png");
+    QPixmap rotationPixmap("assets/icons/rotate_reduced.png");
     QIcon rotationIcon(rotationPixmap);
     rotationButton->setIcon(rotationIcon);
     rotationButton->setIconSize(rotationPixmap.rect().size());
