@@ -389,10 +389,10 @@ void MainGUI::loadModel() {
     QString nameQStr = this->modelNameEdit->text();
     float scale = this->modelImportScale;
     float smoothingThreshold = this->modelImportSmoothingThreshold;
-    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, this->modelImportPhysicalMaterial, [this](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, true, this->modelImportPhysicalMaterial, [this](Core::WeakPointer<Core::Object3D> rootObject){
        Core::WeakPointer<Core::Scene> scene = this->modelerApp->getEngine()->getActiveScene();
        scene->visitScene(rootObject, [this, rootObject](Core::WeakPointer<Core::Object3D> obj){
-           Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
+           Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
            if (meshContainer) {
                Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
                if (objectRenderer) {

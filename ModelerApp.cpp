@@ -47,7 +47,7 @@
 #include "Core/render/RenderTargetCube.h"
 #include "Core/render/RenderTarget.h"
 
-using MeshContainer = Core::RenderableContainer<Core::Mesh>;
+using MeshContainer = Core::MeshContainer;
 
 ModelerApp::ModelerApp(): renderWindow(nullptr) {
 
@@ -80,7 +80,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     }
 }
 
-void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial, ModelerAppLoadModelCallback callback) {
+void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, ModelerAppLoadModelCallback callback) {
    if (this->engineIsReady) {
         std::string sPath = path;
         sPath = FileUtil::removePrefix(sPath, "file://");
@@ -89,15 +89,16 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
         if (smoothingThreshold < 0 ) smoothingThreshold = 0;
         if (smoothingThreshold >= 90) smoothingThreshold = 90;
 
-        CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, usePhysicalMaterial, abbrevName, callback](Core::WeakPointer<Core::Engine> engine) {
+        CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, preserveFBXPivots, usePhysicalMaterial, abbrevName, callback](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
-           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, false, false, true, usePhysicalMaterial);
+           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, true, true, preserveFBXPivots, usePhysicalMaterial);
+
            this->coreScene.addObjectToScene(rootObject);
            rootObject->setName(abbrevName);
            Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
            scene->visitScene(rootObject, [this, rootObject](Core::WeakPointer<Core::Object3D> obj){
-               Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer =
-                       Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
+               Core::WeakPointer<Core::MeshContainer> meshContainer =
+                       Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
                if (meshContainer) {
                    const std::vector<Core::PersistentWeakPointer<Core::Mesh>>& meshes = meshContainer->getRenderables();
                    for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
@@ -114,6 +115,19 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
        };
        this->coreSync->run(runnable);
    }
+}
+
+void ModelerApp::loadAnimation(const std::string& path, bool addLoopPadding, bool preserveFBXPivots, ModelerAppLoadAnimationCallback callback) {
+    if (this->engineIsReady) {
+         std::string sPath = path;
+         sPath = FileUtil::removePrefix(sPath, "file://");
+         CoreSync::Runnable runnable = [this, sPath, addLoopPadding, preserveFBXPivots, callback](Core::WeakPointer<Core::Engine> engine) {
+            Core::ModelLoader& modelLoader = engine->getModelLoader();
+            Core::WeakPointer<Core::Animation> animation = modelLoader.loadAnimation(sPath, addLoopPadding, preserveFBXPivots);
+            callback(animation);
+        };
+        this->coreSync->run(runnable);
+    }
 }
 
 CoreScene& ModelerApp::getCoreScene() {

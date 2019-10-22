@@ -1,7 +1,7 @@
 # Set these to the appropriate directories
-CORE_BUILD_DIR=$$PWD/../core/build
-ASSIMP_BUILD_DIR=$$PWD/../assimp/build
-ASSIMP_SRC_DIR=$$PWD/../assimp/build
+CORE_BUILD_DIR=$$PWD/../../Core/build
+ASSIMP_BUILD_DIR=$$PWD/../../assimp/build/code
+ASSIMP_INCLUDE_DIR=$$PWD/../../assimp/include
 DEVIL_BUILD_DIR=$$PWD/../devil/devil-src/DevIL/build
 
 HEADERS       = \
@@ -72,12 +72,12 @@ else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$CORE_B
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$CORE_BUILD_DIR/debug/core.lib
 else:unix: PRE_TARGETDEPS += $$CORE_BUILD_DIR/libcore.a
 
-win32:CONFIG(release, debug|release): LIBS += -L$$ASSIMP_BUILD_DIR/code/release/ -lassimp
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$ASSIMP_BUILD_DIR/code/ -lassimp
-else:unix: LIBS += -L$$ASSIMP_BUILD_DIR/code/ -lassimp
+win32:CONFIG(release, debug|release): LIBS += -L$$ASSIMP_BUILD_DIR -lassimp
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$ASSIMP_BUILD_DIR -lassimp
+else:unix: LIBS += -L$$ASSIMP_BUILD_DIR -lassimp
 
-INCLUDEPATH += $$ASSIMP_SRC_DIR/include
-DEPENDPATH += $ASSIMP_SRC_DIR/include
+INCLUDEPATH += $$ASSIMP_INCLUDE_DIR
+DEPENDPATH += $ASSIMP_INCLUDE_DIR
 
 win32:CONFIG(release, debug|release): LIBS += -L$$DEVIL_BUILD_DIR/lib/x64/ -lIL
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$DEVIL_BUILD_DIR/lib/x64/ -lIL

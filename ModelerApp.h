@@ -33,11 +33,13 @@ public:
 
     using ModelerAppLifecycleEventCallback = std::function<void()>;
     using ModelerAppLoadModelCallback = std::function<void(Core::WeakPointer<Core::Object3D>)>;
+    using ModelerAppLoadAnimationCallback = std::function<void(Core::WeakPointer<Core::Animation>)>;
 
     ModelerApp();
     void init();
     void setRenderWindow(RenderWindow* renderWindow);
-    void loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool usePhysicalMaterial, ModelerAppLoadModelCallback calback);
+    void loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, ModelerAppLoadModelCallback calback);
+    void loadAnimation(const std::string& path, bool addLoopPadding, bool preserveFBXPivots, ModelerAppLoadAnimationCallback callback);
     CoreScene& getCoreScene();
     void onUpdate(ModelerAppLifecycleEventCallback callback);
     std::shared_ptr<CoreSync> getCoreSync();

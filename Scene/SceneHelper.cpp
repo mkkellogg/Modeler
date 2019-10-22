@@ -10,6 +10,9 @@
 #include "Core/image/TextureUtils.h"
 #include "Core/image/Texture2D.h"
 #include "Core/light/AmbientIBLLight.h"
+#include "Core/asset/ModelLoader.h"
+#include "Core/animation/AnimationManager.h"
+#include "Core/animation/AnimationPlayer.h"
 
 SceneHelper::SceneHelper(ModelerApp& modelerApp): modelerApp(modelerApp) {
 
@@ -33,7 +36,7 @@ void SceneHelper::createDemoSpheres() {
             sphereMaterial->setMetallic(metallic);
             sphereMaterial->setAlbedo(Core::Color(1.0f, 1.0f, 1.0f ,1.0f));
 
-            Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> sphereObj = Core::GeometryUtils::buildMeshContainer(sphereMesh, sphereMaterial, "physical sphere");
+            Core::WeakPointer<Core::MeshContainer> sphereObj = Core::GeometryUtils::buildMeshContainer(sphereMesh, sphereMaterial, "physical sphere");
             Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(sphereObj->getRenderer());
             meshRenderer->setCastShadows(false);
             rootObject->addChild(sphereObj);
@@ -64,7 +67,7 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
 }
 
 void SceneHelper::loadGun(float rotation, float x, float y, float z) {
-    this->modelerApp.loadModel("assets/models/gun/gun.fbx", .25f, 80, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/gun/gun.fbx", .25f, 80, true, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
         rootObject->getTransform().translate(x, y, z, Core::TransformationSpace::World);
@@ -96,7 +99,7 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         scene->visitScene(rootObject, [this, &rootObject, &normalMap, &roughnessMap, &metallicMap](Core::WeakPointer<Core::Object3D> obj){
 
-            Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
+            Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
             if (meshContainer) {
                 Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
                 if (objectRenderer) {
@@ -123,16 +126,21 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
 }
 
 void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
-    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", .075f, 80, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
+
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", .075f, 80, false, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
-        rootObject->getTransform().translate(0.0f, 0.0f, -11.0f, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(10.0f, 0.0f, -15.0f, Core::TransformationSpace::World);
 
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
-        scene->visitScene(rootObject, [this, &rootObject](Core::WeakPointer<Core::Object3D> obj){
+        Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
+        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer](Core::WeakPointer<Core::Object3D> obj){
 
-            Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::RenderableContainer<Core::Mesh>>(obj);
+            Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
             if (meshContainer) {
+                if (!firstMeshContainer.isValid()) {
+                    firstMeshContainer = meshContainer;
+                }
                 Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
                 if (objectRenderer) {
                     Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
@@ -163,6 +171,13 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
                 }
             }
         });
+
+        Core::WeakPointer<Core::Animation> animation = Core::Engine::instance()->getModelLoader().loadAnimation("assets/models/toonwarrior/animations/idle.fbx", false, true);
+        Core::WeakPointer<Core::AnimationManager> animationManager = Core::Engine::instance()->getAnimationManager();
+        Core::WeakPointer<Core::AnimationPlayer> animationPlayer = animationManager->retrieveOrCreateAnimationPlayer(firstMeshContainer->getSkeleton());
+        animationPlayer->addAnimation(animation);
+        animationPlayer->setSpeed(animation, 1.0f);
+        animationPlayer->play(animation);
     });
 }
 
@@ -179,9 +194,9 @@ void SceneHelper::createBasePlatform() {
     Core::WeakPointer<Core::Mesh> slab = Core::GeometryUtils::buildBoxMesh(2.0, 2.0, 2.0, slabColor);
     slab->calculateNormals(75.0f);
 
-    Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> bottomSlabObj(engine->createObject3D<Core::RenderableContainer<Core::Mesh>>());
+    Core::WeakPointer<Core::MeshContainer> bottomSlabObj(engine->createObject3D<Core::MeshContainer>());
     bottomSlabObj->setName("Base platform");
-    Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer>(cubeMaterial, bottomSlabObj));
+    Core::WeakPointer<Core::MeshRenderer> bottomSlabRenderer(engine->createRenderer<Core::MeshRenderer, Core::Mesh>(cubeMaterial, bottomSlabObj));
     bottomSlabObj->addRenderable(slab);
     coreScene.addObjectToScene(bottomSlabObj);
     coreScene.addObjectToSceneRaycaster(bottomSlabObj, slab);

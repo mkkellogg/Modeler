@@ -61,7 +61,7 @@ void RedSkyScene::update() {
         testMaterial->setCubeTexture(irradianceMap);
         Core::WeakPointer<Core::Texture2D> brdfMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::Texture2D>(this->centerProbe->getSpecularIBLBRDFMap()->getColorTexture());
         testMaterial->setRectTexture(brdfMap);
-        Core::WeakPointer<Core::RenderableContainer<Core::Mesh>> testObj = Core::GeometryUtils::buildMeshContainer(testMesh, testMaterial, "testCube");
+        Core::WeakPointer<Core::MeshContainer> testObj = Core::GeometryUtils::buildMeshContainer(testMesh, testMaterial, "testCube");
         coreScene.addObjectToScene(testObj);
         coreScene.addObjectToSceneRaycaster(testObj, testMesh);
         testObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
@@ -100,7 +100,7 @@ void RedSkyScene::setupDefaultObjects() {
     this->sceneHelper.createBasePlatform();
     this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
-    this->modelerApp.loadModel("assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });
 
@@ -120,7 +120,7 @@ void RedSkyScene::setupLights() {
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    this->pointLightObject = engine->createObject3D<Core::RenderableContainer<Core::Mesh>>();
+    this->pointLightObject = engine->createObject3D<Core::MeshContainer>();
     this->pointLightObject->setName("Point light");
     //this->coreScene.addObjectToScene(pointLightObject);
     Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
@@ -132,7 +132,7 @@ void RedSkyScene::setupLights() {
 
     Core::WeakPointer<Core::Mesh> pointLightMesh = Core::GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
     Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
-    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer>(pointLightMaterial, this->pointLightObject));
+    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer, Core::Mesh>(pointLightMaterial, this->pointLightObject));
     pointLightRenderer->setCastShadows(false);
     this->pointLightObject->addRenderable(pointLightMesh);
     coreScene.addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);

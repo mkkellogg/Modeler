@@ -25,6 +25,6 @@ private:
     unsigned int frameCount;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
-    Core::WeakPointer<Core::RenderableContainer<Core::Mesh>>  pointLightObject;
+    Core::WeakPointer<Core::MeshContainer>  pointLightObject;
     Core::WeakPointer<Core::ReflectionProbe> centerProbe;
 };

@@ -3,7 +3,7 @@
 #include "TransformWidget.h"
 #include "SceneUtils.h"
 
-using MeshContainer = Core::RenderableContainer<Core::Mesh>;
+using MeshContainer = Core::MeshContainer;
 
 TransformWidget::TransformWidget(): coreScene(nullptr) {
     this->activeComponentID = -1;
