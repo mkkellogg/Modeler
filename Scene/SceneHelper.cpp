@@ -127,9 +127,9 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
 
 void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
 
-    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", .075f, 80, false, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80, false, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
-        rootObject->getTransform().translate(10.0f, 0.0f, -15.0f, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(1.0f, 0.0f, -12.0f, Core::TransformationSpace::World);
 
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();

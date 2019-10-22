@@ -93,6 +93,12 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
            Core::ModelLoader& modelLoader = engine->getModelLoader();
            Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, true, true, preserveFBXPivots, usePhysicalMaterial);
 
+           Core::WeakPointer<Core::Object3D> newRoot = engine->createObject3D();
+           newRoot->getTransform().getLocalMatrix().copy(rootObject->getTransform().getLocalMatrix());
+           newRoot->addChild(rootObject);
+           rootObject->getTransform().getLocalMatrix().setIdentity();
+           rootObject = newRoot;
+
            this->coreScene.addObjectToScene(rootObject);
            rootObject->setName(abbrevName);
            Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
