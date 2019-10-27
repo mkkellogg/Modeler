@@ -65,7 +65,7 @@ private:
     QMutex onPreRenderMutex;
     QMutex onUpdateMutex;
     QMutex updateMutex;
-    QMutex mainLoopMutex;
+
     bool initialized;
     bool engineInitialized;
     Core::PersistentWeakPointer<Core::Engine> engine;

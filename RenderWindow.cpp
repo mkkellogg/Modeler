@@ -55,7 +55,6 @@ void RenderWindow::start() {
 }
 
 void RenderWindow::mainLoop() {
-    QMutexLocker ml(&this->mainLoopMutex);
     this->update();
 }
 
@@ -69,6 +68,7 @@ void RenderWindow::initializeGL()
     // the signal will be followed by an invocation of initializeGL() where we
     // can recreate all resources.
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &RenderWindow::cleanup);
+    this->initializeOpenGLFunctions();
 
     // Create a vertex array object. In OpenGL ES 2.0 and OpenGL 2.x
     // implementations this is optional and support may not be present
