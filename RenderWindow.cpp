@@ -14,14 +14,14 @@ RenderWindow::RenderWindow(QWidget *parent): OpenGLMouseAdapterWidget(parent),
                            initialized(false), engineInitialized(false), engine(nullptr)
 {
     m_core = QSurfaceFormat::defaultFormat().profile() == QSurfaceFormat::CoreProfile;
-    QSurfaceFormat fmt = format();
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
-    if (m_transparent) {
+   /* if (m_transparent) {
+        QSurfaceFormat fmt = format();
         fmt.setAlphaBufferSize(8);
+        setFormat(fmt);
     }
-    fmt.setSwapBehavior(QSurfaceFormat::SingleBuffer);
-    setFormat(fmt);
+    */
 }
 
 RenderWindow::~RenderWindow()
@@ -40,7 +40,7 @@ QSize RenderWindow::minimumSizeHint() const
 
 QSize RenderWindow::sizeHint() const
 {
-    return QSize(768, 768);
+    return QSize(1014, 768);
 }
 
 void RenderWindow::cleanup()

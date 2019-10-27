@@ -19,24 +19,25 @@ int main(int argc, char *argv[])
     parser.setApplicationDescription(QCoreApplication::applicationName());
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption multipleSampleOption("multisample", "Multisampling");
-    parser.addOption(multipleSampleOption);
-    QCommandLineOption coreProfileOption("coreprofile", "Use core profile");
-    parser.addOption(coreProfileOption);
+    //QCommandLineOption multipleSampleOption("multisample", "Multisampling");
+    //parser.addOption(multipleSampleOption);
+    //QCommandLineOption coreProfileOption("coreprofile", "Use core profile");
+   // parser.addOption(coreProfileOption);
    // QCommandLineOption transparentOption("transparent", "Transparent window");
    // parser.addOption(transparentOption);
     parser.process(app);
 
     QSurfaceFormat fmt;
     fmt.setStencilBufferSize(8);
-    fmt.setDepthBufferSize(32);
-    if (parser.isSet(multipleSampleOption)) {
+    fmt.setDepthBufferSize(24);
+   /* if (parser.isSet(multipleSampleOption)) {
         fmt.setSamples(4);
-    }
+    }*/
     //if (parser.isSet(coreProfileOption)) {
     fmt.setVersion(3, 3);
     fmt.setProfile(QSurfaceFormat::CoreProfile);
     //}
+    fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     QSurfaceFormat::setDefaultFormat(fmt);
 
     MainWindow mainWindow;
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
     RenderWindow * renderWindow = mainGUI->getRenderWindow();
     modelerApp->setRenderWindow(renderWindow);
 
-    //RenderWindow::setTransparent(parser.isSet(transparentOption) && false);
+    RenderWindow::setTransparent(false);
     if (RenderWindow::isTransparent()) {
         mainWindow.setAttribute(Qt::WA_TranslucentBackground);
         mainWindow.setAttribute(Qt::WA_NoSystemBackground, false);
