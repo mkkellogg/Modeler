@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     parser.addOption(multipleSampleOption);
     QCommandLineOption coreProfileOption("coreprofile", "Use core profile");
     parser.addOption(coreProfileOption);
-    QCommandLineOption transparentOption("transparent", "Transparent window");
+   // QCommandLineOption transparentOption("transparent", "Transparent window");
    // parser.addOption(transparentOption);
     parser.process(app);
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     RenderWindow * renderWindow = mainGUI->getRenderWindow();
     modelerApp->setRenderWindow(renderWindow);
 
-    RenderWindow::setTransparent(parser.isSet(transparentOption) && false);
+    //RenderWindow::setTransparent(parser.isSet(transparentOption) && false);
     if (RenderWindow::isTransparent()) {
         mainWindow.setAttribute(Qt::WA_TranslucentBackground);
         mainWindow.setAttribute(Qt::WA_NoSystemBackground, false);

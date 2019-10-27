@@ -37,9 +37,11 @@ public:
     Core::WeakPointer<Core::Engine> getEngine();
     void onInit(LifeCycleEventCallback func);
     QMutex& getUpdateMutex();
+    void start();
 
 public slots:
     void cleanup();
+    void mainLoop();
 
 signals:
 
@@ -55,14 +57,15 @@ private:
     static bool m_transparent;
 
     void init();
-    void update();
-    void render();
+    void engineUpdate();
+    void engineRender();
     void resolveOnInits();
     void resolveOnInit(LifeCycleEventCallback callback);
 
     QMutex onPreRenderMutex;
     QMutex onUpdateMutex;
     QMutex updateMutex;
+    QMutex mainLoopMutex;
     bool initialized;
     bool engineInitialized;
     Core::PersistentWeakPointer<Core::Engine> engine;

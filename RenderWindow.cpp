@@ -1,11 +1,10 @@
 #include "RenderWindow.h"
 
 #include <math.h>
-
+#include <QTimer>
 #include <QMouseEvent>
 #include <QOpenGLShaderProgram>
 #include <QCoreApplication>
-#include <QTimer>
 #include <QApplication>
 #include <QDesktopWidget>
 
@@ -15,13 +14,14 @@ RenderWindow::RenderWindow(QWidget *parent): OpenGLMouseAdapterWidget(parent),
                            initialized(false), engineInitialized(false), engine(nullptr)
 {
     m_core = QSurfaceFormat::defaultFormat().profile() == QSurfaceFormat::CoreProfile;
+    QSurfaceFormat fmt = format();
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
     if (m_transparent) {
-        QSurfaceFormat fmt = format();
         fmt.setAlphaBufferSize(8);
-        setFormat(fmt);
     }
+    fmt.setSwapBehavior(QSurfaceFormat::SingleBuffer);
+    setFormat(fmt);
 }
 
 RenderWindow::~RenderWindow()
@@ -48,6 +48,17 @@ void RenderWindow::cleanup()
 
 }
 
+void RenderWindow::start() {
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(mainLoop()));
+    timer->start(16);
+}
+
+void RenderWindow::mainLoop() {
+    QMutexLocker ml(&this->mainLoopMutex);
+    this->update();
+}
+
 void RenderWindow::initializeGL()
 {
     // In this example the widget's corresponding top-level window can change
@@ -67,14 +78,12 @@ void RenderWindow::initializeGL()
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
 
     this->init();
-
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(16);
+    this->start();
 }
 
 void RenderWindow::paintGL()
 {
+    QMutexLocker ml(&this->updateMutex);
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
     static bool _inited = false;
     if (!_inited) {
@@ -82,9 +91,8 @@ void RenderWindow::paintGL()
         _inited = true;
     }
 
-    QMutexLocker ml(&this->updateMutex);
-    this->update();
-    this->render();
+    this->engineUpdate();
+    this->engineRender();
 
 }
 
@@ -103,11 +111,11 @@ void RenderWindow::init() {
   resolveOnInits();
 }
 
-void RenderWindow::update() {
+void RenderWindow::engineUpdate() {
   engine->update();
 }
 
-void RenderWindow::render() {
+void RenderWindow::engineRender() {
   engine->render();
 }
 
