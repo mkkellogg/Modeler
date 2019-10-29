@@ -40,7 +40,7 @@ QSize RenderWindow::minimumSizeHint() const
 
 QSize RenderWindow::sizeHint() const
 {
-    return QSize(1014, 768);
+    return QSize(1024, 768);
 }
 
 void RenderWindow::cleanup()
@@ -51,7 +51,7 @@ void RenderWindow::cleanup()
 void RenderWindow::start() {
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(mainLoop()));
-    timer->start(16);
+    timer->start(10);
 }
 
 void RenderWindow::mainLoop() {
