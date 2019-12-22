@@ -9,11 +9,14 @@
 #include "Core/Engine.h"
 #include "Core/render/Camera.h"
 #include "Core/scene/Scene.h"
+#include "Core/light/AmbientLight.h"
 
 class CornfieldScene : public ModelerScene
 {
 public:
     CornfieldScene(ModelerApp& modelerApp);
+    ~CornfieldScene();
+
     void load() override;
     void update() override;
 

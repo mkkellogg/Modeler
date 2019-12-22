@@ -20,6 +20,8 @@ public:
     };
 
     TransformWidget();
+    ~TransformWidget();
+
     void init(Core::WeakPointer<Core::Camera> targetCamera);
     void updateTransformationForTargetObjects();
     void updateCamera();

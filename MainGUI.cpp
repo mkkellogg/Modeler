@@ -34,10 +34,10 @@ QCheckBox* modelImportphysicalMaterialCheckBox;
 
 MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
     modelImportScaleEdit(nullptr), modelImportSmoothingThresholdEdit(nullptr), modelImportZUpCheckBox(nullptr), modelImportphysicalMaterialCheckBox(nullptr) {
-    this->modelImportScale = 1.0f;
+    this->modelImportScale = 0.05f;
     this->modelImportSmoothingThreshold = 80;
     this->modelImportZUp = true;
-    this->modelImportPhysicalMaterial = false;
+    this->modelImportPhysicalMaterial = true;
 
     this->renderWindow = new RenderWindow;
     this->renderWindow->setObjectName("renderWindow");
@@ -45,6 +45,8 @@ MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindo
     this->setupStyles();
     this->setAutoFillBackground(true);
     this->setUpGUI();
+
+    this->modelNameEdit->setText("/home/mark/Downloads/castelo/castelo.fbx");
 }
 
 void MainGUI::setModelerApp(ModelerApp* modelerApp) {

@@ -97,16 +97,17 @@ void RedSkyScene::setupDefaultObjects() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
 
-    this->sceneHelper.createBasePlatform();
+    //this->sceneHelper.createBasePlatform();
+
     this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
-    this->modelerApp.loadModel("assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
+    /*this->modelerApp.loadModel("assets/models/metal_tank/Water_Tank_fbx.fbx", 3.0f, 80, true, true, true, [this](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
-    });
+    });*/
 
-    this->sceneHelper.loadWarrior(true, 0.0f);
+   // this->sceneHelper.loadWarrior(true, 0.0f);
 
-    this->sceneHelper.createDemoSpheres();
+    //this->sceneHelper.createDemoSpheres();
 }
 
 void RedSkyScene::setupLights() {

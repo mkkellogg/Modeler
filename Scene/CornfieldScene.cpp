@@ -22,6 +22,9 @@ CornfieldScene::CornfieldScene(ModelerApp& modelerApp): ModelerScene(modelerApp)
     this->frameCount = 0;
 }
 
+CornfieldScene::~CornfieldScene() {
+}
+
 void CornfieldScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 

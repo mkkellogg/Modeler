@@ -53,6 +53,10 @@ ModelerApp::ModelerApp(): renderWindow(nullptr) {
 
 }
 
+ModelerApp::~ModelerApp(){
+    if (this->scene.isValid()) Core::Engine::safeReleaseObject(this->scene);
+}
+
 void ModelerApp::init() {
 
 }
@@ -176,10 +180,10 @@ void ModelerApp::setTransformModeRotation() {
 void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
     this->engineIsReady = true;
-    Core::WeakPointer<Core::Scene> scene(engine->createScene());
-    engine->setActiveScene(scene);
+    this->scene = engine->createScene();
+    engine->setActiveScene(this->scene);
     this->coreScene.setEngine(engine);
-    this->coreScene.setSceneRoot(scene->getRoot());
+    this->coreScene.setSceneRoot(this->scene->getRoot());
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
     this->setupRenderCamera();
 
@@ -237,9 +241,13 @@ void ModelerApp::loadScene(int scene) {
     switch(scene) {
         case 0:
         {
-            std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
-            cornfieldScene->load();
-            this->modelerScene = cornfieldScene;
+           // std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
+           // cornfieldScene->load();
+           // this->modelerScene = cornfieldScene;
+
+           std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
+           redSkyScene->load();
+           this->modelerScene = redSkyScene;
         }
         break;
         default:
@@ -263,11 +271,11 @@ void ModelerApp::setupHighlightMaterials() {
     this->highlightMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
     this->highlightMaterial->setLit(false);
     this->highlightMaterial->setZOffset(-.00005f);
-    this->highlightMaterial->setColor(highlightColor);
+    this->highlightMaterial->setObjectColor(highlightColor);
 
     this->outlineMaterial = this->engine->createMaterial<Core::OutlineMaterial>();
     this->outlineMaterial->setLit(false);
-    this->outlineMaterial->setColor(outlineColor);
+    this->outlineMaterial->setOutlineColor(outlineColor);
     this->outlineMaterial->setEdgeWidth(.01f);
     this->outlineMaterial->setAbsExtend(.004f);
     this->outlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
@@ -324,14 +332,14 @@ void ModelerApp::postRenderCallback() {
         this->outlineMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
         this->outlineMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
         this->outlineMaterial->setFaceCullingEnabled(false);
-        this->outlineMaterial->setColor(this->outlineColor);
+        this->outlineMaterial->setOutlineColor(this->outlineColor);
         this->outlineMaterial->setColorWriteEnabled(true);
         this->outlineMaterial->setDepthWriteEnabled(false);
         this->outlineMaterial->setDepthTestEnabled(true);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
         this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
 
-        this->outlineMaterial->setColor(this->darkOutlineColor);
+        this->outlineMaterial->setOutlineColor(this->darkOutlineColor);
         this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
         this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
 

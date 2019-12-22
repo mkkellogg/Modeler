@@ -36,6 +36,7 @@ public:
     using ModelerAppLoadAnimationCallback = std::function<void(Core::WeakPointer<Core::Animation>)>;
 
     ModelerApp();
+    ~ModelerApp();
     void init();
     void setRenderWindow(RenderWindow* renderWindow);
     void loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, ModelerAppLoadModelCallback calback);
@@ -71,6 +72,7 @@ private:
     Core::WeakPointer<Core::Camera> renderCamera;
     std::unordered_map<Core::UInt64, bool> hiddenSceneObjects;
 
+    Core::WeakPointer<Core::Scene> scene;
     std::shared_ptr<CoreSync> coreSync;
     std::shared_ptr<GestureAdapter> gestureAdapter;
     std::shared_ptr<PipedEventAdapter<GestureAdapter::GestureEvent>> pipedGestureAdapter;

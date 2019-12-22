@@ -10,6 +10,11 @@ TransformWidget::TransformWidget(): coreScene(nullptr) {
     this->actionInProgress = false;
 }
 
+TransformWidget::~TransformWidget() {
+    if (this->rootObject.isValid()) Core::Engine::safeReleaseObject(this->rootObject);
+    if (this->cameraObj.isValid()) Core::Engine::safeReleaseObject(this->cameraObj);
+}
+
 void TransformWidget::init(Core::WeakPointer<Core::Camera> targetCamera) {
     Core::WeakPointer<Core::Engine> engine = Core::Engine::instance();
     this->targetCamera = targetCamera;

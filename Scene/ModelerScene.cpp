@@ -4,6 +4,9 @@ ModelerScene::ModelerScene(ModelerApp& modelerApp): modelerApp(modelerApp), scen
     this->loadComplete = false;
 }
 
+ModelerScene::~ModelerScene() {
+}
+
 void ModelerScene::load() {
     this->loadComplete = true;
 }

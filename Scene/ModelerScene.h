@@ -11,6 +11,8 @@ class CoreScene;
 class ModelerScene {
 public:
     ModelerScene(ModelerApp& modelerApp);
+    ~ModelerScene();
+
     virtual void load();
     virtual void update() = 0;
 
