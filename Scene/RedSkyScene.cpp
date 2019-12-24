@@ -97,7 +97,7 @@ void RedSkyScene::setupDefaultObjects() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
 
-    //this->sceneHelper.createBasePlatform();
+    this->sceneHelper.createBasePlatform();
 
     this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
@@ -105,7 +105,7 @@ void RedSkyScene::setupDefaultObjects() {
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });*/
 
-   // this->sceneHelper.loadWarrior(true, 0.0f);
+    this->sceneHelper.loadWarrior(true, 0.0f);
 
     //this->sceneHelper.createDemoSpheres();
 }
