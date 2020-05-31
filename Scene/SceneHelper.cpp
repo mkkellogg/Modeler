@@ -4,6 +4,7 @@
 
 #include "Core/Engine.h"
 #include "Core/material/StandardPhysicalMaterial.h"
+#include "Core/material/StandardPhysicalMaterialMultiLight.h"
 #include "Core/render/MeshRenderer.h"
 #include "Core/scene/Object3D.h"
 #include "Core/scene/Scene.h"
@@ -61,7 +62,8 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
     reflectionProbeObject->getTransform().getLocalMatrix().translate(x, y, z);
     coreScene.addObjectToScene(reflectionProbeObject);
     reflectionProbe->setSkybox(renderCamera->getSkybox());
-    reflectionProbe->setSkyboxOnly(true);
+    reflectionProbe->setSkyboxOnly(false);
+    reflectionProbe->setRenderWithPhysical(true);
     Core::WeakPointer<Core::AmbientIBLLight> iblLight = engine->createLight<Core::AmbientIBLLight>(reflectionProbeObject);
     return reflectionProbe;
 }
@@ -134,7 +136,7 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
-        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer](Core::WeakPointer<Core::Object3D> obj){
+        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine](Core::WeakPointer<Core::Object3D> obj){
 
             Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
             if (meshContainer) {
@@ -148,6 +150,7 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
                         Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
                         Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
                         if (physicalMaterial) {
+
                             Core::WeakPointer<Core::Object3D> parent = obj->getParent();
                             Core::UInt32 warriorIndex= 0;
                             if (parent && parent->getName() == "warrior") {
@@ -163,6 +166,10 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
                                 physicalMaterial->setMetallic(0.85f);
                                 physicalMaterial->setRoughness(0.3f);
                             }
+
+                            Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight> multiLightSinglePassPhysicalMaterial = engine->createMaterial<Core::StandardPhysicalMaterialMultiLight>();
+                            multiLightSinglePassPhysicalMaterial->copyAttributesFromStandardPhysicalMaterial(physicalMaterial);
+                            meshRenderer->setMaterial(multiLightSinglePassPhysicalMaterial);
                         }
                         Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
                         mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
@@ -203,4 +210,5 @@ void SceneHelper::createBasePlatform() {
     bottomSlabObj->getTransform().getLocalMatrix().scale(15.0f, 1.0f, 15.0f);
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
+    bottomSlabObj->setStatic(true);
 }

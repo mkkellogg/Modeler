@@ -241,13 +241,17 @@ void ModelerApp::loadScene(int scene) {
     switch(scene) {
         case 0:
         {
-           // std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
-           // cornfieldScene->load();
-           // this->modelerScene = cornfieldScene;
-
            std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
            redSkyScene->load();
            this->modelerScene = redSkyScene;
+        }
+        break;
+        case 1:
+        {
+           std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
+           cornfieldScene->load();
+           this->modelerScene = cornfieldScene;
+
         }
         break;
         default:
@@ -267,8 +271,8 @@ void ModelerApp::setupHighlightMaterials() {
 
     this->highlightMaterial = this->engine->createMaterial<Core::BasicColoredMaterial>();
     this->highlightMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
-    this->highlightMaterial->setSourceBlendingMethod(Core::RenderState::BlendingMethod::SrcAlpha);
-    this->highlightMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
+    this->highlightMaterial->setSourceBlendingFactor(Core::RenderState::BlendingFactor::SrcAlpha);
+    this->highlightMaterial->setDestBlendingFactor(Core::RenderState::BlendingFactor::OneMinusSrcAlpha);
     this->highlightMaterial->setLit(false);
     this->highlightMaterial->setZOffset(-.00005f);
     this->highlightMaterial->setObjectColor(highlightColor);
@@ -279,8 +283,8 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineMaterial->setEdgeWidth(.01f);
     this->outlineMaterial->setAbsExtend(.004f);
     this->outlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
-    this->outlineMaterial->setSourceBlendingMethod(Core::RenderState::BlendingMethod::SrcAlpha);
-    this->outlineMaterial->setDestBlendingMethod(Core::RenderState::BlendingMethod::OneMinusSrcAlpha);
+    this->outlineMaterial->setSourceBlendingFactor(Core::RenderState::BlendingFactor::SrcAlpha);
+    this->outlineMaterial->setDestBlendingFactor(Core::RenderState::BlendingFactor::OneMinusSrcAlpha);
 }
 
 void ModelerApp::preRenderCallback() {
