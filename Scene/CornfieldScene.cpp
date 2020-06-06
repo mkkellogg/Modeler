@@ -92,7 +92,7 @@ void CornfieldScene::setupDefaultObjects() {
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });
 
-    this->sceneHelper.loadWarrior(true, -Core::Math::PI / 2.0f);
+    this->sceneHelper.loadWarrior(true, -Core::Math::PI / 2.0f, 0.0f, 0.0f, 0.0f);
 
     this->sceneHelper.createDemoSpheres();
 }

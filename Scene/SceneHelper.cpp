@@ -127,11 +127,44 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
     });
 }
 
-void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation) {
+void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
+    this->modelerApp.loadModel("assets/models/house/house.fbx", .15f, 80, true, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+        rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, rotation, Core::TransformationSpace::World);
+        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
+        Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
+        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine](Core::WeakPointer<Core::Object3D> obj){
 
-    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80, false, true, usePhysicalMaterial, [this, rotation](Core::WeakPointer<Core::Object3D> rootObject){
+            Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
+            if (meshContainer) {
+                if (!firstMeshContainer.isValid()) {
+                    firstMeshContainer = meshContainer;
+                }
+                Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
+                if (objectRenderer) {
+                    Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
+                    if (meshRenderer) {
+                        Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
+                        Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
+                        if (physicalMaterial) {
+                            physicalMaterial->setMetallic(0.0f);
+                            physicalMaterial->setRoughness(0.85f);
+                        }
+                        //Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                       // mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
+                        //mesh->update();
+                    }
+                }
+            }
+        });
+    });
+}
+
+void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
+
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80, false, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
-        rootObject->getTransform().translate(1.0f, 0.0f, -12.0f, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(1.0f + x, 0.0f + y, -12.0f + z, Core::TransformationSpace::World);
 
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();

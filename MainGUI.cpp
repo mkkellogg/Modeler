@@ -34,7 +34,7 @@ QCheckBox* modelImportphysicalMaterialCheckBox;
 
 MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
     modelImportScaleEdit(nullptr), modelImportSmoothingThresholdEdit(nullptr), modelImportZUpCheckBox(nullptr), modelImportphysicalMaterialCheckBox(nullptr) {
-    this->modelImportScale = 0.05f;
+    this->modelImportScale = 0.1f;
     this->modelImportSmoothingThreshold = 80;
     this->modelImportZUp = true;
     this->modelImportPhysicalMaterial = true;
@@ -46,7 +46,7 @@ MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindo
     this->setAutoFillBackground(true);
     this->setUpGUI();
 
-    this->modelNameEdit->setText("/home/mark/Downloads/castelo/castelo.fbx");
+    this->modelNameEdit->setText("/home/mark/Development/Qt/build-modeler2-Desktop_Qt_5_12_5_GCC_64bit-Debug/assets/models/house/house.fbx");
 }
 
 void MainGUI::setModelerApp(ModelerApp* modelerApp) {

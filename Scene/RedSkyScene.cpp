@@ -49,7 +49,7 @@ void RedSkyScene::update() {
     CoreScene& coreScene = this->modelerApp.getCoreScene();
 
     // TODO: remove this code (it displays a cube that shows the irradiance map)
-    if (this->frameCount == 1) {
+   /* if (this->frameCount == 1) {
         Core::Color cubeColor(1.0f, 1.0f, 1.0f, 1.0f);
        // Core::WeakPointer<Core::Mesh> cubeMesh = Core::GeometryUtils::buildBoxMesh(4.0, 4.0, 4.0, cubeColor);
         Core::WeakPointer<Core::Mesh> testMesh = Core::GeometryUtils::buildSphereMesh(3.0f, 32, cubeColor);
@@ -66,7 +66,7 @@ void RedSkyScene::update() {
         coreScene.addObjectToSceneRaycaster(testObj, testMesh);
         testObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
         testObj->getTransform().updateWorldMatrix();
-    }
+    }*/
     this->frameCount++;
 }
 
@@ -97,7 +97,7 @@ void RedSkyScene::setupDefaultObjects() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
 
-    this->sceneHelper.createBasePlatform();
+   // this->sceneHelper.createBasePlatform();
 
     this->centerProbe = this->sceneHelper.createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
 
@@ -105,7 +105,8 @@ void RedSkyScene::setupDefaultObjects() {
         rootObject->getTransform().translate(-11.0f, 0.0f, 0.0f, Core::TransformationSpace::World);
     });*/
 
-    this->sceneHelper.loadWarrior(true, 0.0f);
+    this->sceneHelper.loadWarrior(true, 0.0f, -27.0f, 0.0f, 6.0f);
+    this->sceneHelper.loadHouse(true, Core::Math::PI / 2.0f * 1.15f, 0.0f, 0.0f, 0.0f);
 
     //this->sceneHelper.createDemoSpheres();
 }
