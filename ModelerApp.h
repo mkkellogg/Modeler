@@ -4,7 +4,7 @@
 
 #include "Core/Engine.h"
 #include "Core/scene/Object3D.h"
-#include "Core/material/BasicTexturedMaterial.h"
+#include "Core/material/BasicTexturedFullScreenQuadMaterial.h"
 #include "Core/material/BasicColoredMaterial.h"
 #include "Core/material/BasicExtrusionMaterial.h"
 #include "Core/material/EquirectangularMaterial.h"
@@ -83,6 +83,7 @@ private:
     Core::Color darkOutlineColor;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
     Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;
+    Core::WeakPointer<Core::BasicTexturedFullScreenQuadMaterial> basicTextureMaterial;
 
     QMutex onUpdateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;

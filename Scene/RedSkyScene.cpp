@@ -14,7 +14,7 @@
 #include "Core/light/AmbientLight.h"
 #include "Core/material/BasicMaterial.h"
 #include "Core/material/BasicCubeMaterial.h"
-
+#include "Core/util/Time.h"
 
 #include <QDir>
 
@@ -44,9 +44,13 @@ void RedSkyScene::load() {
 }
 
 void RedSkyScene::update() {
+    static Core::Real lightAngle = 0.0f;
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
+
+    lightAngle += Core::Time::getDeltaTime() * 0.1f;
+    this->directionalLightObject->getTransform().lookAt(Core::Point3r(Core::Math::cos(lightAngle), -1.0f, Core::Math::sin(lightAngle)));
 
     // TODO: remove this code (it displays a cube that shows the irradiance map)
    /* if (this->frameCount == 1) {
@@ -145,7 +149,7 @@ void RedSkyScene::setupLights() {
     //Core::WeakPointer<Core::DirectionalLight> directionalLight = this->engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setIntensity(1.85f);
-    directionalLight->setColor(1.0, 1.0, 0.6, 1.0f);
+    directionalLight->setColor(1.0, 0.8, 0.5, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     this->directionalLightObject->getTransform().lookAt(Core::Point3r(1.0f, -1.0f, -1.0f));
 }

@@ -137,6 +137,7 @@ void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, f
 
             Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
             if (meshContainer) {
+                obj->setStatic(true);
                 if (!firstMeshContainer.isValid()) {
                     firstMeshContainer = meshContainer;
                 }

@@ -24,6 +24,7 @@
 #include "Core/render/RenderTarget.h"
 #include "Core/material/BasicCubeMaterial.h"
 #include "Core/material/BasicMaterial.h"
+#include "Core/material/BasicTexturedMaterial.h"
 #include "Core/material/BasicLitMaterial.h"
 #include "Core/material/StandardAttributes.h"
 #include "Core/material/SkyboxMaterial.h"
@@ -219,13 +220,17 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
         this->modelerScene->update();
     }, true);
 
+    this->basicTextureMaterial = this->engine->createMaterial<Core::BasicTexturedFullScreenQuadMaterial>();
 }
 
 void ModelerApp::setupRenderCamera() {
 
     Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
     cameraObj->setName("Main camera");
-    this->renderCamera = engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 500);
+    this->renderCamera = this->engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 500);
+    this->renderCamera->setSSAOEnabled(true);
+    this->renderCamera->setSSAORadius(2.0f);
+    this->renderCamera->setSSAOBias(0.001f);
     this->coreScene.addObjectToScene(cameraObj);
     this->setSceneObjectHidden(cameraObj, true);
 
@@ -356,6 +361,9 @@ void ModelerApp::postRenderCallback() {
         this->transformWidget.updateCamera();
         this->transformWidget.render();
     }
+
+    this->basicTextureMaterial->setTexture( this->engine->getGraphicsSystem()->getRenderer()->getSSAOTexture());
+    //this->engine->getGraphicsSystem()->renderFullScreenQuad(this->engine->getGraphicsSystem()->getDefaultRenderTarget(), -1, this->basicTextureMaterial);
 
     this->frameCount++;
 }
