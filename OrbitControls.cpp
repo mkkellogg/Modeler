@@ -123,6 +123,15 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
     this->moveFrames++;
 }
 
+void OrbitControls::setOrigin(Core::Real x, Core::Real y, Core::Real z) {
+    this->origin.set(x, y, z);
+}
+
+Core::Point3r OrbitControls::getOrigin() {
+    Core::Point3r temp = this->origin;
+    return temp;
+}
+
 void OrbitControls::resetMove() {
     this->moveFrames = 0;
 }

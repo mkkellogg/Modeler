@@ -47,6 +47,8 @@ public:
     bool isSceneObjectHidden(Core::WeakPointer<Core::Object3D> object);
     void setSceneObjectHidden(Core::WeakPointer<Core::Object3D> object, bool hidden);
     Core::WeakPointer<Core::Camera> getRenderCamera();
+    void setCameraPosition(Core::Real x, Core::Real y, Core::Real z);
+    Core::WeakPointer<Core::Object3D> getRenderCameraObject();
     Core::WeakPointer<Core::Engine> getEngine();
     void setTransformModeTranslation();
     void setTransformModeRotation();
@@ -70,6 +72,7 @@ private:
     std::shared_ptr<ModelerScene> modelerScene;
     CoreScene coreScene;
     Core::WeakPointer<Core::Camera> renderCamera;
+    Core::WeakPointer<Core::Object3D> renderCameraObject;
     std::unordered_map<Core::UInt64, bool> hiddenSceneObjects;
 
     Core::WeakPointer<Core::Scene> scene;

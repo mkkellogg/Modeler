@@ -69,7 +69,7 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
 }
 
 void SceneHelper::loadGun(float rotation, float x, float y, float z) {
-    this->modelerApp.loadModel("assets/models/gun/gun.fbx", .25f, 80, true, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/gun/gun.fbx", .25f, 80 * Core::Math::DegreesToRads, true, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
         rootObject->getTransform().translate(x, y, z, Core::TransformationSpace::World);
@@ -128,8 +128,78 @@ void SceneHelper::loadGun(float rotation, float x, float y, float z) {
 }
 
 void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
-    this->modelerApp.loadModel("assets/models/house/house.fbx", .15f, 80, true, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp.loadModel("assets/models/house/house.fbx", .15f, 90, true, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, rotation, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(x, y, z,  Core::TransformationSpace::World);
+        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
+        Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
+        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine](Core::WeakPointer<Core::Object3D> obj){
+
+            Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
+            if (meshContainer) {
+                obj->setStatic(true);
+                if (!firstMeshContainer.isValid()) {
+                    firstMeshContainer = meshContainer;
+                }
+                Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
+                if (objectRenderer) {
+                    Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
+                    if (meshRenderer) {
+                        Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
+                        Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
+                        if (physicalMaterial) {
+                            physicalMaterial->setMetallic(0.0f);
+                            physicalMaterial->setRoughness(0.85f);
+                        }
+                        //Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                       // mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
+                        //mesh->update();
+                    }
+                }
+            }
+        });
+    });
+}
+
+void SceneHelper::loadTerrain(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
+    this->modelerApp.loadModel("assets/models/terrain/terrain.fbx", .01f, 80 * Core::Math::DegreesToRads, true, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+        //rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, rotation, Core::TransformationSpace::World);
+        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
+        Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
+        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine](Core::WeakPointer<Core::Object3D> obj){
+
+            Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
+            if (meshContainer) {
+                obj->setStatic(true);
+                if (!firstMeshContainer.isValid()) {
+                    firstMeshContainer = meshContainer;
+                }
+                Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
+                if (objectRenderer) {
+                    Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
+                    if (meshRenderer) {
+                        Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
+                        Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
+                        if (physicalMaterial) {
+                            physicalMaterial->setMetallic(0.0f);
+                            physicalMaterial->setRoughness(0.85f);
+                        }
+                        //Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                       // mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
+                        //mesh->update();
+                    }
+                }
+            }
+        });
+    });
+}
+
+void SceneHelper::loadCastle(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
+    this->modelerApp.loadModel("assets/models/castle/castle.fbx", .015f, 80 * Core::Math::DegreesToRads, true, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+        rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, rotation, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(x, y, z,  Core::TransformationSpace::World);
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
@@ -163,9 +233,9 @@ void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, f
 
 void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
 
-    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80, false, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
-        rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
-        rootObject->getTransform().translate(1.0f + x, 0.0f + y, -12.0f + z, Core::TransformationSpace::World);
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80 * Core::Math::DegreesToRads, false, true, usePhysicalMaterial, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
+        rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, rotation, Core::TransformationSpace::World);
+        rootObject->getTransform().translate(x, y, z,  Core::TransformationSpace::World);
 
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
@@ -197,8 +267,8 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x,
                                 physicalMaterial->setRoughness(0.75f);
                             }
                             else {
-                                physicalMaterial->setMetallic(0.85f);
-                                physicalMaterial->setRoughness(0.3f);
+                                physicalMaterial->setMetallic(0.75f);
+                                physicalMaterial->setRoughness(0.4f);
                             }
 
                             Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight> multiLightSinglePassPhysicalMaterial = engine->createMaterial<Core::StandardPhysicalMaterialMultiLight>();
@@ -245,4 +315,18 @@ void SceneHelper::createBasePlatform() {
     bottomSlabObj->getTransform().getLocalMatrix().preTranslate(Core::Vector3r(0.0f, -1.0f, 0.0f));
     bottomSlabObj->getTransform().getLocalMatrix().preRotate(0.0f, 1.0f, 0.0f,Core::Math::PI / 4.0f);
     bottomSlabObj->setStatic(true);
+}
+
+void SceneHelper::setupCommonSceneElements() {
+    Core::WeakPointer<Core::Object3D> renderCameraObject = this->modelerApp.getRenderCameraObject();
+
+    this->centerProbe = this->createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
+
+    this->loadWarrior(true, 0.0f, 48.82f, 27.18f, -138.77f);
+   // this->sceneHelper.loadHouse(true, Core::Math::PI / 2.0f * 1.15f, 0.0f, 0.0f, 0.0f);
+    this->loadTerrain(true, 0.0f, 0.0f, 0.0f, 0.0f);
+    this->loadCastle(true, Core::Math::PI / 2.0f, 48.82f, 27.62f, -164.77f);
+
+    renderCameraObject->getTransform().rotate(0.0f, 1.0f, 0.0f, Core::Math::PI * .8, Core::TransformationSpace::World);
+    this->modelerApp.setCameraPosition(48.82f, 45.62f, -104.77f);
 }

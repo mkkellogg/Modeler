@@ -11,10 +11,14 @@ public:
     Core::WeakPointer<Core::ReflectionProbe> createSkyboxReflectionProbe(float x, float y, float z);
     void loadGun(float rotation, float x, float y, float z);
     void loadHouse(bool usePhysicalMaterial, float rotation, float x, float y, float z);
+    void loadTerrain(bool usePhysicalMaterial, float rotation, float x, float y, float z);
+    void loadCastle(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void createBasePlatform();
     void createDemoSpheres();
+    void setupCommonSceneElements();
 
 private:
     ModelerApp& modelerApp;
+    Core::WeakPointer<Core::ReflectionProbe> centerProbe;
 };

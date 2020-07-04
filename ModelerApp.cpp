@@ -3,7 +3,9 @@
 #include "SceneUtils.h"
 #include "KeyboardAdapter.h"
 #include "Scene/CornfieldScene.h"
-#include "Scene/RedSkyScene.h"
+#include "Scene/SunnySkyScene.h"
+#include "Scene/SunsetScene.h"
+#include "Scene/MoonlitNightScene.h"
 #include "Util/FileUtil.h"
 
 #include "Core/util/Time.h"
@@ -69,7 +71,6 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
             this->engine = renderWindow->getEngine();
             this->coreSync = std::make_shared<CoreSync>();
             this->engineReady(engine);
-            this->orbitControls = std::make_shared<OrbitControls>(this->engine, this->renderCamera, this->coreSync);
 
             std::shared_ptr<MouseAdapter> mouseAdapter = std::make_shared<MouseAdapter>();
             this->renderWindow->setMouseAdapter(mouseAdapter);
@@ -166,6 +167,21 @@ Core::WeakPointer<Core::Camera> ModelerApp::getRenderCamera() {
     return this->renderCamera;
 }
 
+void ModelerApp::setCameraPosition(Core::Real x, Core::Real y, Core::Real z) {
+    Core::Point3r origin = this->orbitControls->getOrigin();
+    Core::Point3r cameraPosition;
+    this->renderCameraObject->getTransform().applyTransformationTo(cameraPosition);
+    Core::Vector3r toOrigin = origin - cameraPosition;
+    this->renderCameraObject->getTransform().setWorldPosition(x, y, z);
+    Core::Point3r newOrigin(x, y, z);
+    newOrigin = newOrigin + toOrigin;
+    this->orbitControls->setOrigin(newOrigin.x, newOrigin.y, newOrigin.z);
+}
+
+Core::WeakPointer<Core::Object3D> ModelerApp::getRenderCameraObject() {
+    return this->renderCameraObject;
+}
+
 Core::WeakPointer<Core::Engine> ModelerApp::getEngine() {
     return this->engine;
 }
@@ -188,7 +204,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,1));
     this->setupRenderCamera();
 
-    this->loadScene(0);
+    this->loadScene(1);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
@@ -225,14 +241,14 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
 
 void ModelerApp::setupRenderCamera() {
 
-    Core::WeakPointer<Core::Object3D> cameraObj = this->engine->createObject3D<Core::Object3D>();
-    cameraObj->setName("Main camera");
-    this->renderCamera = this->engine->createPerspectiveCamera(cameraObj, Core::Camera::DEFAULT_FOV, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 500);
+    this->renderCameraObject = this->engine->createObject3D<Core::Object3D>();
+    this->renderCameraObject->setName("Main camera");
+    this->renderCamera = this->engine->createPerspectiveCamera(this->renderCameraObject, 70 * Core::Math::DegreesToRads, Core::Camera::DEFAULT_ASPECT_RATIO, 0.1f, 500);
     this->renderCamera->setSSAOEnabled(true);
     this->renderCamera->setSSAORadius(2.0f);
     this->renderCamera->setSSAOBias(0.001f);
-    this->coreScene.addObjectToScene(cameraObj);
-    this->setSceneObjectHidden(cameraObj, true);
+    this->coreScene.addObjectToScene(this->renderCameraObject);
+    this->setSceneObjectHidden(this->renderCameraObject, true);
 
     Core::Quaternion qA = Core::Quaternion::fromAngleAxis(0.0, 0, 1, 0);
     Core::Matrix4x4 worldMatrix;
@@ -240,18 +256,13 @@ void ModelerApp::setupRenderCamera() {
     worldMatrix.translate(0, 0, 12);
     worldMatrix.translate(0, 5, 0);
 
+    this->orbitControls = std::make_shared<OrbitControls>(this->engine, this->renderCamera, this->coreSync);
+
 }
 
 void ModelerApp::loadScene(int scene) {
     switch(scene) {
         case 0:
-        {
-           std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
-           redSkyScene->load();
-           this->modelerScene = redSkyScene;
-        }
-        break;
-        case 1:
         {
            std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
            cornfieldScene->load();
@@ -259,11 +270,32 @@ void ModelerApp::loadScene(int scene) {
 
         }
         break;
+        case 1:
+        {
+           std::shared_ptr<SunnySkyScene> sunnySkyScene = std::make_shared<SunnySkyScene>(*this);
+           sunnySkyScene->load();
+           this->modelerScene = sunnySkyScene;
+        }
+        break;
+        case 2:
+        {
+           std::shared_ptr<SunsetScene> sunsetScene = std::make_shared<SunsetScene>(*this);
+           sunsetScene->load();
+           this->modelerScene = sunsetScene;
+        }
+        break;
+        case 3:
+        {
+           std::shared_ptr<MoonlitNightScene> moonlitNightScene = std::make_shared<MoonlitNightScene>(*this);
+           moonlitNightScene->load();
+           this->modelerScene = moonlitNightScene;
+        }
+        break;
         default:
         {
-            std::shared_ptr<RedSkyScene> redSkyScene = std::make_shared<RedSkyScene>(*this);
-            redSkyScene->load();
-            this->modelerScene = redSkyScene;
+            std::shared_ptr<SunnySkyScene> sunnySkyScene = std::make_shared<SunnySkyScene>(*this);
+            sunnySkyScene->load();
+            this->modelerScene = sunnySkyScene;
         }
         break;
     }

@@ -56,15 +56,15 @@ void MainGUI::setModelerApp(ModelerApp* modelerApp) {
             this->refreshSceneTree();
         });
         this->modelerApp->getCoreScene().onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> object){
-            this->updateSelectedSceneObjects(object, true);
-            this->updateSelectedSceneObjectsProperties();
+            this->updateGUIWithSelectedSceneObjects(object, true);
+            this->updateGUIWithSelectedSceneObjectsProperties();
         });
         this->modelerApp->getCoreScene().onSelectedObjectRemoved([this](Core::WeakPointer<Core::Object3D> object){
-            this->updateSelectedSceneObjects(object, false);
-            this->updateSelectedSceneObjectsProperties();
+            this->updateGUIWithSelectedSceneObjects(object, false);
+            this->updateGUIWithSelectedSceneObjectsProperties();
         });
         this->modelerApp->onUpdate([this]() {
-            this->updateSelectedSceneObjectsProperties();
+            this->updateGUIWithSelectedSceneObjectsProperties();
         });
     }
     else {
@@ -212,61 +212,71 @@ QVBoxLayout* MainGUI::buildRightLayout() {
     QString transformComponentStyle = QString("QLineEdit {width: 55px;}");
 
     QLabel* positionLabel = new QLabel("Position: ");
-    this->positionX = new QLineEdit;
-    this->positionX->setObjectName("positionX");
-    this->positionX->setStyleSheet(transformComponentStyle);
-    this->positionX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    this->positionY = new QLineEdit;
-    this->positionX->setObjectName("positionY");
-    this->positionY->setStyleSheet(transformComponentStyle);
-    this->positionY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    this->positionZ = new QLineEdit;
-    this->positionZ->setObjectName("positionZ");
-    this->positionZ->setStyleSheet(transformComponentStyle);
-    this->positionZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->positionXLineEdit = new QLineEdit;
+    this->positionXLineEdit->setObjectName("positionX");
+    this->positionXLineEdit->setStyleSheet(transformComponentStyle);
+    this->positionXLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->positionYLineEdit = new QLineEdit;
+    this->positionYLineEdit->setObjectName("positionY");
+    this->positionYLineEdit->setStyleSheet(transformComponentStyle);
+    this->positionYLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->positionZLineEdit = new QLineEdit;
+    this->positionZLineEdit->setObjectName("positionZ");
+    this->positionZLineEdit->setStyleSheet(transformComponentStyle);
+    this->positionZLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QLabel* rotationLabel = new QLabel("Rotation: ");
-    this->rotationX = new QLineEdit;
-    this->rotationX->setObjectName("rotationX");
-    this->rotationX->setStyleSheet(transformComponentStyle);
-    this->rotationX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    this->rotationY = new QLineEdit;
-    this->rotationY->setObjectName("rotationY");
-    this->rotationY->setStyleSheet(transformComponentStyle);
-    this->rotationY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    this->rotationZ = new QLineEdit;
-    this->rotationZ->setObjectName("rotationZ");
-    this->rotationZ->setStyleSheet(transformComponentStyle);
-    this->rotationZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->eulerXLineEdit = new QLineEdit;
+    this->eulerXLineEdit->setObjectName("eulerX");
+    this->eulerXLineEdit->setStyleSheet(transformComponentStyle);
+    this->eulerXLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->eulerYLineEdit = new QLineEdit;
+    this->eulerYLineEdit->setObjectName("eulerY");
+    this->eulerYLineEdit->setStyleSheet(transformComponentStyle);
+    this->eulerYLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->eulerZLineEdit = new QLineEdit;
+    this->eulerZLineEdit->setObjectName("eulerZ");
+    this->eulerZLineEdit->setStyleSheet(transformComponentStyle);
+    this->eulerZLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QLabel* scaleLabel = new QLabel("Scale: ");
-    this->scaleX = new QLineEdit;
-    this->scaleX->setObjectName("scaleX");
-    this->scaleX->setStyleSheet(transformComponentStyle);
-    this->scaleX->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    this->scaleY = new QLineEdit;
-    this->scaleY->setObjectName("scaleY");
-    this->scaleY->setStyleSheet(transformComponentStyle);
-    this->scaleY->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    this->scaleZ = new QLineEdit;
-    this->scaleZ->setObjectName("scaleZ");
-    this->scaleZ->setStyleSheet(transformComponentStyle);
-    this->scaleZ->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->scaleXLineEdit = new QLineEdit;
+    this->scaleXLineEdit->setObjectName("scaleX");
+    this->scaleXLineEdit->setStyleSheet(transformComponentStyle);
+    this->scaleXLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->scaleYLineEdit = new QLineEdit;
+    this->scaleYLineEdit->setObjectName("scaleY");
+    this->scaleYLineEdit->setStyleSheet(transformComponentStyle);
+    this->scaleYLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->scaleZLineEdit = new QLineEdit;
+    this->scaleZLineEdit->setObjectName("scaleZ");
+    this->scaleZLineEdit->setStyleSheet(transformComponentStyle);
+    this->scaleZLineEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     transformFrameLayout->addWidget (positionLabel, 0, 0);
-    transformFrameLayout->addWidget (positionX, 0, 1);
-    transformFrameLayout->addWidget (positionY, 0, 2);
-    transformFrameLayout->addWidget (positionZ, 0, 3);
+    transformFrameLayout->addWidget (this->positionXLineEdit, 0, 1);
+    transformFrameLayout->addWidget (this->positionYLineEdit, 0, 2);
+    transformFrameLayout->addWidget (this->positionZLineEdit, 0, 3);
+    connect(this->positionXLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectPositionXChanged()));
+    connect(this->positionYLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectPositionYChanged()));
+    connect(this->positionZLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectPositionZChanged()));
 
     transformFrameLayout->addWidget (rotationLabel, 1, 0);
-    transformFrameLayout->addWidget (rotationX, 1, 1);
-    transformFrameLayout->addWidget (rotationY, 1, 2);
-    transformFrameLayout->addWidget (rotationZ, 1, 3);
+    transformFrameLayout->addWidget (this->eulerXLineEdit, 1, 1);
+    transformFrameLayout->addWidget (this->eulerYLineEdit, 1, 2);
+    transformFrameLayout->addWidget (this->eulerZLineEdit, 1, 3);
+    connect(this->eulerXLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectEulerXChanged()));
+    connect(this->eulerYLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectEulerYChanged()));
+    connect(this->eulerZLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectEulerZChanged()));
+
 
     transformFrameLayout->addWidget (scaleLabel, 2, 0);
-    transformFrameLayout->addWidget (scaleX, 2, 1);
-    transformFrameLayout->addWidget (scaleY, 2, 2);
-    transformFrameLayout->addWidget (scaleZ, 2, 3);
+    transformFrameLayout->addWidget (this->scaleXLineEdit, 2, 1);
+    transformFrameLayout->addWidget (this->scaleYLineEdit, 2, 2);
+    transformFrameLayout->addWidget (this->scaleZLineEdit, 2, 3);
+    connect(this->scaleXLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectScaleXChanged()));
+    connect(this->scaleYLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectScaleYChanged()));
+    connect(this->scaleZLineEdit, SIGNAL(editingFinished()), SLOT(selectedObjectScaleZChanged()));
 
     QVBoxLayout *rightLayout = new QVBoxLayout;
     rightLayout->setAlignment(Qt::AlignTop);
@@ -304,56 +314,110 @@ QHBoxLayout* MainGUI::buildSceneToolsLayout() {
 
 }
 
-void MainGUI::updateSelectedSceneObjectsProperties() {
+void MainGUI::updateGUIWithSelectedSceneObjectsProperties() {
+    static bool initialized = false;
+
     std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->modelerApp->getCoreScene().getSelectedObjects();
     if (selectedObjects.size() == 1) {
         Core::WeakPointer<Core::Object3D> object = selectedObjects[0];
-        Core::Matrix4x4 worldTransformation;
-        object->getTransform().updateWorldMatrix();
-        worldTransformation = object->getTransform().getWorldMatrix();
+        Core::Matrix4x4 localTransformation = object->getTransform().getLocalMatrix();
         Core::Vector3r translation;
         Core::Quaternion rotation;
         Core::Vector3r scale;
         Core::Vector3r euler;
 
-        worldTransformation.decompose(translation, rotation, scale);
+        localTransformation.decompose(translation, rotation, scale);
         euler = rotation.euler();
 
         std::ostringstream ss;
 
-        ss << translation.x;
-        this->positionX->setText(QString::fromStdString(ss.str()));
-        ss.str("");
-        ss << translation.y;
-        this->positionY->setText(QString::fromStdString(ss.str()));
-        ss.str("");
-        ss << translation.z;
-        this->positionZ->setText(QString::fromStdString(ss.str()));
+        this->updateTextFieldFromNumberIfChanged(this->positionXLineEdit, translation.x, this->selectedObjectTranslation.x, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->positionYLineEdit, translation.y, this->selectedObjectTranslation.y, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->positionZLineEdit, translation.z, this->selectedObjectTranslation.z, !initialized);
 
-        ss.str("");
-        ss << euler.x;
-        this->rotationX->setText(QString::fromStdString(ss.str()));
-        ss.str("");
-        ss << euler.y;
-        this->rotationY->setText(QString::fromStdString(ss.str()));
-        ss.str("");
-        ss << euler.z;
-        this->rotationZ->setText(QString::fromStdString(ss.str()));
+        this->updateTextFieldFromNumberIfChanged(this->eulerXLineEdit, euler.x, this->selectedObjectEuler.x, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->eulerYLineEdit, euler.y, this->selectedObjectEuler.y, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->eulerZLineEdit, euler.z, this->selectedObjectEuler.z, !initialized);
 
-        ss.str("");
-        ss << scale.x;
-        this->scaleX->setText(QString::fromStdString(ss.str()));
-        ss.str("");
-        ss << scale.y;
-        this->scaleY->setText(QString::fromStdString(ss.str()));
-        ss.str("");
-        ss << scale.z;
-        this->scaleZ->setText(QString::fromStdString(ss.str()));
+        this->updateTextFieldFromNumberIfChanged(this->scaleXLineEdit, scale.x, this->selectedObjectScale.x, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->scaleYLineEdit, scale.y, this->selectedObjectScale.y, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->scaleZLineEdit, scale.z, this->selectedObjectScale.z, !initialized);
+
         this->transformFrame->setVisible(true);
+        initialized = true;
     }
     else {
         this->transformFrame->setVisible(false);
     }
+}
+
+void MainGUI::updateSelectedSceneObjectsPropertiesFromGUI() {
+    std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->modelerApp->getCoreScene().getSelectedObjects();
+    if (selectedObjects.size() == 1) {
+        Core::WeakPointer<Core::Object3D> object = selectedObjects[0];;
+        object->getTransform().setLocalPosition(this->selectedObjectTranslation);
+        object->getTransform().getLocalMatrix().setRotationFromEuler(this->selectedObjectEuler);
+        object->getTransform().getLocalMatrix().setScale(this->selectedObjectScale);
+    }
+}
+
+void MainGUI::updateTextFieldIfChanged(QLineEdit* field, QString* str) {
+    if (field->text() != *str) {
+        field->setText(*str);
+    }
+}
+
+void MainGUI::updateTextFieldFromNumberIfChanged(QLineEdit* field, Core::Real value, Core::Real& cachedValue, bool force) {
+    static std::ostringstream ss;;
+    if (force || Core::Math::abs(value - cachedValue) > 0.0005f) {
+        ss.str("");
+        ss << value;
+        field->setText(QString::fromStdString(ss.str()));
+        cachedValue = value;
+    }
+}
+
+void MainGUI::updateSelectedObjectRealPropertyFromLineEdit(QLineEdit* lineEdit, Core::Real& dest) {
+    bool success;
+    float temp = lineEdit->text().toFloat(&success);
+    if (success) dest = temp;
+    this->updateSelectedSceneObjectsPropertiesFromGUI();
+}
+
+void MainGUI::selectedObjectPositionXChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->positionXLineEdit, this->selectedObjectTranslation.x);
+}
+
+void MainGUI::selectedObjectPositionYChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->positionYLineEdit, this->selectedObjectTranslation.y);
+}
+
+void MainGUI::selectedObjectPositionZChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->positionZLineEdit, this->selectedObjectTranslation.z);
+}
+
+void MainGUI::selectedObjectEulerXChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->eulerXLineEdit, this->selectedObjectEuler.x);
+}
+
+void MainGUI::selectedObjectEulerYChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->eulerYLineEdit, this->selectedObjectEuler.y);
+}
+
+void MainGUI::selectedObjectEulerZChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->eulerZLineEdit, this->selectedObjectEuler.z);
+}
+
+void MainGUI::selectedObjectScaleXChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->scaleXLineEdit, this->selectedObjectScale.x);
+}
+
+void MainGUI::selectedObjectScaleYChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->scaleYLineEdit, this->selectedObjectScale.y);
+}
+
+void MainGUI::selectedObjectScaleZChanged() {
+    this->updateSelectedObjectRealPropertyFromLineEdit(this->scaleZLineEdit, this->selectedObjectScale.z);
 }
 
 void MainGUI::sceneTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
@@ -467,7 +531,7 @@ RenderWindow* MainGUI::getRenderWindow() {
     return this->renderWindow;
 }
 
-void MainGUI::updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added) {
+void MainGUI::updateGUIWithSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added) {
     Core::UInt64 objectID = object->getID();
     if (this->sceneObjectTreeMap.find(objectID) != this->sceneObjectTreeMap.end()) {
         if (added) {

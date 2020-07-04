@@ -10,10 +10,10 @@
 #include "Core/render/Camera.h"
 #include "Core/scene/Scene.h"
 
-class RedSkyScene : public ModelerScene
+class SunnySkyScene : public ModelerScene
 {
 public:
-    RedSkyScene(ModelerApp& modelerApp);
+    SunnySkyScene(ModelerApp& modelerApp);
     void load() override;
     void update() override;
 
@@ -26,5 +26,4 @@ private:
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
     Core::WeakPointer<Core::MeshContainer>  pointLightObject;
-    Core::WeakPointer<Core::ReflectionProbe> centerProbe;
 };

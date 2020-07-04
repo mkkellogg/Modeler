@@ -10,6 +10,9 @@ HEADERS       = \
     RenderWindow.h \
     OpenGLMouseAdapterWidget.h \
     MouseAdapter.h \
+    Scene/MoonlitNightScene.h \
+    Scene/SunnySkyScene.h \
+    Scene/SunsetScene.h \
     Settings.h \
     PipedEventAdapter.h \
     CoreSync.h \
@@ -25,11 +28,13 @@ HEADERS       = \
     KeyboardAdapter.h \
     SceneUtils.h \
     Scene/CornfieldScene.h \
-    Scene/RedSkyScene.h \
     Scene/ModelerScene.h \
     Scene/SceneHelper.h \
     Util/FileUtil.h
 SOURCES       = \
+    Scene/MoonlitNightScene.cpp \
+    Scene/SunnySkyScene.cpp \
+    Scene/SunsetScene.cpp \
     main.cpp \
     ModelerApp.cpp \
     RenderWindow.cpp \
@@ -49,7 +54,6 @@ SOURCES       = \
     KeyboardAdapter.cpp \
     SceneUtils.cpp \
     Scene/CornfieldScene.cpp \
-    Scene/RedSkyScene.cpp \
     Scene/ModelerScene.cpp \
     Scene/SceneHelper.cpp \
     Util/FileUtil.cpp

@@ -36,6 +36,15 @@ public:
     RenderWindow* getRenderWindow();
 
 protected slots:
+    void selectedObjectPositionXChanged();
+    void selectedObjectPositionYChanged();
+    void selectedObjectPositionZChanged();
+    void selectedObjectEulerXChanged();
+    void selectedObjectEulerYChanged();
+    void selectedObjectEulerZChanged();
+    void selectedObjectScaleXChanged();
+    void selectedObjectScaleYChanged();
+    void selectedObjectScaleZChanged();
     void sceneTreeSelectionChanged(const QItemSelection& oldItem,const QItemSelection& newItem);
     void browseForModel();
     void loadModel();
@@ -57,8 +66,12 @@ private:
     QVBoxLayout* buildLeftLayout();
     QVBoxLayout* buildRightLayout();
     QHBoxLayout* buildSceneToolsLayout();
-    void updateSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added);
-    void updateSelectedSceneObjectsProperties();
+    void updateGUIWithSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added);
+    void updateGUIWithSelectedSceneObjectsProperties();
+    void updateSelectedSceneObjectsPropertiesFromGUI();
+    void updateTextFieldIfChanged(QLineEdit* field, QString* str);
+    void updateTextFieldFromNumberIfChanged(QLineEdit* field, Core::Real value, Core::Real& cachedValue, bool force = false);
+    void updateSelectedObjectRealPropertyFromLineEdit(QLineEdit* lineEdit, Core::Real& dest);
     void populateSceneTree(QTreeWidget* sceneObjectTree, QTreeWidgetItem* parentItem, Core::WeakPointer<Core::Object3D> parentObject);
     void refreshSceneTree();
     void expandAllAbove(SceneTreeWidgetItem* item);
@@ -76,27 +89,20 @@ private:
 
     QGroupBox* propertiesPlaceHolderFrame;
     QGroupBox* transformFrame;
-    QLineEdit* positionX;
-    QLineEdit* positionY;
-    QLineEdit* positionZ;
-    QLineEdit* rotationX;
-    QLineEdit* rotationY;
-    QLineEdit* rotationZ;
-    QLineEdit* scaleX;
-    QLineEdit* scaleY;
-    QLineEdit* scaleZ;
+    QLineEdit* positionXLineEdit;
+    QLineEdit* positionYLineEdit;
+    QLineEdit* positionZLineEdit;
+    QLineEdit* eulerXLineEdit;
+    QLineEdit* eulerYLineEdit;
+    QLineEdit* eulerZLineEdit;
+    QLineEdit* scaleXLineEdit;
+    QLineEdit* scaleYLineEdit;
+    QLineEdit* scaleZLineEdit;
 
     std::unordered_map<Core::UInt64, SceneTreeWidgetItem*> sceneObjectTreeMap;
 
     QString appStyle;
     QString titleLabelStyle;
-
-    float modelImportScale;
-    unsigned int modelImportSmoothingThreshold;
-    bool modelImportZUp;
-    bool modelImportPhysicalMaterial;
-    float modelImportPhysicalMetallic = 0.0f;
-    float modelImportPhysicalRoughness = 0.9f;
 
     QLineEdit* modelImportScaleEdit;
     QLineEdit* modelImportSmoothingThresholdEdit;
@@ -106,4 +112,15 @@ private:
     QLineEdit* modelImportPhysicalMetallicEdit;
     QLineEdit* modelImportPhysicalRoughnessEdit;
 
+    float modelImportScale;
+    unsigned int modelImportSmoothingThreshold;
+    bool modelImportZUp;
+    bool modelImportPhysicalMaterial;
+    float modelImportPhysicalMetallic = 0.0f;
+    float modelImportPhysicalRoughness = 0.9f;
+
+
+    Core::Vector3r selectedObjectTranslation;
+    Core::Vector3r selectedObjectScale;
+    Core::Vector3r selectedObjectEuler;
 };
