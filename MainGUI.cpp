@@ -46,7 +46,7 @@ MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindo
     this->setAutoFillBackground(true);
     this->setUpGUI();
 
-    this->modelNameEdit->setText("/home/mark/Development/Qt/build-modeler2-Desktop_Qt_5_12_5_GCC_64bit-Debug/assets/models/house/house.fbx");
+    this->modelNameEdit->setText("/home/mark/Development/Qt/build-modeler2-Desktop_Qt_5_12_5_GCC_64bit-Debug/assets/models/bush_5/bush_5.fbx");
 }
 
 void MainGUI::setModelerApp(ModelerApp* modelerApp) {
