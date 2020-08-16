@@ -49,6 +49,7 @@
 #include "Core/scene/TransformationSpace.h"
 #include "Core/render/RenderTargetCube.h"
 #include "Core/render/RenderTarget.h"
+#include "Core/render/RenderTarget2D.h"
 
 using MeshContainer = Core::MeshContainer;
 
@@ -322,6 +323,39 @@ void ModelerApp::setupHighlightMaterials() {
     this->outlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
     this->outlineMaterial->setSourceBlendingFactor(Core::RenderState::BlendingFactor::SrcAlpha);
     this->outlineMaterial->setDestBlendingFactor(Core::RenderState::BlendingFactor::OneMinusSrcAlpha);
+
+    const Core::Vector2u bufferOutlineRenderTargetSize(1024, 1024);
+    Core::TextureAttributes bufferOutlineColorAttributes;
+    bufferOutlineColorAttributes.Format = Core::TextureFormat::RGBA8;
+    bufferOutlineColorAttributes.FilterMode = Core::TextureFilter::BiLinear;
+    bufferOutlineColorAttributes.MipLevels = 4;
+    bufferOutlineColorAttributes.WrapMode = Core::TextureWrap::Clamp;
+    Core::TextureAttributes bufferOutlineDepthAttributes;
+    bufferOutlineDepthAttributes.IsDepthTexture = false;
+    this->bufferOutlineRenderTargetA = Core::Engine::instance()->getGraphicsSystem()->createRenderTarget2D(true, true, true, bufferOutlineColorAttributes,
+                                                                                                           bufferOutlineDepthAttributes, bufferOutlineRenderTargetSize);
+    this->bufferOutlineRenderTargetB = Core::Engine::instance()->getGraphicsSystem()->createRenderTarget2D(true, true, true, bufferOutlineColorAttributes,
+                                                                                                           bufferOutlineDepthAttributes, bufferOutlineRenderTargetSize);
+
+    this->bufferOutlineSilhouetteMaterial = this->engine->createMaterial<Core::BasicColoredMaterial>();
+    this->bufferOutlineSilhouetteMaterial->setBlendingMode(Core::RenderState::BlendingMode::None);
+    this->bufferOutlineSilhouetteMaterial->setLit(false);
+    this->bufferOutlineSilhouetteMaterial->setZOffset(-.00005f);
+    this->bufferOutlineSilhouetteMaterial->setObjectColor(Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
+
+    this->bufferOutlineMaterial = this->engine->createMaterial<Core::BufferOutlineMaterial>();
+   // this->bufferOutlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::None);
+    this->bufferOutlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
+    this->bufferOutlineMaterial->setSourceBlendingFactor(Core::RenderState::BlendingFactor::SrcAlpha);
+    this->bufferOutlineMaterial->setDestBlendingFactor(Core::RenderState::BlendingFactor::OneMinusSrcAlpha);
+    this->bufferOutlineMaterial->setLit(false);
+    this->bufferOutlineMaterial->setOutlineColor(this->highlightColor);
+    this->bufferOutlineMaterial->setOutlineSize(5);
+
+    this->colorBlack.set(0.0f, 0.0f, 0.0f, 0.0f);
+
+    this->copyMaterial = this->engine->createMaterial<Core::CopyMaterial>();
+
 }
 
 void ModelerApp::preRenderCallback() {
@@ -332,7 +366,7 @@ void ModelerApp::postRenderCallback() {
     const std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->coreScene.getSelectedObjects();
     if (selectedObjects.size() > 0 ) {
 
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+        /*this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
 
@@ -388,14 +422,79 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setHDREnabled(isHDREnabled);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);*/
+
+        static std::vector<Core::WeakPointer<Core::Object3D>> renderRoot;
+        Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
+        Core::WeakPointer<Core::RenderTarget> saveRenderTarget = graphics->getCurrentRenderTarget();
+        Core::WeakPointer<Core::Material> saveOverrideMaterial = this->renderCamera->getOverrideMaterial();
+        Core::DepthOutputOverride saveDepthOutputOverride = this->renderCamera->getDepthOutputOverride();
+        Core::Bool saveRenderSkybox = this->renderCamera->isSkyboxEnabled();
+        this->renderCamera->setSkyboxEnabled(false);
+
+
+        // re-render scene to fill depth buffer
+        this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
+        this->renderCamera->setRenderTarget(this->bufferOutlineRenderTargetA);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+        if (renderRoot.size() == 0) {
+            renderRoot.push_back(this->scene->getRoot());
+        } else {
+            renderRoot[0] = this->scene->getRoot();
+        }
+        this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(false);
+        this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
+        this->renderOnce(renderRoot, this->renderCamera);
+
+        // render stencil for selected objects
+        this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(false);
+        this->bufferOutlineSilhouetteMaterial->setStencilWriteMask(0xFF);
+        this->bufferOutlineSilhouetteMaterial->setStencilReadMask(0xFF);
+        this->bufferOutlineSilhouetteMaterial->setStencilRef(1);
+        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(true);
+        this->bufferOutlineSilhouetteMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+        this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
+        this->renderOnce(selectedObjects, this->renderCamera);
+
+        // render the actual silhouette
+        this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
+        this->bufferOutlineSilhouetteMaterial->setObjectColor(this->highlightColor);
+        this->bufferOutlineSilhouetteMaterial->setStencilWriteMask(0xFF);
+        this->bufferOutlineSilhouetteMaterial->setStencilReadMask(0xFF);
+        this->bufferOutlineSilhouetteMaterial->setStencilRef(1);
+        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(true);
+        this->bufferOutlineSilhouetteMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Equal);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
+        this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::None);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+        this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
+        this->renderOnce(selectedObjects, this->renderCamera);
+
+        // render outline
+        graphics->blit(this->bufferOutlineRenderTargetA, saveRenderTarget, -1, this->bufferOutlineMaterial, false);
+
+
+        this->renderCamera->setDepthOutputOverride(saveDepthOutputOverride);
+        this->renderCamera->setSkyboxEnabled(saveRenderSkybox);
+        this->renderCamera->setOverrideMaterial(saveOverrideMaterial);
+        this->renderCamera->setRenderTarget(saveRenderTarget);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
 
         this->transformWidget.updateCamera();
         this->transformWidget.render();
     }
-
-    this->basicTextureMaterial->setTexture( this->engine->getGraphicsSystem()->getRenderer()->getSSAOTexture());
-    //this->engine->getGraphicsSystem()->renderFullScreenQuad(this->engine->getGraphicsSystem()->getDefaultRenderTarget(), -1, this->basicTextureMaterial);
 
     this->frameCount++;
 }
@@ -440,13 +539,18 @@ void ModelerApp::resolveOnUpdateCallbacks() {
     }
 }
 
-void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material) {
+void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera) {
     Core::WeakPointer<Core::Renderer> renderer =  this->engine->getGraphicsSystem()->getRenderer();
     static std::vector<Core::WeakPointer<Core::Object3D>> roots;
+    static std::unordered_map<Core::UInt64, bool> rendered;
     roots.resize(0);
+    rendered.clear();
     SceneUtils::getRootObjects(objects, roots);
     for (unsigned int i = 0; i < roots.size(); i++) {
         Core::WeakPointer<Core::Object3D> object = roots[i];
-        renderer->renderObjectBasic(object, camera, material);
+        if (!rendered[object->getID()]) {
+            renderer->renderObjectBasic(object, camera);
+            rendered[object->getID()] = true;
+        }
     }
 }

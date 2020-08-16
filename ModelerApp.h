@@ -9,6 +9,8 @@
 #include "Core/material/BasicExtrusionMaterial.h"
 #include "Core/material/EquirectangularMaterial.h"
 #include "Core/material/OutlineMaterial.h"
+#include "Core/material/BufferOutlineMaterial.h"
+#include "Core/material/CopyMaterial.h"
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
 #include "Core/color/Color.h"
@@ -63,7 +65,7 @@ private:
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();
-    void renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera, Core::WeakPointer<Core::Material> material);
+    void renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera);
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;
@@ -84,9 +86,17 @@ private:
     Core::Color highlightColor;
     Core::Color outlineColor;
     Core::Color darkOutlineColor;
+    Core::Color colorBlack;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
     Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;
+    Core::WeakPointer<Core::CopyMaterial> copyMaterial;
+
     Core::WeakPointer<Core::BasicTexturedFullScreenQuadMaterial> basicTextureMaterial;
+
+    Core::WeakPointer<Core::BasicColoredMaterial> bufferOutlineSilhouetteMaterial;
+    Core::WeakPointer<Core::BufferOutlineMaterial> bufferOutlineMaterial;
+    Core::WeakPointer<Core::RenderTarget2D> bufferOutlineRenderTargetA;
+    Core::WeakPointer<Core::RenderTarget2D> bufferOutlineRenderTargetB;
 
     QMutex onUpdateMutex;
     std::vector<ModelerAppLifecycleEventCallback> onUpdates;
