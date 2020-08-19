@@ -12,7 +12,7 @@ public:
     void loadGun(float rotation, float x, float y, float z);
     void loadHouse(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void loadModelStandard(const std::string& path, bool usePhysicalMaterial, float rotation, float x, float y, float , float scale,
-                           bool singlePassMultiLight, float metallic, float roughness, bool transparent, bool customShadowRendering);
+                           bool singlePassMultiLight, float metallic, float roughness, bool transparent, bool customShadowRendering, bool customName = false);
     void loadTerrain(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void createBasePlatform();

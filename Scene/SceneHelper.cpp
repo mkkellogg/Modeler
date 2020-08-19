@@ -163,15 +163,15 @@ void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, f
 }
 
 void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMaterial, float rotation, float x, float y, float z, float scale,
-                                    bool singlePassMultiLight, float metallic, float roughness, bool transparent, bool customShadowRendering) {
+                                    bool singlePassMultiLight, float metallic, float roughness, bool transparent, bool customShadowRendering, bool customName) {
     this->modelerApp.loadModel(path, scale, 80 * Core::Math::DegreesToRads, true, true, usePhysicalMaterial,
-                               [this, rotation, x, y, z, singlePassMultiLight, metallic, roughness, transparent, customShadowRendering](Core::WeakPointer<Core::Object3D> rootObject){
+                               [this, rotation, x, y, z, singlePassMultiLight, metallic, roughness, transparent, customShadowRendering, customName](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, rotation, Core::TransformationSpace::World);
         rootObject->getTransform().translate(x, y, z,  Core::TransformationSpace::World);
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
-        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine, singlePassMultiLight, metallic, roughness, transparent, customShadowRendering](Core::WeakPointer<Core::Object3D> obj){
+        scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine, singlePassMultiLight, metallic, roughness, transparent, customShadowRendering, customName](Core::WeakPointer<Core::Object3D> obj){
 
             Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
             if (meshContainer) {
@@ -202,6 +202,11 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                         }
                         if (customShadowRendering) {
                             renderMaterial->setCustomDepthOutput(true);
+                        }
+                        if (customName) {
+                            Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                            mesh->setName("Bush");
+                            meshContainer->setName("Bush");
                         }
                         //Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
                        // mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
@@ -337,7 +342,7 @@ void SceneHelper::setupCommonSceneElements() {
     this->loadWarrior(true, 0.0f, 48.82f, 27.18f, -138.77f);
     this->loadTerrain(true, Core::Math::PI / 2.0f, 0.0f, 0.0f, 0.0f);
     this->loadModelStandard("assets/models/castle/castle.fbx", true, Core::Math::PI / 2.0f, 48.82f, 27.62f, -164.77f, 0.015f, false, 0.0f, 0.85f, false, false);
-    this->loadModelStandard("assets/models/bush_5/bush_5.fbx", true, Core::Math::PI / 2.0f, 67.5836, 27.6141, -141.718, 0.01f, true, 0.0f, 0.85f, true, true);
+    this->loadModelStandard("assets/models/bush_5/bush_5.fbx", true, Core::Math::PI / 2.0f, 67.5836, 27.6141, -141.718, 0.01f, true, 0.0f, 0.85f, true, true, true);
 
     renderCameraObject->getTransform().rotate(0.0f, 1.0f, 0.0f, Core::Math::PI * .8, Core::TransformationSpace::World);
     this->modelerApp.setCameraPosition(48.82f, 45.62f, -104.77f);

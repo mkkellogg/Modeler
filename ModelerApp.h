@@ -10,6 +10,7 @@
 #include "Core/material/EquirectangularMaterial.h"
 #include "Core/material/OutlineMaterial.h"
 #include "Core/material/BufferOutlineMaterial.h"
+#include "Core/material/BlurMaterial.h"
 #include "Core/material/CopyMaterial.h"
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
@@ -95,6 +96,7 @@ private:
 
     Core::WeakPointer<Core::BasicColoredMaterial> bufferOutlineSilhouetteMaterial;
     Core::WeakPointer<Core::BufferOutlineMaterial> bufferOutlineMaterial;
+    Core::WeakPointer<Core::BlurMaterial> blurMaterial;
     Core::WeakPointer<Core::RenderTarget2D> bufferOutlineRenderTargetA;
     Core::WeakPointer<Core::RenderTarget2D> bufferOutlineRenderTargetB;
 
