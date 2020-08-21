@@ -348,13 +348,18 @@ void ModelerApp::setupHighlightMaterials() {
     this->bufferOutlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::None);
     this->bufferOutlineMaterial->setLit(false);
     this->bufferOutlineMaterial->setOutlineColor(this->highlightColor);
-    this->bufferOutlineMaterial->setOutlineSize(3);
+    this->bufferOutlineMaterial->setOutlineSize(5);
 
     this->colorBlack.set(0.0f, 0.0f, 0.0f, 0.0f);
+    this->colorRed.set(1.0f, 0.0f, 0.0f, 0.0f);
 
     this->blurMaterial = this->engine->createMaterial<Core::BlurMaterial>();
     this->blurMaterial->setKernelSize(5);
     this->blurMaterial->setLit(false);
+
+    this->colorSetMaterial = this->engine->createMaterial<Core::RedColorSetMaterial>();
+    this->colorSetMaterial->setBlendingMode(Core::RenderState::BlendingMode::None);
+    this->colorSetMaterial->setLit(false);
 
     this->copyMaterial = this->engine->createMaterial<Core::CopyMaterial>();
     this->copyMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
@@ -450,13 +455,15 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setHDREnabled(false);
 
         // re-render scene to fill depth buffer
-        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(false);
         this->renderCamera->setRenderTarget(this->bufferOutlineRenderTargetA);
         if (renderRoot.size() == 0) {
             renderRoot.push_back(this->scene->getRoot());
         } else {
             renderRoot[0] = this->scene->getRoot();
         }
+        this->bufferOutlineSilhouetteMaterial->setCustomDepthOutputCopyOverrideMatrialState(false);
+        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(false);
+        this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
         this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(false);
         this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(true);
         this->bufferOutlineSilhouetteMaterial->setZOffset(0.0f);
@@ -467,11 +474,21 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
         this->renderOnce(renderRoot, this->renderCamera);
 
-        // render stencil
+        // render silhouette - part 1
         this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
         this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(false);
         this->bufferOutlineSilhouetteMaterial->setZOffset(-.0005f);
-        this->bufferOutlineSilhouetteMaterial->setObjectColor(this->highlightColor);
+        this->bufferOutlineSilhouetteMaterial->setObjectColor(this->outlineColor);
+        this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
+
+        this->bufferOutlineSilhouetteMaterial->setStencilWriteMask(0xFF);
+        this->bufferOutlineSilhouetteMaterial->setStencilReadMask(0x00);
+        this->bufferOutlineSilhouetteMaterial->setStencilRef(1);
+        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(true);
+        this->bufferOutlineSilhouetteMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
         this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
@@ -479,9 +496,42 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
         this->renderOnce(selectedObjects, this->renderCamera);
 
+        // color set
+        this->colorSetMaterial->setOutputColor(this->outlineColor);
+        graphics->blit(this->bufferOutlineRenderTargetA, this->bufferOutlineRenderTargetA, -1, this->colorSetMaterial, false);
+
+        // render silhouette - part 2
+        this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
+        this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(false);
+        this->bufferOutlineSilhouetteMaterial->setZOffset(-.005f);
+        this->bufferOutlineSilhouetteMaterial->setObjectColor(this->darkOutlineColor);
+        this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
+
+        this->bufferOutlineSilhouetteMaterial->setStencilWriteMask(0x00);
+        this->bufferOutlineSilhouetteMaterial->setStencilReadMask(0xFF);
+        this->bufferOutlineSilhouetteMaterial->setStencilRef(1);
+        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(true);
+        this->bufferOutlineSilhouetteMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::NotEqual);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
+        this->bufferOutlineSilhouetteMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
+        this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
+        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
+        this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
+        this->renderOnce(selectedObjects, this->renderCamera);
+
+        // color set
+        this->colorSetMaterial->setOutputColor(this->darkOutlineColor);
+        graphics->blit(this->bufferOutlineRenderTargetA, this->bufferOutlineRenderTargetA, -1, this->colorSetMaterial, false);
+
+
 
         //render outline
         graphics->blit(this->bufferOutlineRenderTargetA, this->bufferOutlineRenderTargetB, -1, this->bufferOutlineMaterial, true);
+
+        // blur outline
         graphics->blit(this->bufferOutlineRenderTargetB, this->bufferOutlineRenderTargetA, -1, this->blurMaterial, true);
 
         // render silhouette as black
@@ -490,6 +540,8 @@ void ModelerApp::postRenderCallback() {
         this->bufferOutlineSilhouetteMaterial->setObjectColor(this->colorBlack);
         this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(false);
         this->bufferOutlineSilhouetteMaterial->setZOffset(-.005f);
+        this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::Always);
+        this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(false);
         this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
         this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
         this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
@@ -498,58 +550,9 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setRenderTarget(this->bufferOutlineRenderTargetA);
         this->renderOnce(selectedObjects, this->renderCamera);
 
+
         // render outline to main buffer
         graphics->blit(this->bufferOutlineRenderTargetA, saveRenderTarget, -1, this->copyMaterial, false);
-
-
-
-
-
-
-
-
-
-        /*   this->renderCamera->setRenderTarget(this->bufferOutlineRenderTargetA);
-
-           // render stencil for selected objects
-           this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
-           this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(false);
-         //  this->bufferOutlineSilhouetteMaterial->setStencilWriteMask(0xFF);
-         //  this->bufferOutlineSilhouetteMaterial->setStencilReadMask(0x00);
-         //  this->bufferOutlineSilhouetteMaterial->setStencilRef(1);
-         //  this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(true);
-         //  this->bufferOutlineSilhouetteMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
-         //  this->bufferOutlineSilhouetteMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
-        //   this->bufferOutlineSilhouetteMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
-        //   this->bufferOutlineSilhouetteMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
-           this->bufferOutlineSilhouetteMaterial->setZOffset(-.0005f);
-           this->bufferOutlineSilhouetteMaterial->setObjectColor(this->highlightColor);
-           this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
-           this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
-           this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
-           this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-           this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
-           this->renderOnce(selectedObjects, this->renderCamera);
-
-           //graphics->blit(this->bufferOutlineRenderTargetA, this->bufferOutlineRenderTargetB, -1, this->bufferOutlineMaterial, false);
-           graphics->blit(this->bufferOutlineRenderTargetA, saveRenderTarget, -1, this->copyMaterial, false);*/
-
-
-           /*this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
-           this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(true);
-           this->bufferOutlineSilhouetteMaterial->setObjectColor(this->highlightColor);
-           this->bufferOutlineSilhouetteMaterial->setZOffset(-.005f);
-           this->renderCamera->setRenderTarget(this->bufferOutlineRenderTargetA);
-           this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
-           this->renderCamera->setOverrideMaterial(this->bufferOutlineSilhouetteMaterial);
-           this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
-           this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
-           this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-           this->renderOnce(selectedObjects, this->renderCamera);
-           graphics->blit(this->bufferOutlineRenderTargetA, saveRenderTarget, -1, this->copyMaterial, false);*/
-
-
-
 
 
 

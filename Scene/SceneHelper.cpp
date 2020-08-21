@@ -202,6 +202,7 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                         }
                         if (customShadowRendering) {
                             renderMaterial->setCustomDepthOutput(true);
+                            renderMaterial->setCustomDepthOutputCopyOverrideMatrialState(true);
                         }
                         if (customName) {
                             Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];

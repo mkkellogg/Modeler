@@ -11,6 +11,7 @@
 #include "Core/material/OutlineMaterial.h"
 #include "Core/material/BufferOutlineMaterial.h"
 #include "Core/material/BlurMaterial.h"
+#include "Core/material/RedColorSetMaterial.h"
 #include "Core/material/CopyMaterial.h"
 #include "Core/material/Shader.h"
 #include "Core/scene/RayCaster.h"
@@ -88,9 +89,11 @@ private:
     Core::Color outlineColor;
     Core::Color darkOutlineColor;
     Core::Color colorBlack;
+    Core::Color colorRed;
     Core::WeakPointer<Core::BasicColoredMaterial> highlightMaterial;
     Core::WeakPointer<Core::OutlineMaterial> outlineMaterial;
     Core::WeakPointer<Core::CopyMaterial> copyMaterial;
+    Core::WeakPointer<Core::RedColorSetMaterial> colorSetMaterial;
 
     Core::WeakPointer<Core::BasicTexturedFullScreenQuadMaterial> basicTextureMaterial;
 
