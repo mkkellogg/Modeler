@@ -104,7 +104,7 @@ void SunsetScene::setupLights() {
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     directionalLight->setFaceCullingEnabled(false);
 
-    Core::Vector3r lightVector(-0.8f, -.2f, 0.2f);
+    Core::Vector3r lightVector(-0.8f, -.35f, 0.2f);
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
     this->directionalLightObject->getTransform().translate(offsetVector, Core::TransformationSpace::World);

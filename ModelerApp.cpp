@@ -202,10 +202,10 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->setActiveScene(this->scene);
     this->coreScene.setEngine(engine);
     this->coreScene.setSceneRoot(this->scene->getRoot());
-    engine->getGraphicsSystem()->setClearColor(Core::Color(0,0,0,0));
+    engine->getGraphicsSystem()->setClearColor(Core::Color(0, 0, 0, 0));
     this->setupRenderCamera();
 
-    this->loadScene(1);
+    this->loadScene(2);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
@@ -348,13 +348,13 @@ void ModelerApp::setupHighlightMaterials() {
     this->bufferOutlineMaterial->setBlendingMode(Core::RenderState::BlendingMode::None);
     this->bufferOutlineMaterial->setLit(false);
     this->bufferOutlineMaterial->setOutlineColor(this->highlightColor);
-    this->bufferOutlineMaterial->setOutlineSize(5);
+    this->bufferOutlineMaterial->setOutlineSize(4);
 
     this->colorBlack.set(0.0f, 0.0f, 0.0f, 0.0f);
     this->colorRed.set(1.0f, 0.0f, 0.0f, 0.0f);
 
     this->blurMaterial = this->engine->createMaterial<Core::BlurMaterial>();
-    this->blurMaterial->setKernelSize(5);
+    this->blurMaterial->setKernelSize(3);
     this->blurMaterial->setLit(false);
 
     this->colorSetMaterial = this->engine->createMaterial<Core::RedColorSetMaterial>();
@@ -477,7 +477,7 @@ void ModelerApp::postRenderCallback() {
         // render silhouette - part 1
         this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
         this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(false);
-        this->bufferOutlineSilhouetteMaterial->setZOffset(-.0005f);
+        this->bufferOutlineSilhouetteMaterial->setZOffset(-.0001f);
         this->bufferOutlineSilhouetteMaterial->setObjectColor(this->outlineColor);
         this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
 
@@ -503,7 +503,7 @@ void ModelerApp::postRenderCallback() {
         // render silhouette - part 2
         this->bufferOutlineSilhouetteMaterial->setColorWriteEnabled(true);
         this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(false);
-        this->bufferOutlineSilhouetteMaterial->setZOffset(-.005f);
+        this->bufferOutlineSilhouetteMaterial->setZOffset(-.0001f);
         this->bufferOutlineSilhouetteMaterial->setObjectColor(this->darkOutlineColor);
         this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
 
@@ -539,7 +539,7 @@ void ModelerApp::postRenderCallback() {
         this->bufferOutlineSilhouetteMaterial->setDepthWriteEnabled(true);
         this->bufferOutlineSilhouetteMaterial->setObjectColor(this->colorBlack);
         this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(false);
-        this->bufferOutlineSilhouetteMaterial->setZOffset(-.005f);
+        //this->bufferOutlineSilhouetteMaterial->setZOffset(-.005f);
         this->bufferOutlineSilhouetteMaterial->setDepthFunction(Core::RenderState::DepthFunction::Always);
         this->bufferOutlineSilhouetteMaterial->setStencilTestEnabled(false);
         this->renderCamera->setDepthOutputOverride(Core::DepthOutputOverride::Depth);
