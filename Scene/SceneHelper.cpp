@@ -17,7 +17,6 @@
 #include "Core/animation/AnimationPlayer.h"
 
 SceneHelper::SceneHelper(ModelerApp& modelerApp): modelerApp(modelerApp) {
-
 }
 
 void SceneHelper::createDemoSpheres() {
@@ -66,66 +65,8 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
     reflectionProbe->setSkyboxOnly(false);
     reflectionProbe->setRenderWithPhysical(true);
     Core::WeakPointer<Core::AmbientIBLLight> iblLight = engine->createLight<Core::AmbientIBLLight>(reflectionProbeObject);
+    iblLight->setReflectionProbe(reflectionProbe);
     return reflectionProbe;
-}
-
-void SceneHelper::loadGun(float rotation, float x, float y, float z) {
-    this->modelerApp.loadModel("assets/models/gun/gun.fbx", .25f, 80 * Core::Math::DegreesToRads, true, true, true, [this, rotation, x, y, z](Core::WeakPointer<Core::Object3D> rootObject){
-        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
-        rootObject->getTransform().rotate(0.0f, 1.0f, 0.f, rotation, Core::TransformationSpace::World);
-        rootObject->getTransform().translate(x, y, z, Core::TransformationSpace::World);
-
-        Core::TextureAttributes texAttributes;
-        texAttributes.FilterMode = Core::TextureFilter::TriLinear;
-        texAttributes.MipLevels = 6;
-        texAttributes.WrapMode = Core::TextureWrap::Clamp;
-        texAttributes.Format = Core::TextureFormat::RGBA8;
-
-        Core::TextureAttributes texAttributesSingleChannel;
-        texAttributesSingleChannel.FilterMode = Core::TextureFilter::TriLinear;
-        texAttributesSingleChannel.MipLevels = 6;
-        texAttributesSingleChannel.WrapMode = Core::TextureWrap::Clamp;
-        texAttributesSingleChannel.Format = Core::TextureFormat::R32F;
-
-        std::shared_ptr<Core::StandardImage> normalImage = Core::ImageLoader::loadImageU("assets/models/gun/Cerberus_N.tga");
-        Core::WeakPointer<Core::Texture2D> normalMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
-        normalMap->buildFromImage(normalImage);
-
-        std::shared_ptr<Core::StandardImage> roughnessImage = Core::ImageLoader::loadImageU("assets/models/gun/Cerberus_R.tga");
-        Core::WeakPointer<Core::Texture2D> roughnessMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
-        roughnessMap->buildFromImage(roughnessImage);
-
-        std::shared_ptr<Core::StandardImage> metallicImage = Core::ImageLoader::loadImageU("assets/models/gun/Cerberus_M.tga");
-        Core::WeakPointer<Core::Texture2D> metallicMap = engine->getGraphicsSystem()->createTexture2D(texAttributes);
-        metallicMap->buildFromImage(metallicImage);
-
-        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
-        scene->visitScene(rootObject, [this, &rootObject, &normalMap, &roughnessMap, &metallicMap](Core::WeakPointer<Core::Object3D> obj){
-
-            Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
-            if (meshContainer) {
-                Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
-                if (objectRenderer) {
-                    Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
-                    if (meshRenderer) {
-                        Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
-                        Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
-                        if (physicalMaterial) {
-                            physicalMaterial->setNormalMapEnabled(true);
-                            physicalMaterial->setNormalMap(normalMap);
-                            physicalMaterial->setRoughnessMapEnabled(true);
-                            physicalMaterial->setRoughnessMap(roughnessMap);
-                            physicalMaterial->setMetallicMapEnabled(true);
-                            physicalMaterial->setMetallicMap(metallicMap);
-                        }
-                        Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
-                    }
-                }
-            }
-        });
-
-
-    });
 }
 
 void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, float y, float z) {
@@ -165,10 +106,11 @@ void SceneHelper::loadHouse(bool usePhysicalMaterial, float rotation, float x, f
 
 void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMaterial, float yRotation, float rx, float ry, float rz, float ra,
                                     float tx, float ty, float tz, float scale, bool singlePassMultiLight, float metallic, float roughness,
-                                    bool transparent, unsigned int enabledAlphaChannel, bool customShadowRendering, std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad) {
+                                    bool transparent, unsigned int enabledAlphaChannel, bool doubleSided, bool customShadowRendering,
+                                    std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad) {
     this->modelerApp.loadModel(path, scale, 80 * Core::Math::DegreesToRads, true, true, usePhysicalMaterial,
                                [this, yRotation, rx, ry, rz, ra, tx, ty, tz, singlePassMultiLight, metallic, roughness,
-                                transparent, enabledAlphaChannel, customShadowRendering, onLoad](Core::WeakPointer<Core::Object3D> rootObject){
+                                transparent, enabledAlphaChannel, doubleSided, customShadowRendering, onLoad](Core::WeakPointer<Core::Object3D> rootObject){
         rootObject->getTransform().rotate(0.0f, 1.0f, 0.0f, yRotation, Core::TransformationSpace::World);
         rootObject->getTransform().translate(tx, ty, tz,  Core::TransformationSpace::World);
         rootObject->getTransform().rotate(rx, ry, rz, ra);
@@ -176,7 +118,7 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
         scene->visitScene(rootObject, [this, &rootObject, &firstMeshContainer, &engine, singlePassMultiLight,
-                                       metallic, roughness, transparent, enabledAlphaChannel, customShadowRendering](Core::WeakPointer<Core::Object3D> obj){
+                                       metallic, roughness, transparent, enabledAlphaChannel, doubleSided, customShadowRendering](Core::WeakPointer<Core::Object3D> obj){
 
             Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
             if (meshContainer) {
@@ -219,6 +161,11 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                             renderMaterial->setCustomDepthOutput(true);
                             renderMaterial->setCustomDepthOutputCopyOverrideMatrialState(true);
                         }
+                        if (doubleSided) {
+                            renderMaterial->setFaceCullingEnabled(false);
+                            renderMaterial->setCustomDepthOutput(true);
+                            renderMaterial->setCustomDepthOutputStateCopyExcludeFaceCulling(true);
+                        }
                         //Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
                        // mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
                         //mesh->update();
@@ -254,9 +201,6 @@ void SceneHelper::loadTerrain(bool usePhysicalMaterial, float rotation, float x,
                             physicalMaterial->setMetallic(0.0f);
                             physicalMaterial->setRoughness(0.85f);
                         }
-                        //Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
-                       // mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
-                        //mesh->update();
                     }
                 }
             }
@@ -304,7 +248,7 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x,
                                 physicalMaterial->setRoughness(0.4f);
                             }
                         }
-                        Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderables()[0];
+                        Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderable(0);
                         mesh->setNormalsSmoothingThreshold(Core::Math::PI / 1.5f);
                         mesh->update();
                     }
@@ -358,14 +302,14 @@ void SceneHelper::setupCommonSceneElements() {
 
     this->loadWarrior(true, 0.0f, 48.82f, 27.18f, -138.77f);
     this->loadTerrain(true, Core::Math::PI / 2.0f, 0.0f, 0.0f, 0.0f);
-    this->loadModelStandard("assets/models/castle/castle.fbx", true, Core::Math::PI / 2.0f, 0, 1, 0, 0, 48.82f, 27.62f, -164.77f, 0.015f, false, 0.0f, 0.85f, false, 0, false, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, Core::Math::PI / 2.0f, 0, 1, 0, 0, 35.0f, 27.5136f, -135.0f, 0.01f, true, 0.0f, 0.85f, true, 1, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, 0.0f, 0, 1, 0, 0, 28.6463f, 27.5136, -137.331f, 0.015f, true, 0.0f, 0.85f, true, 1, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, Core::Math::PI / 2.0f, 0, 1, 0, 0, 23.0214f, 27.5136f, -141.079f, 0.01f, true, 0.0f, 0.85f, true, 1, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, Core::Math::PI / 2.0f, 1, 0, 0, -5.75f * Core::Math::DegreesToRads , 70.7394f, 27.5136f, -139.049f, 0.01f, true, 0.0f, 0.85f, true, 4, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, 0.0f, 0, 1, 0, 0, 74.83f, 27.5136f, -142.29f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, 0.0f, 0, 1, 0, 0, 78.36f, 27.5136f, -146.75f, 0.015f, true, 0.0f, 0.85f, true, 1, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, 0.0f, 0, 1, 0, 0, 63.26f, 27.5136f, -139.87f, 0.01f, true, 0.0f, 0.85f, true, 1, true, dummyOnLoad);
+    this->loadModelStandard("assets/models/castle/castle.fbx", true, Core::Math::PI / 2.0f, 0, 1, 0, 0, 48.82f, 27.62f, -164.77f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+    this->loadModelStandard(bush1Path, true, Core::Math::PI / 2.0f, 0, 1, 0, 0, 35.0f, 27.5136f, -135.0f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(bush1Path, true, 0.0f, 0, 1, 0, 0, 28.6463f, 27.5136, -137.331f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(bush1Path, true, Core::Math::PI / 2.0f, 0, 1, 0, 0, 23.0214f, 27.5136f, -141.079f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(tree1Path, true, Core::Math::PI / 2.0f, 1, 0, 0, -5.75f * Core::Math::DegreesToRads , 70.7394f, 27.5136f, -139.049f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
+    this->loadModelStandard(tree1Path, true, 0.0f, 0, 1, 0, 0, 74.83f, 27.5136f, -142.29f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
+    this->loadModelStandard(bush1Path, true, 0.0f, 0, 1, 0, 0, 78.36f, 27.5136f, -146.75f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(bush1Path, true, 0.0f, 0, 1, 0, 0, 63.26f, 27.5136f, -139.87f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
 
     renderCameraObject->getTransform().rotate(0.0f, 1.0f, 0.0f, Core::Math::PI * .8, Core::TransformationSpace::World);
     this->modelerApp.setCameraPosition(48.82f, 45.62f, -104.77f);

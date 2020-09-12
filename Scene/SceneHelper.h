@@ -9,11 +9,11 @@ class SceneHelper
 public:
     SceneHelper(ModelerApp& modelerApp);
     Core::WeakPointer<Core::ReflectionProbe> createSkyboxReflectionProbe(float x, float y, float z);
-    void loadGun(float rotation, float x, float y, float z);
     void loadHouse(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void loadModelStandard(const std::string& path, bool usePhysicalMaterial, float yRotation, float rx, float ry, float rz, float ra,
                            float tx, float ty, float tz, float scale, bool singlePassMultiLight, float metallic, float roughness,
-                           bool transparent, unsigned int enabledAlphaChannel, bool customShadowRendering, std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad);
+                           bool transparent, unsigned int enabledAlphaChannel, bool doubleSided, bool customShadowRendering,
+                           std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad);
     void loadTerrain(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void createBasePlatform();

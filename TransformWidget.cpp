@@ -93,7 +93,7 @@ void TransformWidget::render() {
     this->camera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
     this->camera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
     this->camera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);
-    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderObjectBasic(this->rootObject, this->camera, true);
+    Core::Engine::instance()->getGraphicsSystem()->getRenderer()->renderSceneBasic(this->rootObject, this->camera, true);
 }
 
 bool TransformWidget::startAction(Core::Int32 x, Core::Int32 y) {

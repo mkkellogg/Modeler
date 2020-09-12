@@ -7,7 +7,6 @@
 #include "Core/geometry/Mesh.h"
 #include "Core/render/RenderableContainer.h"
 #include "Core/render/MeshRenderer.h"
-#include "Core/render/ReflectionProbe.h"
 #include "Core/render/RenderTargetCube.h"
 #include "Core/render/RenderTarget2D.h"
 #include "Core/light/AmbientIBLLight.h"
@@ -24,10 +23,6 @@ MoonlitNightScene::MoonlitNightScene(ModelerApp& modelerApp): ModelerScene(model
 
 void MoonlitNightScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
-
-   /* renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(2.0f);
-    renderCamera->setHDRGamma(1.0f);*/
 
     renderCamera->setHDREnabled(true);
     renderCamera->setHDRToneMapTypeExposure(2.0f);
@@ -58,8 +53,6 @@ void MoonlitNightScene::setupSkyboxes() {
     skyboxTextureAttributes.MipLevels = 2;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
 
-
-
     std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
     skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_north.png", true));
     skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_south.png", true));
@@ -88,14 +81,15 @@ void MoonlitNightScene::setupLights() {
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    /*this->pointLightObject = engine->createObject3D<Core::MeshContainer>();
+    this->pointLightObject = engine->createObject3D<Core::MeshContainer>();
     this->pointLightObject->setName("Point light");
-    //this->coreScene.addObjectToScene(pointLightObject);
-    Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
-    pointLight->setColor(1.0f, 1.0f, 1.0f, 1.0f);
+    coreScene.addObjectToScene(pointLightObject);
+    Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 512, 0.0115, 0.35);
+    pointLight->setColor(1.0f, 0.9f, 0.1f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    pointLight->setRadius(30.0f);
-    this->pointLightObject->getTransform().translate(Core::Vector3r(5.0f, 10.0f, 5.0f));
+    pointLight->setRadius(12.0f);
+    pointLight->setIntensity(50.0f);
+    this->pointLightObject->getTransform().translate(Core::Vector3r(64, 36, -142));
     Core::Real pointLightSize = 0.35f;
 
     Core::WeakPointer<Core::Mesh> pointLightMesh = Core::GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
@@ -103,7 +97,7 @@ void MoonlitNightScene::setupLights() {
     Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer, Core::Mesh>(pointLightMaterial, this->pointLightObject));
     pointLightRenderer->setCastShadows(false);
     this->pointLightObject->addRenderable(pointLightMesh);
-    coreScene.addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);*/
+    coreScene.addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
     this->directionalLightObject = engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");

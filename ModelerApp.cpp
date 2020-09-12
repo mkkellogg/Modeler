@@ -113,8 +113,8 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
                Core::WeakPointer<Core::MeshContainer> meshContainer =
                        Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
                if (meshContainer) {
-                   const std::vector<Core::PersistentWeakPointer<Core::Mesh>>& meshes = meshContainer->getRenderables();
-                   for (Core::WeakPointer<Core::Mesh> mesh : meshes) {
+                   for (Core::UInt32 i = 0; i < meshContainer->getBaseRenderableCount(); i++) {
+                       Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderable(i);
                        this->coreScene.addObjectToSceneRaycaster(obj, mesh);
                    }
                }
@@ -205,7 +205,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0, 0, 0, 0));
     this->setupRenderCamera();
 
-    this->loadScene(2);
+    this->loadScene(3);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
@@ -639,7 +639,7 @@ void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>
             rendered[objectID] = true;
         }
     }
-    renderer->renderObjectBasic(root, camera, true);
+    renderer->renderSceneBasic(root, camera, true);
 
     for (unsigned int i = 0; i < roots.size(); i++) {
         Core::WeakPointer<Core::Object3D> object = roots[i];
