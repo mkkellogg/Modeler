@@ -9,14 +9,11 @@
 #include "Core/Engine.h"
 #include "Core/render/Camera.h"
 #include "Core/scene/Scene.h"
-#include "Core/light/AmbientLight.h"
 
-class CornfieldScene : public ModelerScene
+class SunriseScene : public ModelerScene
 {
 public:
-    CornfieldScene(ModelerApp& modelerApp);
-    ~CornfieldScene();
-
+    SunriseScene(ModelerApp& modelerApp);
     void load() override;
     void update() override;
 
@@ -28,6 +25,5 @@ private:
     unsigned int frameCount;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
-    Core::WeakPointer<Core::MeshContainer>  pointLightObject;
-    Core::WeakPointer<Core::ReflectionProbe> centerProbe;
+    Core::WeakPointer<Core::Object3D>  pointLightObject;
 };

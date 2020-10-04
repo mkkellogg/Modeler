@@ -35,6 +35,13 @@ class MainGUI;
 class ModelerApp {
 public:
 
+    enum class SceneID {
+        SunnySky = 0,
+        MoonlitNight = 1,
+        Sunrise = 2,
+        Sunset = 3
+    };
+
     using ModelerAppLifecycleEventCallback = std::function<void()>;
     using ModelerAppLoadModelCallback = std::function<void(Core::WeakPointer<Core::Object3D>)>;
     using ModelerAppLoadAnimationCallback = std::function<void(Core::WeakPointer<Core::Animation>)>;
@@ -63,10 +70,11 @@ private:
     void gesture(GestureAdapter::GestureEvent event);
     void mouseButton(MouseAdapter::MouseEventType type, Core::UInt32 button, Core::Int32 x, Core::Int32 y);
     void setupRenderCamera();
-    void loadScene(int scene);
+    void loadScene(SceneID scene);
     void resolveOnUpdateCallbacks();
     void preRenderCallback();
     void postRenderCallback();
+    void renderOutline();
     void renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera);
 
     RenderWindow* renderWindow;

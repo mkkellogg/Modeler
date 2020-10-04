@@ -26,7 +26,7 @@ void MoonlitNightScene::load() {
 
     renderCamera->setHDREnabled(true);
     renderCamera->setHDRToneMapTypeExposure(2.0f);
-    renderCamera->setHDRGamma(1.0f);
+    renderCamera->setHDRGamma(1.5f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
     cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
@@ -81,22 +81,29 @@ void MoonlitNightScene::setupLights() {
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    this->pointLightObject = engine->createObject3D<Core::MeshContainer>();
+    this->pointLightObject = engine->createObject3D();
     this->pointLightObject->setName("Point light");
     coreScene.addObjectToScene(pointLightObject);
-    Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 512, 0.0115, 0.35);
+    Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 512, 0.0115f, 0.35f);
     pointLight->setColor(1.0f, 0.9f, 0.1f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     pointLight->setRadius(12.0f);
-    pointLight->setIntensity(50.0f);
+    pointLight->setIntensity(100.0f);
     this->pointLightObject->getTransform().translate(Core::Vector3r(64, 36, -142));
-    Core::Real pointLightSize = 0.35f;
 
+
+    Core::Real pointLightSize = 0.35f;
+    Core::WeakPointer<Core::MeshContainer> pointLightMeshContainer = engine->createRenderableContainer<Core::MeshContainer, Core::Mesh>(this->pointLightObject);
     Core::WeakPointer<Core::Mesh> pointLightMesh = Core::GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    pointLightMesh->setNormalsSmoothingThreshold(80.0f);
+    pointLightMesh->setCalculateNormals(true);
+    pointLightMesh->setCalculateTangents(true);
+    pointLightMesh->setCalculateBounds(true);
+
     Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
-    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer, Core::Mesh>(pointLightMaterial, this->pointLightObject));
+    Core::WeakPointer<Core::MeshRenderer> pointLightRenderer = engine->createRenderer<Core::MeshRenderer, Core::Mesh>(pointLightMaterial, this->pointLightObject);
     pointLightRenderer->setCastShadows(false);
-    this->pointLightObject->addRenderable(pointLightMesh);
+    pointLightMeshContainer->addRenderable(pointLightMesh);
     coreScene.addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
     this->directionalLightObject = engine->createObject3D();

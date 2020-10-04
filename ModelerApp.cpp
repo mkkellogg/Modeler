@@ -2,8 +2,8 @@
 #include "RenderWindow.h"
 #include "SceneUtils.h"
 #include "KeyboardAdapter.h"
-#include "Scene/CornfieldScene.h"
 #include "Scene/SunnySkyScene.h"
+#include "Scene/SunriseScene.h"
 #include "Scene/SunsetScene.h"
 #include "Scene/MoonlitNightScene.h"
 #include "Util/FileUtil.h"
@@ -98,6 +98,7 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
 
         CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, preserveFBXPivots, usePhysicalMaterial, abbrevName, callback](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
+           modelLoader.setFallbackTexturePath("assets/textures/");
            Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, true, true, preserveFBXPivots, usePhysicalMaterial);
 
            Core::WeakPointer<Core::Object3D> newRoot = engine->createObject3D();
@@ -106,16 +107,19 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
            rootObject->getTransform().getLocalMatrix().setIdentity();
            rootObject = newRoot;
 
-           this->coreScene.addObjectToScene(rootObject);
            rootObject->setName(abbrevName);
+           this->coreScene.addObjectToScene(rootObject);
            Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
            scene->visitScene(rootObject, [this, rootObject](Core::WeakPointer<Core::Object3D> obj){
-               Core::WeakPointer<Core::MeshContainer> meshContainer =
-                       Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
-               if (meshContainer) {
-                   for (Core::UInt32 i = 0; i < meshContainer->getBaseRenderableCount(); i++) {
-                       Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderable(i);
-                       this->coreScene.addObjectToSceneRaycaster(obj, mesh);
+               Core::WeakPointer<Core::BaseRenderableContainer> baseRenderableContainer = obj->getBaseRenderableContainer();
+               if (baseRenderableContainer.isValid()) {
+                   Core::WeakPointer<Core::MeshContainer> meshContainer =
+                           Core::WeakPointer<Core::BaseRenderableContainer>::dynamicPointerCast<Core::MeshContainer>(baseRenderableContainer);
+                   if (meshContainer) {
+                       for (Core::UInt32 i = 0; i < meshContainer->getBaseRenderableCount(); i++) {
+                           Core::WeakPointer<Core::Mesh> mesh = meshContainer->getRenderable(i);
+                           this->coreScene.addObjectToSceneRaycaster(obj, mesh);
+                       }
                    }
                }
            });
@@ -205,7 +209,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0, 0, 0, 0));
     this->setupRenderCamera();
 
-    this->loadScene(3);
+    this->loadScene(SceneID::Sunset);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
@@ -262,31 +266,30 @@ void ModelerApp::setupRenderCamera() {
 
 }
 
-void ModelerApp::loadScene(int scene) {
+void ModelerApp::loadScene(SceneID scene) {
     switch(scene) {
-        case 0:
-        {
-           std::shared_ptr<CornfieldScene> cornfieldScene = std::make_shared<CornfieldScene>(*this);
-           cornfieldScene->load();
-           this->modelerScene = cornfieldScene;
-
-        }
-        break;
-        case 1:
+        case SceneID::SunnySky:
         {
            std::shared_ptr<SunnySkyScene> sunnySkyScene = std::make_shared<SunnySkyScene>(*this);
            sunnySkyScene->load();
            this->modelerScene = sunnySkyScene;
         }
         break;
-        case 2:
+        case SceneID::Sunrise:
+        {
+           std::shared_ptr<SunriseScene> sunriseScene = std::make_shared<SunriseScene>(*this);
+           sunriseScene->load();
+           this->modelerScene = sunriseScene;
+        }
+        break;
+        case SceneID::Sunset:
         {
            std::shared_ptr<SunsetScene> sunsetScene = std::make_shared<SunsetScene>(*this);
            sunsetScene->load();
            this->modelerScene = sunsetScene;
         }
         break;
-        case 3:
+        case SceneID::MoonlitNight:
         {
            std::shared_ptr<MoonlitNightScene> moonlitNightScene = std::make_shared<MoonlitNightScene>(*this);
            moonlitNightScene->load();
@@ -366,8 +369,6 @@ void ModelerApp::setupHighlightMaterials() {
     this->copyMaterial->setSourceBlendingFactor(Core::RenderState::BlendingFactor::SrcAlpha);
     this->copyMaterial->setDestBlendingFactor(Core::RenderState::BlendingFactor::OneMinusSrcAlpha);
     this->copyMaterial->setLit(false);
-
-
 }
 
 void ModelerApp::preRenderCallback() {
@@ -375,73 +376,13 @@ void ModelerApp::preRenderCallback() {
 }
 
 void ModelerApp::postRenderCallback() {
+    this->renderOutline();
+}
+
+void ModelerApp::renderOutline() {
+
     const std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->coreScene.getSelectedObjects();
     if (selectedObjects.size() > 0 ) {
-
-        /*this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, false);
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, false);
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, false);
-
-        Core::Bool isSkyboxEnabled = this->renderCamera->isSkyboxEnabled();
-        Core::Bool isHDREnabled = this->renderCamera->isHDREnabled();
-        this->renderCamera->setSkyboxEnabled(false);
-        this->renderCamera->setHDREnabled(false);
-
-        this->highlightMaterial->setStencilTestEnabled(false);
-        this->highlightMaterial->setStencilWriteMask(0x00);
-        this->highlightMaterial->setFaceCullingEnabled(true);
-        this->highlightMaterial->setColorWriteEnabled(true);
-        this->highlightMaterial->setDepthTestEnabled(true);
-        this->highlightMaterial->setDepthWriteEnabled(true);
-        this->renderOnce(selectedObjects, this->renderCamera, this->highlightMaterial);
-
-        this->engine->getGraphicsSystem()->clearActiveRenderTarget(false, false, true);
-        this->highlightMaterial->setStencilWriteMask(0xFF);
-        this->highlightMaterial->setStencilReadMask(0xFF);
-        this->highlightMaterial->setStencilRef(1);
-        this->highlightMaterial->setStencilTestEnabled(true);
-        this->highlightMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::Always);
-        this->highlightMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
-        this->highlightMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
-        this->highlightMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
-        this->highlightMaterial->setFaceCullingEnabled(false);
-        this->highlightMaterial->setColorWriteEnabled(false);
-        this->highlightMaterial->setDepthTestEnabled(false);
-        this->highlightMaterial->setDepthWriteEnabled(true);
-        this->renderOnce(selectedObjects, this->renderCamera, this->highlightMaterial);
-
-        this->outlineMaterial->setStencilWriteMask(0x00);
-        this->outlineMaterial->setStencilReadMask(0xFF);
-        this->outlineMaterial->setStencilRef(1);
-        this->outlineMaterial->setStencilTestEnabled(true);
-        this->outlineMaterial->setStencilComparisonFunction(Core::RenderState::StencilFunction::NotEqual);
-        this->outlineMaterial->setStencilFailActionStencil(Core::RenderState::StencilAction::Keep);
-        this->outlineMaterial->setStencilFailActionDepth(Core::RenderState::StencilAction::Keep);
-        this->outlineMaterial->setStencilAllPassAction(Core::RenderState::StencilAction::Replace);
-        this->outlineMaterial->setFaceCullingEnabled(false);
-        this->outlineMaterial->setOutlineColor(this->outlineColor);
-        this->outlineMaterial->setColorWriteEnabled(true);
-        this->outlineMaterial->setDepthWriteEnabled(false);
-        this->outlineMaterial->setDepthTestEnabled(true);
-        this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::LessThanOrEqual);
-        this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
-
-        this->outlineMaterial->setOutlineColor(this->darkOutlineColor);
-        this->outlineMaterial->setDepthFunction(Core::RenderState::DepthFunction::GreaterThanOrEqual);
-        this->renderOnce(selectedObjects, this->renderCamera, this->outlineMaterial);
-
-        this->renderCamera->setSkyboxEnabled(isSkyboxEnabled);
-        this->renderCamera->setHDREnabled(isHDREnabled);
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Color, true);
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Depth, true);
-        this->renderCamera->setAutoClearRenderBuffer(Core::RenderBufferType::Stencil, true);*/
-
-
-
-
-
-
-
         static std::vector<Core::WeakPointer<Core::Object3D>> renderRoot;
         Core::WeakPointer<Core::Graphics> graphics = Core::Engine::instance()->getGraphicsSystem();
         Core::WeakPointer<Core::RenderTarget> saveRenderTarget = graphics->getCurrentRenderTarget();
@@ -526,8 +467,6 @@ void ModelerApp::postRenderCallback() {
         this->colorSetMaterial->setOutputColor(this->darkOutlineColor);
         graphics->blit(this->bufferOutlineRenderTargetA, this->bufferOutlineRenderTargetA, -1, this->colorSetMaterial, false);
 
-
-
         //render outline
         graphics->blit(this->bufferOutlineRenderTargetA, this->bufferOutlineRenderTargetB, -1, this->bufferOutlineMaterial, true);
 
@@ -550,14 +489,8 @@ void ModelerApp::postRenderCallback() {
         this->renderCamera->setRenderTarget(this->bufferOutlineRenderTargetA);
         this->renderOnce(selectedObjects, this->renderCamera);
 
-
         // render outline to main buffer
         graphics->blit(this->bufferOutlineRenderTargetA, saveRenderTarget, -1, this->copyMaterial, false);
-
-
-
-
-
 
         this->renderCamera->setDepthOutputOverride(saveDepthOutputOverride);
         this->renderCamera->setSkyboxEnabled(saveRenderSkybox);
@@ -573,7 +506,6 @@ void ModelerApp::postRenderCallback() {
         this->transformWidget.updateCamera();
         this->transformWidget.render();
     }
-
     this->frameCount++;
 }
 
@@ -634,6 +566,7 @@ void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>
         Core::WeakPointer<Core::Object3D> object = roots[i];
         Core::UInt64 objectID = object->getID();
         if (!rendered[objectID]) {
+            object->getTransform().getTempMatrix().copy(object->getTransform().getLocalMatrix());
             saveParents[objectID] = object->getParent();
             root->addChild(object);
             rendered[objectID] = true;
@@ -645,5 +578,6 @@ void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>
         Core::WeakPointer<Core::Object3D> object = roots[i];
         Core::WeakPointer<Core::Object3D> originalParent = saveParents[object->getID()];
         if (originalParent.isValid()) originalParent->addChild(object);
+        object->getTransform().getLocalMatrix().copy(object->getTransform().getTempMatrix());
     }
 }

@@ -27,10 +27,7 @@
 #include "Core/material/StandardPhysicalMaterial.h"
 #include "Core/render/MeshRenderer.h"
 
-QLineEdit* modelImportScaleEdit;
-QLineEdit* modelImportSmoothingThresholdEdit;
-QCheckBox* modelImportZUpCheckBox;
-QCheckBox* modelImportphysicalMaterialCheckBox;
+const float MainGUI::OBJECT_PROPERTY_GUI_UPDATE_EPSILON = 0.000005f;
 
 MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindow(mw), sceneObjectTree(nullptr),
     modelImportScaleEdit(nullptr), modelImportSmoothingThresholdEdit(nullptr), modelImportZUpCheckBox(nullptr), modelImportphysicalMaterialCheckBox(nullptr) {
@@ -46,7 +43,7 @@ MainGUI::MainGUI(MainWindow *mw): modelerApp(nullptr), qtApp(nullptr), mainWindo
     this->setAutoFillBackground(true);
     this->setUpGUI();
 
-    this->modelNameEdit->setText("/home/mark/Development/Qt/build-modeler2-Desktop_Qt_5_12_5_GCC_64bit-Debug/assets/models/bush_5/bush_5.fbx");
+    this->modelNameEdit->setText("/home/mark/Development/Qt/build-modeler2-Desktop_Qt_5_12_5_GCC_64bit-Debug/assets/models/tree_00/tree_00.fbx");
 }
 
 void MainGUI::setModelerApp(ModelerApp* modelerApp) {
@@ -57,14 +54,14 @@ void MainGUI::setModelerApp(ModelerApp* modelerApp) {
         });
         this->modelerApp->getCoreScene().onSelectedObjectAdded([this](Core::WeakPointer<Core::Object3D> object){
             this->updateGUIWithSelectedSceneObjects(object, true);
-            this->updateGUIWithSelectedSceneObjectsProperties();
+            this->updateGUIWithSelectedSceneObjectsProperties(true);
         });
         this->modelerApp->getCoreScene().onSelectedObjectRemoved([this](Core::WeakPointer<Core::Object3D> object){
             this->updateGUIWithSelectedSceneObjects(object, false);
-            this->updateGUIWithSelectedSceneObjectsProperties();
+            this->updateGUIWithSelectedSceneObjectsProperties(true);
         });
         this->modelerApp->onUpdate([this]() {
-            this->updateGUIWithSelectedSceneObjectsProperties();
+            this->updateGUIWithSelectedSceneObjectsProperties(false);
         });
     }
     else {
@@ -314,7 +311,7 @@ QHBoxLayout* MainGUI::buildSceneToolsLayout() {
 
 }
 
-void MainGUI::updateGUIWithSelectedSceneObjectsProperties() {
+void MainGUI::updateGUIWithSelectedSceneObjectsProperties(bool force) {
     static bool initialized = false;
 
     std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->modelerApp->getCoreScene().getSelectedObjects();
@@ -331,17 +328,17 @@ void MainGUI::updateGUIWithSelectedSceneObjectsProperties() {
 
         std::ostringstream ss;
 
-        this->updateTextFieldFromNumberIfChanged(this->positionXLineEdit, translation.x, this->selectedObjectTranslation.x, !initialized);
-        this->updateTextFieldFromNumberIfChanged(this->positionYLineEdit, translation.y, this->selectedObjectTranslation.y, !initialized);
-        this->updateTextFieldFromNumberIfChanged(this->positionZLineEdit, translation.z, this->selectedObjectTranslation.z, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->positionXLineEdit, translation.x, this->selectedObjectTranslation.x, !initialized || force);
+        this->updateTextFieldFromNumberIfChanged(this->positionYLineEdit, translation.y, this->selectedObjectTranslation.y, !initialized || force);
+        this->updateTextFieldFromNumberIfChanged(this->positionZLineEdit, translation.z, this->selectedObjectTranslation.z, !initialized || force);
 
-        this->updateTextFieldFromNumberIfChanged(this->eulerXLineEdit, euler.x, this->selectedObjectEuler.x, !initialized);
-        this->updateTextFieldFromNumberIfChanged(this->eulerYLineEdit, euler.y, this->selectedObjectEuler.y, !initialized);
-        this->updateTextFieldFromNumberIfChanged(this->eulerZLineEdit, euler.z, this->selectedObjectEuler.z, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->eulerXLineEdit, euler.x, this->selectedObjectEuler.x, !initialized || force);
+        this->updateTextFieldFromNumberIfChanged(this->eulerYLineEdit, euler.y, this->selectedObjectEuler.y, !initialized || force);
+        this->updateTextFieldFromNumberIfChanged(this->eulerZLineEdit, euler.z, this->selectedObjectEuler.z, !initialized || force);
 
-        this->updateTextFieldFromNumberIfChanged(this->scaleXLineEdit, scale.x, this->selectedObjectScale.x, !initialized);
-        this->updateTextFieldFromNumberIfChanged(this->scaleYLineEdit, scale.y, this->selectedObjectScale.y, !initialized);
-        this->updateTextFieldFromNumberIfChanged(this->scaleZLineEdit, scale.z, this->selectedObjectScale.z, !initialized);
+        this->updateTextFieldFromNumberIfChanged(this->scaleXLineEdit, scale.x, this->selectedObjectScale.x, !initialized || force);
+        this->updateTextFieldFromNumberIfChanged(this->scaleYLineEdit, scale.y, this->selectedObjectScale.y, !initialized || force);
+        this->updateTextFieldFromNumberIfChanged(this->scaleZLineEdit, scale.z, this->selectedObjectScale.z, !initialized || force);
 
         this->transformFrame->setVisible(true);
         initialized = true;
@@ -352,12 +349,12 @@ void MainGUI::updateGUIWithSelectedSceneObjectsProperties() {
 }
 
 void MainGUI::updateSelectedSceneObjectsPropertiesFromGUI() {
+    static Core::Matrix4x4 localMatrix;
+    static Core::Matrix4x4 scaleMatrix;
     std::vector<Core::WeakPointer<Core::Object3D>>& selectedObjects = this->modelerApp->getCoreScene().getSelectedObjects();
     if (selectedObjects.size() == 1) {
-        Core::WeakPointer<Core::Object3D> object = selectedObjects[0];;
-        object->getTransform().setLocalPosition(this->selectedObjectTranslation);
-        object->getTransform().getLocalMatrix().setRotationFromEuler(this->selectedObjectEuler);
-        object->getTransform().getLocalMatrix().setScale(this->selectedObjectScale);
+        Core::WeakPointer<Core::Object3D> object = selectedObjects[0];
+        object->getTransform().getLocalMatrix().compose(this->selectedObjectTranslation, this->selectedObjectEuler, this->selectedObjectScale);
     }
 }
 
@@ -369,7 +366,7 @@ void MainGUI::updateTextFieldIfChanged(QLineEdit* field, QString* str) {
 
 void MainGUI::updateTextFieldFromNumberIfChanged(QLineEdit* field, Core::Real value, Core::Real& cachedValue, bool force) {
     static std::ostringstream ss;;
-    if (force || Core::Math::abs(value - cachedValue) > 0.0005f) {
+    if (force || Core::Math::abs(value - cachedValue) > OBJECT_PROPERTY_GUI_UPDATE_EPSILON) {
         ss.str("");
         ss << value;
         field->setText(QString::fromStdString(ss.str()));
@@ -380,8 +377,12 @@ void MainGUI::updateTextFieldFromNumberIfChanged(QLineEdit* field, Core::Real va
 void MainGUI::updateSelectedObjectRealPropertyFromLineEdit(QLineEdit* lineEdit, Core::Real& dest) {
     bool success;
     float temp = lineEdit->text().toFloat(&success);
-    if (success) dest = temp;
-    this->updateSelectedSceneObjectsPropertiesFromGUI();
+    if (success) {
+        if (Core::Math::abs(temp - dest) > OBJECT_PROPERTY_GUI_UPDATE_EPSILON) {
+            dest = temp;
+            this->updateSelectedSceneObjectsPropertiesFromGUI();
+        }
+    }
 }
 
 void MainGUI::selectedObjectPositionXChanged() {
@@ -458,17 +459,20 @@ void MainGUI::loadModel() {
     this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, true, this->modelImportPhysicalMaterial, [this](Core::WeakPointer<Core::Object3D> rootObject){
        Core::WeakPointer<Core::Scene> scene = this->modelerApp->getEngine()->getActiveScene();
        scene->visitScene(rootObject, [this, rootObject](Core::WeakPointer<Core::Object3D> obj){
-           Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::Object3D>::dynamicPointerCast<Core::MeshContainer>(obj);
-           if (meshContainer) {
-               Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>> objectRenderer = meshContainer->getRenderer();
-               if (objectRenderer) {
-                   Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::ObjectRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
-                   if (meshRenderer) {
-                       Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
-                       Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
-                       if (physicalMaterial) {
-                           physicalMaterial->setMetallic(this->modelImportPhysicalMetallic);
-                           physicalMaterial->setRoughness(this->modelImportPhysicalRoughness);
+           Core::WeakPointer<Core::BaseRenderableContainer> baseRenderableContainer = obj->getBaseRenderableContainer();
+           if (baseRenderableContainer.isValid()) {
+               Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::BaseRenderableContainer>::dynamicPointerCast<Core::MeshContainer>(baseRenderableContainer);
+               if (meshContainer) {
+                   Core::WeakPointer<Core::Object3DRenderer<Core::Mesh>> objectRenderer = Core::WeakPointer<Core::BaseObject3DRenderer>::dynamicPointerCast<Core::Object3DRenderer<Core::Mesh>>(obj->getBaseRenderer());
+                   if (objectRenderer) {
+                       Core::WeakPointer<Core::MeshRenderer> meshRenderer = Core::WeakPointer<Core::Object3DRenderer<Core::Mesh>>::dynamicPointerCast<Core::MeshRenderer>(objectRenderer);
+                       if (meshRenderer) {
+                           Core::WeakPointer<Core::Material> renderMaterial = meshRenderer->getMaterial();
+                           Core::WeakPointer<Core::StandardPhysicalMaterial> physicalMaterial = Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterial>(renderMaterial);
+                           if (physicalMaterial) {
+                               physicalMaterial->setMetallic(this->modelImportPhysicalMetallic);
+                               physicalMaterial->setRoughness(this->modelImportPhysicalRoughness);
+                           }
                        }
                    }
                }

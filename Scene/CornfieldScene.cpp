@@ -63,7 +63,7 @@ void CornfieldScene::update() {
         Core::WeakPointer<Core::Texture2D> brdfMap = Core::WeakPointer<Core::Texture>::dynamicPointerCast<Core::Texture2D>(this->centerProbe->getSpecularIBLBRDFMapRenderTarget()->getColorTexture());
         cubeMaterial->setRectTexture(brdfMap);
         cubeMaterial->setCubeTexture(irradianceMap);
-        Core::WeakPointer<Core::MeshContainer> cubeObj = Core::GeometryUtils::buildMeshContainer(cubeMesh, cubeMaterial, "testCube");
+        Core::WeakPointer<Core::Object3D> cubeObj = Core::GeometryUtils::buildMeshContainerObject(cubeMesh, cubeMaterial, "testCube");
         coreScene.addObjectToScene(cubeObj);
         coreScene.addObjectToSceneRaycaster(cubeObj, cubeMesh);
         cubeObj->getTransform().getLocalMatrix().translate(0.0f, 5.0f, 0.0f);
@@ -108,7 +108,8 @@ void CornfieldScene::setupLights() {
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
     ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
 
-    this->pointLightObject = engine->createObject3D<Core::MeshContainer>();
+    this->pointLightObject = engine->createObject3D();
+    Core::WeakPointer<Core::MeshContainer> pointLightMeshContainer = engine->createRenderableContainer<Core::MeshContainer, Core::Mesh>(this->pointLightObject);
     this->pointLightObject->setName("Point light");
     //this->coreScene.addObjectToScene(this->pointLightObject);
     Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(pointLightObject, true, 2048, 0.0115, 0.35);
@@ -122,7 +123,7 @@ void CornfieldScene::setupLights() {
     Core::WeakPointer<Core::BasicMaterial> pointLightMaterial = engine->createMaterial<Core::BasicMaterial>();
     Core::WeakPointer<Core::MeshRenderer> pointLightRenderer(engine->createRenderer<Core::MeshRenderer, Core::Mesh>(pointLightMaterial, this->pointLightObject));
     pointLightRenderer->setCastShadows(false);
-    this->pointLightObject->addRenderable(pointLightMesh);
+    pointLightMeshContainer->addRenderable(pointLightMesh);
     //coreScene.addObjectToSceneRaycaster(this->pointLightObject, pointLightMesh);
 
     this->directionalLightObject = engine->createObject3D();

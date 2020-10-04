@@ -207,16 +207,16 @@ void TransformWidget::buildTranslationObject() {
     Core::WeakPointer<Core::Mesh> arrowMesh = Core::GeometryUtils::buildArrowMesh(baseLength, 0.035f, coneLength, 0.15f, 16, highlightColor);
     Core::WeakPointer<Core::Mesh> arrowColliderMesh = Core::GeometryUtils::buildBoxMesh(.15f, baseLength + coneLength, .15f, highlightColor);
 
-    Core::WeakPointer<MeshContainer> xArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, xMaterial, "XArrow");
+    Core::WeakPointer<Core::Object3D> xArrow = Core::GeometryUtils::buildMeshContainerObject(arrowMesh, xMaterial, "XArrow");
     xArrow->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, 1.0f, -Core::Math::PI / 2.0f);
     xArrow->getTransform().getLocalMatrix().preTranslate(halfLength, 0.0f, 0.0f);
     this->xTranslateID = this->raycaster.addObject(xArrow, arrowColliderMesh);
 
-    Core::WeakPointer<MeshContainer> yArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, yMaterial, "YArrow");
+    Core::WeakPointer<Core::Object3D> yArrow = Core::GeometryUtils::buildMeshContainerObject(arrowMesh, yMaterial, "YArrow");
     yArrow->getTransform().getLocalMatrix().preTranslate(0.0f, halfLength, 0.0f);
     this->yTranslateID = this->raycaster.addObject(yArrow, arrowColliderMesh);
 
-    Core::WeakPointer<MeshContainer> zArrow = Core::GeometryUtils::buildMeshContainer(arrowMesh, zMaterial, "ZArrow");
+    Core::WeakPointer<Core::Object3D> zArrow = Core::GeometryUtils::buildMeshContainerObject(arrowMesh, zMaterial, "ZArrow");
     zArrow->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
     zArrow->getTransform().getLocalMatrix().preTranslate(0.0f, 0.0f, halfLength);
     this->zTranslateID = this->raycaster.addObject(zArrow, arrowColliderMesh);
@@ -241,14 +241,14 @@ void TransformWidget::buildRotationObject() {
     Core::WeakPointer<Core::Mesh> torusMesh = Core::GeometryUtils::buildTorusMesh(torusRadius, torusTubeRadius, 32, 16, highlightColor);
     Core::WeakPointer<Core::Mesh> torusColliderMesh = Core::GeometryUtils::buildTorusMesh(torusRadius, torusTubeRadius * 3.0f, 32, 16, highlightColor);
 
-    Core::WeakPointer<MeshContainer> xRing = Core::GeometryUtils::buildMeshContainer(torusMesh, xMaterial, "XRing");
+    Core::WeakPointer<Core::Object3D> xRing = Core::GeometryUtils::buildMeshContainerObject(torusMesh, xMaterial, "XRing");
     xRing->getTransform().getLocalMatrix().preRotate(0.0f, 0.0f, -1.0f, Core::Math::PI / 2.0f);
     this->xRotateID = this->raycaster.addObject(xRing, torusColliderMesh);
 
-    Core::WeakPointer<MeshContainer> yRing = Core::GeometryUtils::buildMeshContainer(torusMesh, yMaterial, "YRing");
+    Core::WeakPointer<Core::Object3D> yRing = Core::GeometryUtils::buildMeshContainerObject(torusMesh, yMaterial, "YRing");
     this->yRotateID = this->raycaster.addObject(yRing, torusColliderMesh);
 
-    Core::WeakPointer<MeshContainer> zRing = Core::GeometryUtils::buildMeshContainer(torusMesh, zMaterial, "ZRing");
+    Core::WeakPointer<Core::Object3D> zRing = Core::GeometryUtils::buildMeshContainerObject(torusMesh, zMaterial, "ZRing");
     zRing->getTransform().getLocalMatrix().preRotate(1.0f, 0.0f, 0.0f, Core::Math::PI / 2.0f);
     this->zRotateID = this->raycaster.addObject(zRing, torusColliderMesh);
 

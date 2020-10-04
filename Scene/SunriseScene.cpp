@@ -1,4 +1,4 @@
-#include "SunnySkyScene.h"
+#include "SunriseScene.h"
 
 #include "Core/image/TextureUtils.h"
 #include "Core/image/Texture2D.h"
@@ -17,11 +17,11 @@
 
 #include <QDir>
 
-SunnySkyScene::SunnySkyScene(ModelerApp& modelerApp): ModelerScene(modelerApp) {
+SunriseScene::SunriseScene(ModelerApp& modelerApp): ModelerScene(modelerApp) {
     this->frameCount = 0;
 }
 
-void SunnySkyScene::load() {
+void SunriseScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
     renderCamera->setHDREnabled(true);
@@ -38,13 +38,13 @@ void SunnySkyScene::load() {
     this->setupLights();
 }
 
-void SunnySkyScene::update() {
+void SunriseScene::update() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     this->frameCount++;
 }
 
-void SunnySkyScene::setupSkyboxes() {
+void SunriseScene::setupSkyboxes() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
 
@@ -53,16 +53,16 @@ void SunnySkyScene::setupSkyboxes() {
     skyboxTextureAttributes.MipLevels = 2;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
 
-    Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-7_flipped.png", false);
+    Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-6_flipped.png", false);
     renderCamera->getSkybox().build(skyTexture, true);
     renderCamera->setSkyboxEnabled(true);
 }
 
-void SunnySkyScene::setupDefaultObjects() {
+void SunriseScene::setupDefaultObjects() {
     this->sceneHelper.setupCommonSceneElements();
 }
 
-void SunnySkyScene::setupLights() {
+void SunriseScene::setupLights() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
@@ -78,9 +78,11 @@ void SunnySkyScene::setupLights() {
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setIntensity(3.0f);
-    directionalLight->setColor(1.0, 1.0, 0.75, 1.0f);
+    directionalLight->setColor(1.0f, .878f, .878f, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    Core::Vector3r lightVector(-0.6f, -1.0f, -0.4);
+    directionalLight->setFaceCullingEnabled(false);
+
+    Core::Vector3r lightVector(-0.8f, -.35f, 0.2f);
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
     this->directionalLightObject->getTransform().translate(offsetVector, Core::TransformationSpace::World);

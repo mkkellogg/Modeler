@@ -55,6 +55,9 @@ protected slots:
     void setTransformModeRotation();
 
 private:
+
+    static const float OBJECT_PROPERTY_GUI_UPDATE_EPSILON;
+
     class SceneTreeWidgetItem: public QTreeWidgetItem {
     public:
         Core::WeakPointer<Core::Object3D> sceneObject;
@@ -67,7 +70,7 @@ private:
     QVBoxLayout* buildRightLayout();
     QHBoxLayout* buildSceneToolsLayout();
     void updateGUIWithSelectedSceneObjects(Core::WeakPointer<Core::Object3D> object, bool added);
-    void updateGUIWithSelectedSceneObjectsProperties();
+    void updateGUIWithSelectedSceneObjectsProperties(bool force = false);
     void updateSelectedSceneObjectsPropertiesFromGUI();
     void updateTextFieldIfChanged(QLineEdit* field, QString* str);
     void updateTextFieldFromNumberIfChanged(QLineEdit* field, Core::Real value, Core::Real& cachedValue, bool force = false);
@@ -118,7 +121,6 @@ private:
     bool modelImportPhysicalMaterial;
     float modelImportPhysicalMetallic = 0.0f;
     float modelImportPhysicalRoughness = 0.9f;
-
 
     Core::Vector3r selectedObjectTranslation;
     Core::Vector3r selectedObjectScale;

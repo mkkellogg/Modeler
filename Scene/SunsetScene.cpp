@@ -26,7 +26,7 @@ void SunsetScene::load() {
 
     renderCamera->setHDREnabled(true);
     renderCamera->setHDRToneMapTypeExposure(2.0f);
-    renderCamera->setHDRGamma(1.0f);
+    renderCamera->setHDRGamma(2.2f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
     cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
@@ -47,14 +47,8 @@ void SunsetScene::update() {
 void SunsetScene::setupSkyboxes() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
-
-    Core::TextureAttributes skyboxTextureAttributes;
-    skyboxTextureAttributes.FilterMode = Core::TextureFilter::Linear;
-    skyboxTextureAttributes.MipLevels = 2;
-    Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
-
-    Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-6_flipped.png", false);
-    renderCamera->getSkybox().build(skyTexture, true);
+    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/Sky-4.hdr", true, Core::Math::PI * -0.75f);
+    renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
     renderCamera->setSkyboxEnabled(true);
 }
 
@@ -71,18 +65,18 @@ void SunsetScene::setupLights() {
     this->ambientLightObject->setName("Ambient light");
     coreScene.addObjectToScene(ambientLightObject);
     Core::WeakPointer<Core::AmbientLight> ambientLight = engine->createLight<Core::AmbientLight>(ambientLightObject);
-    ambientLight->setColor(0.25f, 0.25f, 0.25f, 1.0f);
+    ambientLight->setColor(0.9f, 0.5f, 0.0f, 1.0f);
 
     this->directionalLightObject = engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
     directionalLight->setIntensity(3.0f);
-    directionalLight->setColor(1.0f, .878f, .878f, 1.0f);
+    directionalLight->setColor(1.0f, .75f, .1f, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     directionalLight->setFaceCullingEnabled(false);
 
-    Core::Vector3r lightVector(-0.8f, -.35f, 0.2f);
+    Core::Vector3r lightVector(-0.6f, -.2f, -0.4f);
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
     this->directionalLightObject->getTransform().translate(offsetVector, Core::TransformationSpace::World);
