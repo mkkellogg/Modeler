@@ -25,7 +25,7 @@ void SunsetScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
     renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(2.0f);
+    renderCamera->setHDRToneMapTypeExposure(3.0f);
     renderCamera->setHDRGamma(2.2f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
@@ -47,7 +47,7 @@ void SunsetScene::update() {
 void SunsetScene::setupSkyboxes() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
-    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/Sky-4.hdr", true, Core::Math::PI * -0.75f);
+    Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/Sky-4.hdr", true, Core::Math::PI * -0.85f);
     renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
     renderCamera->setSkyboxEnabled(true);
 }
@@ -76,7 +76,8 @@ void SunsetScene::setupLights() {
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     directionalLight->setFaceCullingEnabled(false);
 
-    Core::Vector3r lightVector(-0.6f, -.2f, -0.4f);
+    // Core::Vector3r lightVector(-0.6f, -.2f, -0.4f);
+    Core::Vector3r lightVector(-0.5f, -.2f, -0.5f);
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
     this->directionalLightObject->getTransform().translate(offsetVector, Core::TransformationSpace::World);

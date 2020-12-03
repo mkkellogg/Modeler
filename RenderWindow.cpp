@@ -40,7 +40,7 @@ QSize RenderWindow::minimumSizeHint() const
 
 QSize RenderWindow::sizeHint() const
 {
-    return QSize(1024, 768);
+    return QSize(1200, 800);
 }
 
 void RenderWindow::cleanup()

@@ -94,7 +94,7 @@ void MoonlitNightScene::setupLights() {
 
     Core::Real pointLightSize = 0.35f;
     Core::WeakPointer<Core::MeshContainer> pointLightMeshContainer = engine->createRenderableContainer<Core::MeshContainer, Core::Mesh>(this->pointLightObject);
-    Core::WeakPointer<Core::Mesh> pointLightMesh = Core::GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 1.0f, 1.0f, 1.0f));
+    Core::WeakPointer<Core::Mesh> pointLightMesh = Core::GeometryUtils::buildBoxMesh(pointLightSize, pointLightSize, pointLightSize, Core::Color(1.0f, 0.9f, 0.1f, 1.0f));
     pointLightMesh->setNormalsSmoothingThreshold(80.0f);
     pointLightMesh->setCalculateNormals(true);
     pointLightMesh->setCalculateTangents(true);

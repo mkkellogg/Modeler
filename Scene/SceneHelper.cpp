@@ -11,11 +11,23 @@
 #include "Core/scene/Scene.h"
 #include "Core/image/TextureUtils.h"
 #include "Core/image/Texture2D.h"
+#include "Core/image/TextureAttr.h"
+#include "Core/image/GridAtlas.h"
 #include "Core/light/AmbientIBLLight.h"
 #include "Core/asset/ModelLoader.h"
 #include "Core/animation/AnimationManager.h"
 #include "Core/animation/AnimationPlayer.h"
 #include "Core/render/BaseObject3DRenderer.h"
+#include "Core/filesys/FileSystem.h"
+#include "Core/particles/ParticleSystem.h"
+#include "Core/particles/ParticleEmitter.h"
+#include "Core/particles/initializer/BoxPositionInitializer.h"
+#include "Core/particles/initializer/RandomVelocityInitializer.h"
+#include "Core/particles/initializer/LifetimeInitializer.h"
+#include "Core/particles/initializer/SizeInitializer.h"
+#include "Core/particles/renderer/ParticleSystemAnimatedSpriteRenderer.h"
+#include "Core/particles/renderer/ParticleSystemPointRenderer.h"
+#include "Core/particles/material/ParticleStandardMaterial.h"
 
 SceneHelper::SceneHelper(ModelerApp& modelerApp): modelerApp(modelerApp) {
 }
@@ -278,6 +290,8 @@ void SceneHelper::createBasePlatform() {
 }
 
 void SceneHelper::setupCommonSceneElements() {
+    Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+    CoreScene& coreScene = this->modelerApp.getCoreScene();
     Core::WeakPointer<Core::Object3D> renderCameraObject = this->modelerApp.getRenderCameraObject();
 
     this->centerProbe = this->createSkyboxReflectionProbe(0.0f, 10.0f, 0.0f);
@@ -330,4 +344,45 @@ void SceneHelper::setupCommonSceneElements() {
 
     renderCameraObject->getTransform().rotate(0.0f, 1.0f, 0.0f, Core::Math::PI * .8, Core::TransformationSpace::World);
     this->modelerApp.setCameraPosition(48.82f, 45.62f, -104.77f);
+
+
+
+
+
+    Core::WeakPointer<Core::Texture2D> atlasTexture;
+    std::shared_ptr<Core::FileSystem> fileSystem = Core::FileSystem::getInstance();
+    std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/star.png");
+
+    Core::TextureAttributes texAttributes;
+    texAttributes.FilterMode = Core::TextureFilter::TriLinear;
+    texAttributes.MipLevels = 4;
+    texAttributes.WrapMode = Core::TextureWrap::Mirror;
+    texAttributes.Format = Core::TextureFormat::RGBA8;
+
+    std::shared_ptr<Core::StandardImage> atalsTextureImage;
+    atalsTextureImage = Core::ImageLoader::loadImageU(atlastexturePath);
+    atlasTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
+    atlasTexture->buildFromImage(atalsTextureImage);
+    Core::GridAtlas atlas(atlasTexture, 1, 1);
+
+
+
+
+
+    Core::WeakPointer<Core::Object3D> particleSystemObject = engine->createObject3D();
+    particleSystemObject->getTransform().translate(57.006f, 27.7081f, -132.096f);
+    coreScene.addObjectToScene(particleSystemObject);
+    Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> particleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(particleSystemObject);
+    Core::WeakPointer<Core::ParticleStandardMaterial> particleMaterial = particleRenderer->getMaterial();
+    particleMaterial->setAtlas(atlas);
+    //Core::WeakPointer<Core::ParticleSystemPointRenderer> particlePointRenderer = engine->createRenderer<Core::ParticleSystemPointRenderer, Core::ParticleSystem>(particleSystemObject);
+    Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 50);
+    Core::ConstantParticleEmitter& constantEmitter = ps->setEmitter<Core::ConstantParticleEmitter>();
+    constantEmitter.emissionRate = 2;
+    ps->addParticleStateInitializer<Core::LifetimeInitializer>(10.0f, 10.0f);
+    ps->addParticleStateInitializer<Core::SizeInitializer>(0.35f, 0.1f);
+    ps->addParticleStateInitializer<Core::BoxPositionInitializer>(2.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f);
+    ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.5f, 25.0f, 0.5f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
+    ps->setSimulateInWorldSpace(true);
+    ps->start();
 }

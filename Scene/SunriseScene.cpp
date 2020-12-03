@@ -53,7 +53,7 @@ void SunriseScene::setupSkyboxes() {
     skyboxTextureAttributes.MipLevels = 2;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
 
-    Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-6_flipped.png", false);
+    Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-6_flipped.png", false, -2.9f);
     renderCamera->getSkybox().build(skyTexture, true);
     renderCamera->setSkyboxEnabled(true);
 }
@@ -82,7 +82,7 @@ void SunriseScene::setupLights() {
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     directionalLight->setFaceCullingEnabled(false);
 
-    Core::Vector3r lightVector(-0.8f, -.35f, 0.2f);
+    Core::Vector3r lightVector(0.6f, -.25f, -0.4f);
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
     this->directionalLightObject->getTransform().translate(offsetVector, Core::TransformationSpace::World);

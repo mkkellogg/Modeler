@@ -44,7 +44,7 @@ std::string fragmentShader =
    "    out_color = (highlightColor * vColor) * clamp(dot(normalize(vNormal), vViewWorld) * highlightScale, highlightLowerBound, 1.0);\n"
    "}\n";
 
-BasicRimShadowMaterial::BasicRimShadowMaterial(Core::WeakPointer<Core::Graphics> graphics) : Core::Material(graphics) {
+BasicRimShadowMaterial::BasicRimShadowMaterial()  {
     this->highlightScale = 1.0f;
     this->highlightLowerBound = 0.0f;
     this->highlightColor.set(1.0f, 1.0f, 1.0f, 1.0f);

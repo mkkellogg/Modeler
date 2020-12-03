@@ -12,6 +12,7 @@ HEADERS       = \
     MouseAdapter.h \
     Scene/MoonlitNightScene.h \
     Scene/SunnySkyScene.h \
+    Scene/SunriseScene.h \
     Scene/SunsetScene.h \
     Settings.h \
     PipedEventAdapter.h \
@@ -27,13 +28,13 @@ HEADERS       = \
     SceneTreeWidget.h \
     KeyboardAdapter.h \
     SceneUtils.h \
-    Scene/CornfieldScene.h \
     Scene/ModelerScene.h \
     Scene/SceneHelper.h \
     Util/FileUtil.h
 SOURCES       = \
     Scene/MoonlitNightScene.cpp \
     Scene/SunnySkyScene.cpp \
+    Scene/SunriseScene.cpp \
     Scene/SunsetScene.cpp \
     main.cpp \
     ModelerApp.cpp \
@@ -53,7 +54,6 @@ SOURCES       = \
     SceneTreeWidget.cpp \
     KeyboardAdapter.cpp \
     SceneUtils.cpp \
-    Scene/CornfieldScene.cpp \
     Scene/ModelerScene.cpp \
     Scene/SceneHelper.cpp \
     Util/FileUtil.cpp

@@ -209,7 +209,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0, 0, 0, 0));
     this->setupRenderCamera();
 
-    this->loadScene(SceneID::Sunset);
+    this->loadScene(SceneID::MoonlitNight);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();

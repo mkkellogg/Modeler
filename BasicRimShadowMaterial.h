@@ -19,7 +19,7 @@ public:
     void setHighlightColor(Core::Color color);
 
 private:
-    BasicRimShadowMaterial(Core::WeakPointer<Core::Graphics> graphics);
+    BasicRimShadowMaterial();
     void bindShaderVarLocations();
 
     Core::Int32 positionLocation;
