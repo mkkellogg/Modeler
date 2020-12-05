@@ -1,9 +1,7 @@
 # Set these to the appropriate directories
-CORE_BUILD_DIR=$$PWD/../../Core/build
-ASSIMP_BUILD_DIR=$$PWD/../../assimp/build/code
-ASSIMP_INCLUDE_DIR1=$$PWD/../../assimp/include
-ASSIMP_INCLUDE_DIR2=$$PWD/../../assimp/build/include
-DEVIL_BUILD_DIR=$$PWD/../devil/devil-src/DevIL/build
+CORE_BINARY_DIR=$$PWD/../../Core/build
+ASSIMP_BINARY_DIR=$$PWD/../../assimp/build/bin
+#DEVIL_BINARY_DIR=$$PWD/../devil/devil-src/DevIL/build
 
 HEADERS       = \
     ModelerApp.h \
@@ -64,31 +62,19 @@ QT           += widgets
 DEFINES += GL_GLEXT_PROTOTYPES
 CONFIG += c++11
 
-win32:CONFIG(release, debug|release): LIBS += -L$$CORE_BUILD_DIR/release/ -lcore
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$CORE_BUILD_DIR/debug/ -lcore
-else:unix: LIBS += -L$$CORE_BUILD_DIR -lcore
+INCLUDEPATH += $$CORE_BINARY_DIR/include/
+DEPENDPATH += $$CORE_BINARY_DIR/include/
 
-INCLUDEPATH += $$CORE_BUILD_DIR/include/
-DEPENDPATH += $$CORE_BUILD_DIR/include/
+LIBS += -L$$CORE_BINARY_DIR/ -lcore
+PRE_TARGETDEPS += $$CORE_BINARY_DIR/libcore.a
+# For windows, the follow line may need to be uncommented
+# PRE_TARGETDEPS += $$CORE_BINARY_DIR/core.lib
 
-win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$CORE_BUILD_DIR/release/libcore.a
-else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$CORE_BUILD_DIR/debug/libcore.a
-else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$CORE_BUILD_DIR/release/core.lib
-else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$CORE_BUILD_DIR/debug/core.lib
-else:unix: PRE_TARGETDEPS += $$CORE_BUILD_DIR/libcore.a
-
-win32:CONFIG(release, debug|release): LIBS += -L$$ASSIMP_BUILD_DIR -lassimp
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$ASSIMP_BUILD_DIR -lassimp
-else:unix: LIBS += -L$$ASSIMP_BUILD_DIR -lassimp
-
-INCLUDEPATH += $$ASSIMP_INCLUDE_DIR1
-INCLUDEPATH += $$ASSIMP_INCLUDE_DIR2
-DEPENDPATH += $ASSIMP_INCLUDE_DIR1
-DEPENDPATH += $ASSIMP_INCLUDE_DIR2
-
-win32:CONFIG(release, debug|release): LIBS += -L$$DEVIL_BUILD_DIR/lib/x64/ -lIL
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$DEVIL_BUILD_DIR/lib/x64/ -lIL
-else:unix: LIBS += -L$$DEVIL_BUILD_DIR/lib/x64/ -lIL
+LIBS += -L$$ASSIMP_BINARY_DIR
+# If you have a custom DevIL location, uncomment the line below
+#LIBS += -L$$DEVIL_BINARY_DIR/lib/x64/
+LIBS += -lassimp
+LIBS += -lIL
 
 
 

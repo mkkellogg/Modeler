@@ -260,7 +260,7 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x,
         animationPlayer->play(animation);
     };
 
-    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80 * Core::Math::DegreesToRads, false, true, usePhysicalMaterial, onLoaded);
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80 * Core::Math::DegreesToRads, false, false, usePhysicalMaterial, onLoaded);
 }
 
 void SceneHelper::createBasePlatform() {
