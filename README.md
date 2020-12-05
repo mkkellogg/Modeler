@@ -18,5 +18,15 @@ The application uses some model & texture assets by default, they can be downloa
 
 ## Building
 
-It is recommended that you build inside QT Creator. You will need to modify the locations of the Core, Assimp, and DevIL libraries in modeler2.pro. This can be done by editing the following variables: CORE_BUILD_DIR, ASSIMP_INCLUDE_DIR, ASSIMP_BUILD_DIR, and DEVIL_BUILD_DIR.
+It is recommended that you build inside QT Creator. You will need to modify the locations of the Core, Assimp, and DevIL libraries in modeler2.pro. This can be done by editing the following variables: CORE_BINARY_DIR, ASSIMP_BINARY_DIR, and DEVIL_BINARY_DIR.
+
+## Linux notes:
+
+To install Qt and Qt Creator on Linux:
+
+     sudo apt install qtcreator
+     
+     sudo apt install build-essential
+     
+     sudo apt install qt5-default
 
