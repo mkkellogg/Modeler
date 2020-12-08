@@ -25,9 +25,11 @@
 #include "Core/particles/initializer/RandomVelocityInitializer.h"
 #include "Core/particles/initializer/LifetimeInitializer.h"
 #include "Core/particles/initializer/SizeInitializer.h"
+#include "Core/particles/initializer/SequenceInitializer.h"
 #include "Core/particles/renderer/ParticleSystemAnimatedSpriteRenderer.h"
 #include "Core/particles/renderer/ParticleSystemPointRenderer.h"
 #include "Core/particles/material/ParticleStandardMaterial.h"
+#include "Core/particles/operator/SequenceOperator.h"
 
 SceneHelper::SceneHelper(ModelerApp& modelerApp): modelerApp(modelerApp) {
 }
@@ -351,19 +353,19 @@ void SceneHelper::setupCommonSceneElements() {
 
     Core::WeakPointer<Core::Texture2D> atlasTexture;
     std::shared_ptr<Core::FileSystem> fileSystem = Core::FileSystem::getInstance();
-    std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/star.png");
+    std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_6_low.png");
 
     Core::TextureAttributes texAttributes;
     texAttributes.FilterMode = Core::TextureFilter::TriLinear;
     texAttributes.MipLevels = 4;
-    texAttributes.WrapMode = Core::TextureWrap::Mirror;
+    texAttributes.WrapMode = Core::TextureWrap::Clamp;
     texAttributes.Format = Core::TextureFormat::RGBA8;
 
     std::shared_ptr<Core::StandardImage> atalsTextureImage;
     atalsTextureImage = Core::ImageLoader::loadImageU(atlastexturePath);
     atlasTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     atlasTexture->buildFromImage(atalsTextureImage);
-    Core::GridAtlas atlas(atlasTexture, 1, 1);
+    Core::GridAtlas atlas(atlasTexture, 16, 8);
 
 
 
@@ -376,13 +378,17 @@ void SceneHelper::setupCommonSceneElements() {
     Core::WeakPointer<Core::ParticleStandardMaterial> particleMaterial = particleRenderer->getMaterial();
     particleMaterial->setAtlas(atlas);
     //Core::WeakPointer<Core::ParticleSystemPointRenderer> particlePointRenderer = engine->createRenderer<Core::ParticleSystemPointRenderer, Core::ParticleSystem>(particleSystemObject);
-    Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 50);
+    Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 1);
     Core::ConstantParticleEmitter& constantEmitter = ps->setEmitter<Core::ConstantParticleEmitter>();
-    constantEmitter.emissionRate = 2;
-    ps->addParticleStateInitializer<Core::LifetimeInitializer>(10.0f, 10.0f);
-    ps->addParticleStateInitializer<Core::SizeInitializer>(0.35f, 0.1f);
+    constantEmitter.emissionRate = 1;
+    Core::WeakPointer<Core::ParticleSequence> sequenceA = ps->createParticleSequence(0, 70);
+   // ps->addParticleStateInitializer<Core::LifetimeInitializer>(10.0f, 10.0f);
+    ps->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
+    ps->addParticleStateInitializer<Core::SizeInitializer>(1.0, 1.0);
     ps->addParticleStateInitializer<Core::BoxPositionInitializer>(2.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f);
-    ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.5f, 25.0f, 0.5f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
+    //ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
+    ps->addParticleStateInitializer<Core::SequenceInitializer>(sequenceA);
+    ps->addParticleStateOperator<Core::SequenceOperator>(sequenceA, 0.075f, true);
     ps->setSimulateInWorldSpace(true);
     ps->start();
 }
