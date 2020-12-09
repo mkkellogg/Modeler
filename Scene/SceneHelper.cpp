@@ -353,7 +353,7 @@ void SceneHelper::setupCommonSceneElements() {
 
     Core::WeakPointer<Core::Texture2D> atlasTexture;
     std::shared_ptr<Core::FileSystem> fileSystem = Core::FileSystem::getInstance();
-    std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_6_low.png");
+    std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_6_low_fixed.png");
 
     Core::TextureAttributes texAttributes;
     texAttributes.FilterMode = Core::TextureFilter::TriLinear;
@@ -388,7 +388,7 @@ void SceneHelper::setupCommonSceneElements() {
     ps->addParticleStateInitializer<Core::BoxPositionInitializer>(2.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f);
     //ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
     ps->addParticleStateInitializer<Core::SequenceInitializer>(sequenceA);
-    ps->addParticleStateOperator<Core::SequenceOperator>(sequenceA, 0.075f, true);
+    ps->addParticleStateOperator<Core::SequenceOperator>(sequenceA, 0.055f, true);
     ps->setSimulateInWorldSpace(true);
     ps->start();
 }
