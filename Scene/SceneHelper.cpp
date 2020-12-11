@@ -12,7 +12,7 @@
 #include "Core/image/TextureUtils.h"
 #include "Core/image/Texture2D.h"
 #include "Core/image/TextureAttr.h"
-#include "Core/image/GridAtlas.h"
+#include "Core/image/Atlas.h"
 #include "Core/light/AmbientIBLLight.h"
 #include "Core/asset/ModelLoader.h"
 #include "Core/animation/AnimationManager.h"
@@ -365,10 +365,8 @@ void SceneHelper::setupCommonSceneElements() {
     atalsTextureImage = Core::ImageLoader::loadImageU(atlastexturePath);
     atlasTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     atlasTexture->buildFromImage(atalsTextureImage);
-    Core::GridAtlas atlas(atlasTexture, 16, 8);
-
-
-
+    Core::Atlas atlas(atlasTexture);
+    atlas.addTileArray(70, 0.0f, 0.0f, 128.0f / 2048.0f, 128.0f / 1024.0f);
 
 
     Core::WeakPointer<Core::Object3D> particleSystemObject = engine->createObject3D();
