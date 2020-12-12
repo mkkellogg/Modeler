@@ -20,6 +20,7 @@
 #include "Core/render/BaseObject3DRenderer.h"
 #include "Core/filesys/FileSystem.h"
 #include "Core/particles/ParticleSystem.h"
+#include "Core/particles/ParticleSequenceGroup.h"
 #include "Core/particles/ParticleEmitter.h"
 #include "Core/particles/initializer/BoxPositionInitializer.h"
 #include "Core/particles/initializer/RandomVelocityInitializer.h"
@@ -379,14 +380,15 @@ void SceneHelper::setupCommonSceneElements() {
     Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 1);
     Core::ConstantParticleEmitter& constantEmitter = ps->setEmitter<Core::ConstantParticleEmitter>();
     constantEmitter.emissionRate = 1;
-    Core::WeakPointer<Core::ParticleSequence> sequenceA = ps->createParticleSequence(0, 70);
+    ps->addParticleSequence(0, 70);
+    Core::WeakPointer<Core::ParticleSequenceGroup> particleSequences = ps->getParticleSequences();
    // ps->addParticleStateInitializer<Core::LifetimeInitializer>(10.0f, 10.0f);
     ps->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
     ps->addParticleStateInitializer<Core::SizeInitializer>(1.0, 1.0);
     ps->addParticleStateInitializer<Core::BoxPositionInitializer>(2.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f);
     //ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
-    ps->addParticleStateInitializer<Core::SequenceInitializer>(sequenceA);
-    ps->addParticleStateOperator<Core::SequenceOperator>(sequenceA, 0.055f, true);
+    ps->addParticleStateInitializer<Core::SequenceInitializer>(particleSequences);
+    ps->addParticleStateOperator<Core::SequenceOperator>(particleSequences, 0.055f, true);
     ps->setSimulateInWorldSpace(true);
     ps->start();
 }
