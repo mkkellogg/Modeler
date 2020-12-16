@@ -352,7 +352,7 @@ void SceneHelper::setupCommonSceneElements() {
 
 
 
-    Core::WeakPointer<Core::Texture2D> atlasTexture;
+    /*Core::WeakPointer<Core::Texture2D> atlasTexture;
     std::shared_ptr<Core::FileSystem> fileSystem = Core::FileSystem::getInstance();
     std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_6_low_fixed.png");
 
@@ -377,7 +377,7 @@ void SceneHelper::setupCommonSceneElements() {
     Core::WeakPointer<Core::ParticleStandardMaterial> particleMaterial = particleRenderer->getMaterial();
     particleMaterial->setAtlas(atlas);
     //Core::WeakPointer<Core::ParticleSystemPointRenderer> particlePointRenderer = engine->createRenderer<Core::ParticleSystemPointRenderer, Core::ParticleSystem>(particleSystemObject);
-    Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 1);
+    Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 5);
     Core::ConstantParticleEmitter& constantEmitter = ps->setEmitter<Core::ConstantParticleEmitter>();
     constantEmitter.emissionRate = 1;
     ps->addParticleSequence(0, 70);
@@ -385,10 +385,51 @@ void SceneHelper::setupCommonSceneElements() {
    // ps->addParticleStateInitializer<Core::LifetimeInitializer>(10.0f, 10.0f);
     ps->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
     ps->addParticleStateInitializer<Core::SizeInitializer>(1.0, 1.0);
-    ps->addParticleStateInitializer<Core::BoxPositionInitializer>(2.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f);
+    ps->addParticleStateInitializer<Core::BoxPositionInitializer>(1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
     //ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
     ps->addParticleStateInitializer<Core::SequenceInitializer>(particleSequences);
     ps->addParticleStateOperator<Core::SequenceOperator>(particleSequences, 0.055f, true);
+    ps->setSimulateInWorldSpace(true);
+    ps->start();*/
+
+
+    Core::WeakPointer<Core::Texture2D> atlasTexture;
+    std::shared_ptr<Core::FileSystem> fileSystem = Core::FileSystem::getInstance();
+    std::string atlastexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_burning_character.png");
+
+    Core::TextureAttributes texAttributes;
+    texAttributes.FilterMode = Core::TextureFilter::TriLinear;
+    texAttributes.MipLevels = 4;
+    texAttributes.WrapMode = Core::TextureWrap::Clamp;
+    texAttributes.Format = Core::TextureFormat::RGBA8;
+
+    std::shared_ptr<Core::StandardImage> atalsTextureImage;
+    atalsTextureImage = Core::ImageLoader::loadImageU(atlastexturePath);
+    atlasTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
+    atlasTexture->buildFromImage(atalsTextureImage);
+    Core::Atlas atlas(atlasTexture);
+    atlas.addTileArray(11, 0.0f, 0.0f, 80.0f/ 2048.0f, 180.0f / 2048.0f);
+
+
+    Core::WeakPointer<Core::Object3D> particleSystemObject = engine->createObject3D();
+    particleSystemObject->getTransform().translate(57.006f, 27.7081f, -132.096f);
+    coreScene.addObjectToScene(particleSystemObject);
+    Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> particleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(particleSystemObject);
+    Core::WeakPointer<Core::ParticleStandardMaterial> particleMaterial = particleRenderer->getMaterial();
+    particleMaterial->setAtlas(atlas);
+    //Core::WeakPointer<Core::ParticleSystemPointRenderer> particlePointRenderer = engine->createRenderer<Core::ParticleSystemPointRenderer, Core::ParticleSystem>(particleSystemObject);
+    Core::WeakPointer<Core::ParticleSystem> ps = engine->createParticleSystem(particleSystemObject, 5);
+    Core::ConstantParticleEmitter& constantEmitter = ps->setEmitter<Core::ConstantParticleEmitter>();
+    constantEmitter.emissionRate = 1;
+    ps->addParticleSequence(0, 11);
+    Core::WeakPointer<Core::ParticleSequenceGroup> particleSequences = ps->getParticleSequences();
+    // ps->addParticleStateInitializer<Core::LifetimeInitializer>(10.0f, 10.0f);
+    ps->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
+    ps->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), Core::Vector2r(0.5f, 1.0f));
+    ps->addParticleStateInitializer<Core::BoxPositionInitializer>(0.25f, 0.0f, 0.25f, 0.0f, 0.0f, 0.0f);
+    //ps->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.0f, 25.0f, 0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
+    ps->addParticleStateInitializer<Core::SequenceInitializer>(particleSequences);
+    ps->addParticleStateOperator<Core::SequenceOperator>(particleSequences, 0.055f, false);
     ps->setSimulateInWorldSpace(true);
     ps->start();
 }
