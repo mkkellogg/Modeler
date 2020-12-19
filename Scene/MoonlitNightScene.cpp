@@ -102,7 +102,7 @@ void MoonlitNightScene::setupLights() {
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(2.0f);
+    directionalLight->setIntensity(1.0f);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
 
@@ -154,22 +154,25 @@ void MoonlitNightScene::setupLights() {
     fire2ParticleMaterial->setAtlas(fire2Atlas);
     Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 6);
     Core::ConstantParticleEmitter& fire2ConstantEmitter = fire2ParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
-    fire2ConstantEmitter.emissionRate = 2;
+    fire2ConstantEmitter.emissionRate = 5;
     fire2ParticleSystem->addParticleSequence(0, 18);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire2ParticleSequences = fire2ParticleSystem->getParticleSequences();
     fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), 0.0f, Core::Vector2r(1.0f, 1.0f), 0.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI * 2.0, -Core::Math::PI);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.5, -.75f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.25, 0.25), 0.0f, Core::Vector2r(0.5f, 0.5f), 0.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.5f, .86f, 0.5f, -0.25f, 0.0f, -0.25f, 2.0f, 0.5f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.1f, 0.4f, 0.1f, -0.05f, 0.8f, -0.05f, 0.5f, 0.8f);
     fire2ParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire2ParticleSequences);
     fire2ParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire2ParticleSequences, 0.055f, false);
     Core::OpacityInterpolatorOperator& fire2OpacityInterpolatorOperator = fire2ParticleSystem->addParticleStateOperator<Core::OpacityInterpolatorOperator>();
     fire2OpacityInterpolatorOperator.addElement(0.0f, 0.0f);
-    fire2OpacityInterpolatorOperator.addElement(1.0f, 0.25f);
-    fire2OpacityInterpolatorOperator.addElement(1.0f, 0.75f);
+    fire2OpacityInterpolatorOperator.addElement(0.3f, 0.25f);
+    fire2OpacityInterpolatorOperator.addElement(0.3f, 0.5f);
     fire2OpacityInterpolatorOperator.addElement(0.0f, 1.0f);
     fire2ParticleSystem->setSimulateInWorldSpace(true);
-    //fire2ParticleSystem->start();
+    fire2ParticleSystem->start();
+
 
     // fire 4 particle system
     Core::WeakPointer<Core::Object3D> fire4FlatParticleSystemObject = engine->createObject3D();
@@ -188,18 +191,18 @@ void MoonlitNightScene::setupLights() {
     fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(3.0f, -1.5f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), 0.6f, Core::Vector2r(0.0f, 0.0f), 0.4f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f, 0.0f, 0.1f, 0.0f, 0.0f, 0.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.1f, 0.4f, 0.1f, -0.05f, 0.8f, -0.05f,  1.0f, 0.8f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.1f, 0.4f, 0.1f, -0.05f, 0.8f, -0.05f,  0.5f, 1.3f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire4FlatParticleSequences, false);
     fire4FlatParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire4FlatParticleSequences, 0.075f, false, false);
 
     Core::OpacityInterpolatorOperator& fire4FlatOpacityInterpolatorOperator = fire4FlatParticleSystem->addParticleStateOperator<Core::OpacityInterpolatorOperator>();
     fire4FlatOpacityInterpolatorOperator.addElement(0.0f, 0.0f);
-    fire4FlatOpacityInterpolatorOperator.addElement(0.8f, 0.1f);
-    fire4FlatOpacityInterpolatorOperator.addElement(.7f, 0.75f);
+    fire4FlatOpacityInterpolatorOperator.addElement(0.6f, 0.2f);
+    fire4FlatOpacityInterpolatorOperator.addElement(.5f, 0.75f);
     fire4FlatOpacityInterpolatorOperator.addElement(0.0f, 1.0f);
 
     Core::SizeInterpolatorOperator& fire4FlatSizeInterpolatorOperator = fire4FlatParticleSystem->addParticleStateOperator<Core::SizeInterpolatorOperator>(true);
-    fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(0.1f, 0.1f), 0.0f);
+    fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(0.3f, 0.3f), 0.0f);
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(1.0f, 1.0f), 0.4f);
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(1.0f, 1.0f), 0.55f);
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(0.65f, 0.65f), 0.75f);
@@ -211,13 +214,13 @@ void MoonlitNightScene::setupLights() {
     Core::WeakPointer<Core::Object3D> fireLightObject = engine->createObject3D();
     particleSystemObject->addChild(fireLightObject);
     fireLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
-    particleSystemObject->getTransform().translate(57.006f, 28.5f, -132.096f);
+    particleSystemObject->getTransform().translate(43.3167f, 32.3185f, -136.33f);
 
     particleSystemObject->setName("Torch");
     Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(fireLightObject, true, 512, 0.0115f, 0.35f);
-    pointLight->setColor(1.0f, 0.9f, 0.1f, 1.0f);
+    pointLight->setColor(1.0f, 0.6f, 0.1f, 1.0f);
     pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     pointLight->setRadius(12.0f);
-    pointLight->setIntensity(100.0f);
+    pointLight->setIntensity(50.0f);
 
 }
