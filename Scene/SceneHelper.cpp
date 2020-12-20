@@ -280,7 +280,7 @@ void SceneHelper::createBasePlatform() {
     bottomSlabObj->setStatic(true);
 }
 
-void SceneHelper::setupCommonSceneElements() {
+void SceneHelper::setupCommonSceneElements(bool excludeCastle) {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
     Core::WeakPointer<Core::Object3D> renderCameraObject = this->modelerApp.getRenderCameraObject();
@@ -298,14 +298,15 @@ void SceneHelper::setupCommonSceneElements() {
 
     std::function<void(Core::WeakPointer<Core::Object3D>)> dummyOnLoad = [](Core::WeakPointer<Core::Object3D> root){};
 
-    this->loadWarrior(true, 0.0f, 48.82f, 27.18f, -138.77f);
+    this->loadWarrior(true, 0.0f, 45.4452f, 27.18f, -140.123f);
     this->loadTerrain(true, Core::Math::PI / 2.0f);
-    this->loadModelStandard(castle1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 48.82f, 27.62f, -164.77f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+    if (!excludeCastle) this->loadModelStandard(castle1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 48.82f, 27.62f, -164.77f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
 
     // front left bushes
     this->loadModelStandard(bush1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 35.0f, 27.5136f, -135.0f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
     this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 28.6463f, 27.5136, -137.331f, 0.015f, 0.015f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
     this->loadModelStandard(bush1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 23.0214f, 27.5136f, -141.079f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+
 
     // front right objects
     this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 68.91f, 26.5136f, -139.049f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
@@ -317,8 +318,9 @@ void SceneHelper::setupCommonSceneElements() {
     this->loadModelStandard(wellPath, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 73.74, 27.11f, -154.55f, 0.02f, 0.02f, 0.02f, false, 0.0f, 0.85f, false, 1, false, false, dummyOnLoad);
     this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 93.14F, 26.69f, -138.61f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
 
+
     // cliffs
-    this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 40.06, 27.178f, -133.22f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0,  55.8991f, 27.178f, -140.469f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
     this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
     this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
 

@@ -84,7 +84,7 @@ void MoonlitNightScene::setupSkyboxes() {
 }
 
 void MoonlitNightScene::setupDefaultObjects() {
-    this->sceneHelper.setupCommonSceneElements();
+    this->sceneHelper.setupCommonSceneElements(true);
 }
 
 void MoonlitNightScene::setupLights() {
@@ -124,8 +124,11 @@ void MoonlitNightScene::setupLights() {
     texAttributes.MipLevels = 4;
     texAttributes.WrapMode = Core::TextureWrap::Clamp;
     texAttributes.Format = Core::TextureFormat::RGBA8;
-    Core::WeakPointer<Core::Object3D> particleSystemObject = engine->createObject3D();
-    coreScene.addObjectToScene(particleSystemObject);
+    Core::WeakPointer<Core::Object3D> torch1ParticleSystemObject = engine->createObject3D();
+    coreScene.addObjectToScene(torch1ParticleSystemObject);
+    Core::WeakPointer<Core::Object3D> torch2ParticleSystemObject = engine->createObject3D();
+    coreScene.addObjectToScene(torch2ParticleSystemObject);
+
 
     // Fire 2 atlas
     std::string fire2TexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_2.png");
@@ -145,13 +148,52 @@ void MoonlitNightScene::setupLights() {
     Core::Atlas fire4FlatAtlas(fire4Texture);
     fire4FlatAtlas.addTileArray(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
 
+    this->createFire2ParticleSystem(engine, torch1ParticleSystemObject, fire2Atlas);
+    this->createFire4ParticleSystem(engine, torch1ParticleSystemObject, fire4FlatAtlas);
+    Core::WeakPointer<Core::Object3D> torch1LightObject = engine->createObject3D();
+    torch1ParticleSystemObject->addChild(torch1LightObject);
+    torch1LightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
+    torch1ParticleSystemObject->getTransform().translate(40.4505, 32.3185f, -141.762f);
+    torch1ParticleSystemObject->setName("Torch1");
+    Core::WeakPointer<Core::PointLight> torch1Light = engine->createPointLight<Core::PointLight>(torch1LightObject, true, 512, 0.0115f, 0.35f);
+    torch1Light->setColor(1.0f, 0.6f, 0.1f, 1.0f);
+    torch1Light->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
+    torch1Light->setRadius(12.0f);
+    torch1Light->setIntensity(50.0f);
 
-    // fire 2 particle system
+    this->createFire2ParticleSystem(engine, torch2ParticleSystemObject, fire2Atlas);
+    this->createFire4ParticleSystem(engine, torch2ParticleSystemObject, fire4FlatAtlas);
+    Core::WeakPointer<Core::Object3D> torch2LightObject = engine->createObject3D();
+    torch2ParticleSystemObject->addChild(torch2LightObject);
+    torch2LightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
+    torch2ParticleSystemObject->getTransform().translate(51.0316f, 32.3185f, -141.762f);
+
+    torch1ParticleSystemObject->setName("Torch1");
+    Core::WeakPointer<Core::PointLight> torch2Light = engine->createPointLight<Core::PointLight>(torch2LightObject, true, 512, 0.0115f, 0.35f);
+    torch2Light->setColor(1.0f, 0.6f, 0.1f, 1.0f);
+    torch2Light->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
+    torch2Light->setRadius(12.0f);
+    torch2Light->setIntensity(50.0f);
+
+
+
+    std::function<void(Core::WeakPointer<Core::Object3D>)> dummyOnLoad = [](Core::WeakPointer<Core::Object3D> root){};
+
+    const std::string modularCastleTowerPath("assets/models/modular_castle_tower/modular_castle_tower.fbx");
+    const std::string modularCastleWallGatePath("assets/models/modular_castle_wall_gate/modular_castle_wall_gate.fbx");
+
+    this->sceneHelper.loadModelStandard(modularCastleTowerPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7209, 27.1098f, -146.606f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+    this->sceneHelper.loadModelStandard(modularCastleTowerPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.6357, 27.1098f, -146.606f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+    this->sceneHelper.loadModelStandard(modularCastleWallGatePath, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.7019, 27.1098f, -146.371f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+
+}
+
+void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas) {
     Core::WeakPointer<Core::Object3D> fire2ParticleSystemObject = engine->createObject3D();
-    particleSystemObject->addChild(fire2ParticleSystemObject);
+    parent->addChild(fire2ParticleSystemObject);
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire2ParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire2ParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire2ParticleMaterial = fire2ParticleRenderer->getMaterial();
-    fire2ParticleMaterial->setAtlas(fire2Atlas);
+    fire2ParticleMaterial->setAtlas(atlas);
     Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 6);
     Core::ConstantParticleEmitter& fire2ConstantEmitter = fire2ParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
     fire2ConstantEmitter.emissionRate = 5;
@@ -172,14 +214,14 @@ void MoonlitNightScene::setupLights() {
     fire2OpacityInterpolatorOperator.addElement(0.0f, 1.0f);
     fire2ParticleSystem->setSimulateInWorldSpace(true);
     fire2ParticleSystem->start();
+}
 
-
-    // fire 4 particle system
+void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas) {
     Core::WeakPointer<Core::Object3D> fire4FlatParticleSystemObject = engine->createObject3D();
-    particleSystemObject->addChild(fire4FlatParticleSystemObject);
+    parent->addChild(fire4FlatParticleSystemObject);
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire4FlatParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire4FlatParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire4FlatParticleMaterial = fire4FlatParticleRenderer->getMaterial();
-    fire4FlatParticleMaterial->setAtlas(fire4FlatAtlas);
+    fire4FlatParticleMaterial->setAtlas(atlas);
     Core::WeakPointer<Core::ParticleSystem> fire4FlatParticleSystem = engine->createParticleSystem(fire4FlatParticleSystemObject, 20);
     Core::ConstantParticleEmitter& fire4FlatConstantEmitter = fire4FlatParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
     //fire4FlatConstantEmitter.emissionRate = 5;
@@ -210,17 +252,4 @@ void MoonlitNightScene::setupLights() {
 
     fire4FlatParticleSystem->setSimulateInWorldSpace(true);
     fire4FlatParticleSystem->start();
-
-    Core::WeakPointer<Core::Object3D> fireLightObject = engine->createObject3D();
-    particleSystemObject->addChild(fireLightObject);
-    fireLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
-    particleSystemObject->getTransform().translate(43.3167f, 32.3185f, -136.33f);
-
-    particleSystemObject->setName("Torch");
-    Core::WeakPointer<Core::PointLight> pointLight = engine->createPointLight<Core::PointLight>(fireLightObject, true, 512, 0.0115f, 0.35f);
-    pointLight->setColor(1.0f, 0.6f, 0.1f, 1.0f);
-    pointLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    pointLight->setRadius(12.0f);
-    pointLight->setIntensity(50.0f);
-
 }

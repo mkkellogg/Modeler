@@ -17,7 +17,7 @@ public:
     void loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void createBasePlatform();
     void createDemoSpheres();
-    void setupCommonSceneElements();
+    void setupCommonSceneElements(bool excludeCastle = false);
 
 private:
     ModelerApp& modelerApp;
