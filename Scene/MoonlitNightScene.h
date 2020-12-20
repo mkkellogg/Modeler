@@ -21,7 +21,8 @@ public:
 private:
     void setupSkyboxes();
     void setupDefaultObjects();
-    void setupLights();
+    void setupBaseLights();
+    void setupScene();
     void createFire2ParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas);
     void createFire4ParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas);
 
