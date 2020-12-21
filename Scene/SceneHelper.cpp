@@ -165,6 +165,10 @@ void SceneHelper::loadTerrain(bool usePhysicalMaterial, float rotation) {
         scene->visitScene(rootObject, [&firstMeshContainer](Core::WeakPointer<Core::Object3D> obj){
 
             Core::WeakPointer<Core::BaseRenderableContainer> baseRenderableContainer = obj->getBaseRenderableContainer();
+            if (obj->getName() != "Scene.003") {
+                 obj->setLayer(1);
+            }
+
             if (baseRenderableContainer.isValid()) {
                 Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::BaseRenderableContainer>::dynamicPointerCast<Core::MeshContainer>(baseRenderableContainer);
                 if (meshContainer) {

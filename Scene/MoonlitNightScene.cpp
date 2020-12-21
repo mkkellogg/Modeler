@@ -164,6 +164,9 @@ void MoonlitNightScene::setupScene() {
     torch1Light->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     torch1Light->setRadius(12.0f);
     torch1Light->setIntensity(50.0f);
+    Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
+    Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
+    torch1Light->setCullingMask(torch1LightCullingMask);
 
     // second torch, root object
     Core::WeakPointer<Core::Object3D> torch2ParticleSystemObject = engine->createObject3D();
@@ -183,6 +186,9 @@ void MoonlitNightScene::setupScene() {
     torch2Light->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     torch2Light->setRadius(12.0f);
     torch2Light->setIntensity(50.0f);
+    Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
+    Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
+    torch2Light->setCullingMask(torch2LightCullingMask);
 
     // castle fort objects
     std::function<void(Core::WeakPointer<Core::Object3D>)> dummyOnLoad = [](Core::WeakPointer<Core::Object3D> root){};
