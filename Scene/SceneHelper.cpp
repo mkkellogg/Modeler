@@ -75,11 +75,11 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
 void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMaterial, bool overrideLoadedTransform, float ex, float ey, float ez, float rx, float ry, float rz, float ra,
                                     float tx, float ty, float tz, float scaleX, float scaleY, float scaleZ, bool singlePassMultiLight, float metallic, float roughness,
                                     bool transparent, unsigned int enabledAlphaChannel, bool doubleSided, bool customShadowRendering,
-                                    std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad, Core::Int32 layer) {
+                                    std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad) {
 
     std::function<void(Core::WeakPointer<Core::Object3D>)> onLoaded = [this, overrideLoadedTransform, ex, ey, ez, rx, ry, rz, ra, tx, ty, tz, scaleX, scaleY, scaleZ,
                                                                        singlePassMultiLight, metallic, roughness, transparent, enabledAlphaChannel, doubleSided,
-                                                                       customShadowRendering, onLoad, layer](Core::WeakPointer<Core::Object3D> rootObject){
+                                                                       customShadowRendering, onLoad](Core::WeakPointer<Core::Object3D> rootObject){
         Core::Matrix4x4 rotationMatrix;
         rotationMatrix.makeRotationFromEuler(ex, ey, ez);
         if (!overrideLoadedTransform) rotationMatrix.multiply(rootObject->getTransform().getLocalMatrix());
@@ -95,10 +95,10 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
         scene->visitScene(rootObject, [&firstMeshContainer, &engine, singlePassMultiLight, metallic, roughness, transparent,
-                                       enabledAlphaChannel, doubleSided, customShadowRendering, layer](Core::WeakPointer<Core::Object3D> obj){
+                                       enabledAlphaChannel, doubleSided, customShadowRendering](Core::WeakPointer<Core::Object3D> obj){
 
             Core::WeakPointer<Core::BaseRenderableContainer> baseRenderableContainer = obj->getBaseRenderableContainer();
-            obj->setLayer(layer);
+           // obj->setLayer(0);
             if (baseRenderableContainer.isValid()) {
                 Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::BaseRenderableContainer>::dynamicPointerCast<Core::MeshContainer>(baseRenderableContainer);
                 if (meshContainer) {
