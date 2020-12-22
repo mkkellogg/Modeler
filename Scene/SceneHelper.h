@@ -12,7 +12,7 @@ public:
     void loadModelStandard(const std::string& path, bool usePhysicalMaterial, bool overrideLoadedTransform, float ex, float ey, float ez,
                            float rx, float ry, float rz, float ra, float tx, float ty, float tz, float scaleX, float scaleY, float scaleZ,
                            bool singlePassMultiLight, float metallic, float roughness, bool transparent, unsigned int enabledAlphaChannel,
-                           bool doubleSided, bool customShadowRendering, std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad);
+                           bool doubleSided, bool customShadowRendering, std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad, Core::Int32 layer = 0);
     void loadTerrain(bool usePhysicalMaterial, float rotation);
     void loadWarrior(bool usePhysicalMaterial, float rotation, float x, float y, float z);
     void createBasePlatform();

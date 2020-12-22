@@ -147,6 +147,7 @@ void MoonlitNightScene::setupScene() {
     Core::Atlas fire4FlatAtlas(fire4Texture);
     fire4FlatAtlas.addTileArray(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
 
+
     // first torch, root object
     Core::WeakPointer<Core::Object3D> torch1ParticleSystemObject = engine->createObject3D();
     coreScene.addObjectToScene(torch1ParticleSystemObject);
@@ -166,7 +167,9 @@ void MoonlitNightScene::setupScene() {
     torch1Light->setIntensity(50.0f);
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
+   // Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 2);
     torch1Light->setCullingMask(torch1LightCullingMask);
+
 
     // second torch, root object
     Core::WeakPointer<Core::Object3D> torch2ParticleSystemObject = engine->createObject3D();
@@ -179,8 +182,7 @@ void MoonlitNightScene::setupScene() {
     torch2ParticleSystemObject->addChild(torch2LightObject);
     torch2LightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
     torch2ParticleSystemObject->getTransform().translate(51.0316f, 32.3185f, -141.762f);
-
-    torch1ParticleSystemObject->setName("Torch1");
+    torch2ParticleSystemObject->setName("Torch2");
     Core::WeakPointer<Core::PointLight> torch2Light = engine->createPointLight<Core::PointLight>(torch2LightObject, true, 512, 0.0115f, 0.35f);
     torch2Light->setColor(1.0f, 0.6f, 0.1f, 1.0f);
     torch2Light->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
@@ -188,15 +190,53 @@ void MoonlitNightScene::setupScene() {
     torch2Light->setIntensity(50.0f);
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
+   // Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 2);
     torch2Light->setCullingMask(torch2LightCullingMask);
+
+
+        /*
+    // third torch, root object
+    Core::WeakPointer<Core::Object3D> torch3ParticleSystemObject = engine->createObject3D();
+    coreScene.addObjectToScene(torch3ParticleSystemObject);
+
+    // second torch particle systems and light
+    this->createFire2ParticleSystem(engine, torch3ParticleSystemObject, fire2Atlas);
+    this->createFire4ParticleSystem(engine, torch3ParticleSystemObject, fire4FlatAtlas);
+    Core::WeakPointer<Core::Object3D> torch3LightObject = engine->createObject3D();
+    torch3ParticleSystemObject->addChild(torch3LightObject);
+    torch3LightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
+    torch3ParticleSystemObject->getTransform().translate(45.0316f, 32.3185f, -163.762f);
+    torch3ParticleSystemObject->setName("Torch3");
+    Core::WeakPointer<Core::PointLight> torch3Light = engine->createPointLight<Core::PointLight>(torch3LightObject, true, 512, 0.0115f, 0.35f);
+    torch3Light->setColor(1.0f, 0.6f, 0.1f, 1.0f);
+    torch3Light->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
+    torch3Light->setRadius(12.0f);
+    torch3Light->setIntensity(50.0f);
+    Core::IntMask torch3LightCullingMask = torch3Light->getCullingMask();
+    Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 1);
+    Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 4);
+    torch3Light->setCullingMask(torch3LightCullingMask);*/
+
 
     // castle fort objects
     std::function<void(Core::WeakPointer<Core::Object3D>)> dummyOnLoad = [](Core::WeakPointer<Core::Object3D> root){};
     const std::string modularCastleTowerPath("assets/models/modular_castle_tower/modular_castle_tower.fbx");
     const std::string modularCastleWallGatePath("assets/models/modular_castle_wall_gate/modular_castle_wall_gate.fbx");
-    this->sceneHelper.loadModelStandard(modularCastleTowerPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7209, 27.1098f, -146.606f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
-    this->sceneHelper.loadModelStandard(modularCastleTowerPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.6357, 27.1098f, -146.606f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
-    this->sceneHelper.loadModelStandard(modularCastleWallGatePath, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.7019, 27.1098f, -146.371f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+    const std::string modularCastleWallBottomPath("assets/models/modular_castle_wall_bottom/modular_castle_wall_bottom.fbx");
+    const std::string modularCastleWallTopPath("assets/models/modular_castle_wall_top/modular_castle_wall_top.fbx");
+    this->sceneHelper.loadModelStandard(modularCastleTowerPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7209, 27.1098f, -146.606f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleTowerPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.6357, 27.1098f, -146.606f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallGatePath, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.7019, 27.1098f, -146.371f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+
+    this->sceneHelper.loadModelStandard(modularCastleWallBottomPath, true, false, 0.0f, -Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7705f, 27.1098f, -153.457f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallTopPath, true, false, 0.0f, -Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7705f, 27.1098f, -153.457f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallBottomPath, true, false, 0.0f, -Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7705f, 27.1098f, -162.38f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallTopPath, true, false, 0.0f, -Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 38.7705f, 27.1098f, -162.38f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+
+    this->sceneHelper.loadModelStandard(modularCastleWallBottomPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.8551f, 27.1098f, -153.457f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallTopPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.8551f, 27.1098f, -153.457f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallBottomPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.8551f, 27.1098f, -162.38f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
+    this->sceneHelper.loadModelStandard(modularCastleWallTopPath, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 52.8551f, 27.1098f, -162.38f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
 
 }
 
