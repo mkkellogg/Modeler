@@ -75,11 +75,11 @@ Core::WeakPointer<Core::ReflectionProbe> SceneHelper::createSkyboxReflectionProb
 void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMaterial, bool overrideLoadedTransform, float ex, float ey, float ez, float rx, float ry, float rz, float ra,
                                     float tx, float ty, float tz, float scaleX, float scaleY, float scaleZ, bool singlePassMultiLight, float metallic, float roughness,
                                     bool transparent, unsigned int enabledAlphaChannel, bool doubleSided, bool customShadowRendering,
-                                    std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad) {
+                                    std::function<void(Core::WeakPointer<Core::Object3D>)> onLoad, int layer) {
 
     std::function<void(Core::WeakPointer<Core::Object3D>)> onLoaded = [this, overrideLoadedTransform, ex, ey, ez, rx, ry, rz, ra, tx, ty, tz, scaleX, scaleY, scaleZ,
                                                                        singlePassMultiLight, metallic, roughness, transparent, enabledAlphaChannel, doubleSided,
-                                                                       customShadowRendering, onLoad](Core::WeakPointer<Core::Object3D> rootObject){
+                                                                       customShadowRendering, onLoad, layer](Core::WeakPointer<Core::Object3D> rootObject){
         Core::Matrix4x4 rotationMatrix;
         rotationMatrix.makeRotationFromEuler(ex, ey, ez);
         if (!overrideLoadedTransform) rotationMatrix.multiply(rootObject->getTransform().getLocalMatrix());
@@ -95,10 +95,10 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
         scene->visitScene(rootObject, [&firstMeshContainer, &engine, singlePassMultiLight, metallic, roughness, transparent,
-                                       enabledAlphaChannel, doubleSided, customShadowRendering](Core::WeakPointer<Core::Object3D> obj){
+                                       enabledAlphaChannel, doubleSided, customShadowRendering, layer](Core::WeakPointer<Core::Object3D> obj){
 
             Core::WeakPointer<Core::BaseRenderableContainer> baseRenderableContainer = obj->getBaseRenderableContainer();
-           // obj->setLayer(0);
+            obj->setLayer(layer);
             if (baseRenderableContainer.isValid()) {
                 Core::WeakPointer<Core::MeshContainer> meshContainer = Core::WeakPointer<Core::BaseRenderableContainer>::dynamicPointerCast<Core::MeshContainer>(baseRenderableContainer);
                 if (meshContainer) {
@@ -305,40 +305,40 @@ void SceneHelper::setupCommonSceneElements(bool excludeCastle) {
 
     this->loadWarrior(true, 0.0f, 45.4452f, 27.18f, -140.123f);
     this->loadTerrain(true, Core::Math::PI / 2.0f);
-    if (!excludeCastle) this->loadModelStandard(castle1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 48.82f, 27.62f, -164.77f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad);
+    if (!excludeCastle) this->loadModelStandard(castle1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 48.82f, 27.62f, -164.77f, 0.015f, 0.015f, 0.015f, false, 0.0f, 0.85f, false, 0, false, false, dummyOnLoad, 0);
 
     // front left bushes
-    this->loadModelStandard(bush1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 35.0f, 27.5136f, -135.0f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 28.6463f, 27.5136, -137.331f, 0.015f, 0.015f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 23.0214f, 27.5136f, -141.079f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(bush1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 35.0f, 27.5136f, -135.0f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 28.6463f, 27.5136, -137.331f, 0.015f, 0.015f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(bush1Path, true, false, 0.0f, Core::Math::PI / 2.0f, 0.0f, 0, 1, 0, 0, 23.0214f, 27.5136f, -141.079f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
 
 
     // front right objects
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 68.91f, 26.5136f, -139.049f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 74.83f, 27.5136f, -142.29f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 85.49f, 26.8536f, -126.29f, 0.0055f, 0.0055f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 78.36f, 27.5136f, -146.75f, 0.015f, 0.015f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f,  0.0f, 0, 1, 0, 0, 63.26f, 27.5136f, -139.87f, 0.01f,  0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(stone2Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 79.5061, 25.6019f, -127.909f, 0.015f, 0.025f, 0.07f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(wellPath, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 73.74, 27.11f, -154.55f, 0.02f, 0.02f, 0.02f, false, 0.0f, 0.85f, false, 1, false, false, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 93.14F, 26.69f, -138.61f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 68.91f, 26.5136f, -139.049f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 74.83f, 27.5136f, -142.29f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 85.49f, 26.8536f, -126.29f, 0.0055f, 0.0055f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 78.36f, 27.5136f, -146.75f, 0.015f, 0.015f, 0.015f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(bush1Path, true, false, 0.0f, 0.0f,  0.0f, 0, 1, 0, 0, 63.26f, 27.5136f, -139.87f, 0.01f,  0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(stone2Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 79.5061, 25.6019f, -127.909f, 0.015f, 0.025f, 0.07f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(wellPath, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 73.74, 27.11f, -154.55f, 0.02f, 0.02f, 0.02f, false, 0.0f, 0.85f, false, 1, false, false, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 93.14F, 26.69f, -138.61f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
 
 
     // cliffs
-    this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0,  55.8991f, 27.178f, -140.469f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
-    this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad);
+    this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0,  55.8991f, 27.178f, -140.469f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, true, 1, true, true, dummyOnLoad, 0);
 
     // random trees
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 23.9029f, 27.095f, -154.38f, 0.011f, 0.011f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree3Path, true, true, -1.585f, -0.0929f, 0.1719f, 0, 1, 0, 0, 23.9192f, 24.926f, -160.299f, 0.0075f, 0.0075f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 23.817f, 26.264f, -182.373f, 0.005f, 0.005f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 18.8396f, 17.9282f, -130.676f, 0.005f, 0.005f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, .940061f, 26.69f, -132.04f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 5.8642f, 49.927f, -211.811f, 0.0125f, 0.0145f, 0.0125f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 13.78f, 49.927f, -211.5f, 0.0095f, 0.0095f, 0.0165f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 56.367f, 56.553f, -211.185f, 0.0115f, 0.0115f, 0.0135f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 86.006f, 11.7081f, -119.096f, 0.0115f, 0.0115f, 0.0135f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 23.9029f, 27.095f, -154.38f, 0.011f, 0.011f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree3Path, true, true, -1.585f, -0.0929f, 0.1719f, 0, 1, 0, 0, 23.9192f, 24.926f, -160.299f, 0.0075f, 0.0075f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 23.817f, 26.264f, -182.373f, 0.005f, 0.005f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 18.8396f, 17.9282f, -130.676f, 0.005f, 0.005f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, .940061f, 26.69f, -132.04f, 0.0075f, 0.0075f, 0.0075f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 5.8642f, 49.927f, -211.811f, 0.0125f, 0.0145f, 0.0125f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree3Path, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 13.78f, 49.927f, -211.5f, 0.0095f, 0.0095f, 0.0165f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 56.367f, 56.553f, -211.185f, 0.0115f, 0.0115f, 0.0135f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0, 86.006f, 11.7081f, -119.096f, 0.0115f, 0.0115f, 0.0135f, true, 0.0f, 0.85f, true, 4, true, true, dummyOnLoad, 0);
 
     renderCameraObject->getTransform().rotate(0.0f, 1.0f, 0.0f, Core::Math::PI * .8, Core::TransformationSpace::World);
     this->modelerApp.setCameraPosition(48.82f, 45.62f, -104.77f);
