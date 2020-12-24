@@ -59,7 +59,7 @@ void SunnySkyScene::setupSkyboxes() {
 }
 
 void SunnySkyScene::setupDefaultObjects() {
-    this->sceneHelper.setupCommonSceneElements();
+    this->sceneHelper.setupCommonSceneElements(false, true);
 }
 
 void SunnySkyScene::setupLights() {

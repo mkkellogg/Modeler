@@ -50,7 +50,7 @@ public:
     ~ModelerApp();
     void init();
     void setRenderWindow(RenderWindow* renderWindow);
-    void loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, ModelerAppLoadModelCallback calback);
+    void loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, bool castShadows, ModelerAppLoadModelCallback callback);
     void loadAnimation(const std::string& path, bool addLoopPadding, bool preserveFBXPivots, ModelerAppLoadAnimationCallback callback);
     CoreScene& getCoreScene();
     void onUpdate(ModelerAppLifecycleEventCallback callback);

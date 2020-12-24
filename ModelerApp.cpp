@@ -87,7 +87,7 @@ void ModelerApp::setRenderWindow(RenderWindow* renderWindow) {
     }
 }
 
-void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, ModelerAppLoadModelCallback callback) {
+void ModelerApp::loadModel(const std::string& path, float scale, float smoothingThreshold, bool zUp, bool preserveFBXPivots, bool usePhysicalMaterial, bool castShadows, ModelerAppLoadModelCallback callback) {
    if (this->engineIsReady) {
         std::string sPath = path;
         sPath = FileUtil::removePrefix(sPath, "file://");
@@ -96,10 +96,10 @@ void ModelerApp::loadModel(const std::string& path, float scale, float smoothing
         if (smoothingThreshold < 0 ) smoothingThreshold = 0;
         if (smoothingThreshold >= 90) smoothingThreshold = 90;
 
-        CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, preserveFBXPivots, usePhysicalMaterial, abbrevName, callback](Core::WeakPointer<Core::Engine> engine) {
+        CoreSync::Runnable runnable = [this, sPath, scale, smoothingThreshold, zUp, preserveFBXPivots, usePhysicalMaterial, castShadows, abbrevName, callback](Core::WeakPointer<Core::Engine> engine) {
            Core::ModelLoader& modelLoader = engine->getModelLoader();
            modelLoader.setFallbackTexturePath("assets/textures/");
-           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, true, true, preserveFBXPivots, usePhysicalMaterial);
+           Core::WeakPointer<Core::Object3D> rootObject = modelLoader.loadModel(sPath, scale, smoothingThreshold, castShadows, true, preserveFBXPivots, usePhysicalMaterial);
 
            Core::WeakPointer<Core::Object3D> newRoot = engine->createObject3D();
            newRoot->getTransform().getLocalMatrix().copy(rootObject->getTransform().getLocalMatrix());

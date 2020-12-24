@@ -59,7 +59,7 @@ void SunriseScene::setupSkyboxes() {
 }
 
 void SunriseScene::setupDefaultObjects() {
-    this->sceneHelper.setupCommonSceneElements();
+    this->sceneHelper.setupCommonSceneElements(false, true);
 }
 
 void SunriseScene::setupLights() {

@@ -456,7 +456,7 @@ void MainGUI::loadModel() {
     QString nameQStr = this->modelNameEdit->text();
     float scale = this->modelImportScale;
     float smoothingThreshold = this->modelImportSmoothingThreshold;
-    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, true, this->modelImportPhysicalMaterial, [this](Core::WeakPointer<Core::Object3D> rootObject){
+    this->modelerApp->loadModel(nameQStr.toStdString(), scale, smoothingThreshold, this->modelImportZUp, true, true, this->modelImportPhysicalMaterial, [this](Core::WeakPointer<Core::Object3D> rootObject){
        Core::WeakPointer<Core::Scene> scene = this->modelerApp->getEngine()->getActiveScene();
        scene->visitScene(rootObject, [this, rootObject](Core::WeakPointer<Core::Object3D> obj){
            Core::WeakPointer<Core::BaseRenderableContainer> baseRenderableContainer = obj->getBaseRenderableContainer();
