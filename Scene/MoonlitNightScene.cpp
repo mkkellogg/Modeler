@@ -149,6 +149,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     fire4FlatAtlas.addTileArray(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
 
     const std::string fenceEnd5("assets/models/fence_end_5/fence_end_5.fbx");
+    const std::string campfire("assets/models/toonlevel/campfire/campfire01.fbx");
     // torch 1
     Core::WeakPointer<Core::PointLight> torch1Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
@@ -166,11 +167,13 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.0816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 3
-    Core::WeakPointer<Core::PointLight> torch3Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 45.4915f, 30.405f, -164.412f, 1.5f, 10.0f, 75.0f);
+    Core::WeakPointer<Core::PointLight> torch3Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 45.4915f, 28.405f, -164.412f, 2.0f, 10.0f, 75.0f);
     Core::IntMask torch3LightCullingMask = torch3Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 4);
     torch3Light->setCullingMask(torch3LightCullingMask);
+    torch3Light->getOwner()->getTransform().translate(0.0f, 1.0f, 0.0f);
+    this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,45.4915f, 27.405f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
     Core::WeakPointer<Core::PointLight> torch4Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 75.0f);
@@ -229,7 +232,6 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire2ParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire2ParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire2ParticleMaterial = fire2ParticleRenderer->getMaterial();
     fire2ParticleMaterial->setAtlas(atlas);
-    //fire2ParticleMaterial->setUVOffset(-.01f, 0.0f);
     Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 6);
     Core::ConstantParticleEmitter& fire2ConstantEmitter = fire2ParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
     fire2ConstantEmitter.emissionRate = 5;
@@ -239,8 +241,8 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
    // fire2ParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI * 2.0, -Core::Math::PI);
     fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.0, -1.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.25  * scale, 0.25 * scale), 0.0f, Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f, 0.0f, 0.05f, 0.0f, 0.0f, 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f, 0.4f, 0.05f, -0.025f, 0.8f, -0.025f,  0.5f, 1.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, 0.0f, 0.0f, 0.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f * scale, 0.4f * scale, 0.05f * scale, -0.025f * scale, 0.8f * scale, -0.025f * scale,  0.5f * scale, 1.0f * scale);
     fire2ParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire2ParticleSequences);
     fire2ParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire2ParticleSequences, 0.055f, false);
 
@@ -279,8 +281,8 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI / 2.0f, -Core::Math::PI / 4.0f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::Math::PI, -Core::Math::PI / 2.0f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), 0.6f * scale, Core::Vector2r(0.0f, 0.0f), 0.4f * scale);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f, 0.0f, 0.1f, 0.0f, 0.0f, 0.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f, 0.4f, 0.05f, -0.025f, 0.8f, -0.025f,  0.5f, 1.3f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f * scale, 0.0f, 0.1f * scale, 0.0f, 0.0f, 0.0f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f * scale, 0.4f * scale, 0.05f * scale, -0.025f * scale, 0.8f * scale, -0.025f * scale,  0.5f * scale, 1.3f * scale);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire4FlatParticleSequences, false);
     fire4FlatParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire4FlatParticleSequences, 0.075f, false, false);
 
@@ -298,12 +300,6 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(0.1f, 0.1f), 1.0f);
 
     Core::ColorInterpolatorOperator& fire4FlatColorInterpolatorOperator = fire4FlatParticleSystem->addParticleStateOperator<Core::ColorInterpolatorOperator>(true);
-    /*fire4FlatColorInterpolatorOperator.addElement(Core::Color(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);
-    fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.3f);
-    fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.6f);
-    fire4FlatColorInterpolatorOperator.addElement(Core::Color(0.9f, 0.6f, 0.3f, 1.0f), 0.8f);
-    fire4FlatColorInterpolatorOperator.addElement(Core::Color(0.75f, 0.0f, 0.0f, 1.0f), 1.0f);*/
-
     fire4FlatColorInterpolatorOperator.addElement(Core::Color(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);
     fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.3f);
     fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.4);
