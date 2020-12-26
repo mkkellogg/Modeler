@@ -24,8 +24,12 @@ SunnySkyScene::SunnySkyScene(ModelerApp& modelerApp): ModelerScene(modelerApp) {
 void SunnySkyScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
-    renderCamera->setHDREnabled(true);
+   /* renderCamera->setHDREnabled(true);
     renderCamera->setHDRToneMapTypeExposure(2.0f);
+    renderCamera->setHDRGamma(2.0f);*/
+
+    renderCamera->setHDREnabled(true);
+    renderCamera->setHDRToneMapTypeReinhard();
     renderCamera->setHDRGamma(2.0f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
@@ -77,7 +81,7 @@ void SunnySkyScene::setupLights() {
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(3.0f);
+    directionalLight->setIntensity(4.0f);
     directionalLight->setColor(1.0, 1.0, 0.75, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     Core::Vector3r lightVector(-0.6f, -1.0f, -0.4);

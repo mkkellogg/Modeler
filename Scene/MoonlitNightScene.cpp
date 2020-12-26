@@ -31,6 +31,7 @@
 #include "Core/particles/operator/SequenceOperator.h"
 #include "Core/particles/operator/OpacityInterpolatorOperator.h"
 #include "Core/particles/operator/SizeInterpolatorOperator.h"
+#include "Core/particles/operator/ColorInterpolatorOperator.h"
 
 #include <QDir>
 
@@ -51,9 +52,9 @@ void MoonlitNightScene::load() {
     cameraObj->getTransform().lookAt(Core::Point3r(0, 0, 0));
 
     this->setupSkyboxes();
-    this->setupDefaultObjects();
+    this->setupCommonSceneElements();
+    this->setupUniqueSceneElements();
     this->setupBaseLights();
-    this->setupScene();
 }
 
 void MoonlitNightScene::update() {
@@ -84,7 +85,7 @@ void MoonlitNightScene::setupSkyboxes() {
     renderCamera->setSkyboxEnabled(true);
 }
 
-void MoonlitNightScene::setupDefaultObjects() {
+void MoonlitNightScene::setupCommonSceneElements() {
     this->sceneHelper.setupCommonSceneElements(true, true);
 }
 
@@ -108,7 +109,6 @@ void MoonlitNightScene::setupBaseLights() {
     directionalLight->setIntensity(1.0f);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-
     Core::Vector3r lightVector(-0.5f, -1.0f, -0.5f);
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
@@ -117,12 +117,12 @@ void MoonlitNightScene::setupBaseLights() {
 
 }
 
-void MoonlitNightScene::setupScene() {
+void MoonlitNightScene::setupUniqueSceneElements() {
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     CoreScene& coreScene = this->modelerApp.getCoreScene();
     std::function<void(Core::WeakPointer<Core::Object3D>)> dummyOnLoad = [](Core::WeakPointer<Core::Object3D> root){};
 
-    // texture atlasses for flame particles systems
+    // texture atlases for flame particles systems
     std::shared_ptr<Core::FileSystem> fileSystem = Core::FileSystem::getInstance();
     Core::TextureAttributes texAttributes;
     texAttributes.FilterMode = Core::TextureFilter::TriLinear;
@@ -150,36 +150,35 @@ void MoonlitNightScene::setupScene() {
 
     const std::string fenceEnd5("assets/models/fence_end_5/fence_end_5.fbx");
     // torch 1
-    Core::WeakPointer<Core::PointLight> torch1Light = this->createTorch(engine, coreScene, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    Core::WeakPointer<Core::PointLight> torch1Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 2);
     torch1Light->setCullingMask(torch1LightCullingMask);
-    // torches
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.49f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
+    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.6f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 2
-    Core::WeakPointer<Core::PointLight> torch2Light = this->createTorch(engine, coreScene, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    Core::WeakPointer<Core::PointLight> torch2Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 2);
     torch2Light->setCullingMask(torch2LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.0716f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
+    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.1816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 3
-    Core::WeakPointer<Core::PointLight> torch3Light = this->createTorch(engine, coreScene, fire2Atlas, fire4FlatAtlas, 45.4915f, 30.405f, -164.412f, 1.5f, 10.0f, 75.0f);
+    Core::WeakPointer<Core::PointLight> torch3Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 45.4915f, 30.405f, -164.412f, 1.5f, 10.0f, 75.0f);
     Core::IntMask torch3LightCullingMask = torch3Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 4);
     torch3Light->setCullingMask(torch3LightCullingMask);
 
     // torch 4
-    Core::WeakPointer<Core::PointLight> torch4Light = this->createTorch(engine, coreScene, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 75.0f);
+    Core::WeakPointer<Core::PointLight> torch4Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 75.0f);
     Core::IntMask torch4LightCullingMask = torch4Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 4);
     torch4Light->setCullingMask(torch4LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 31.7082f, 26.1624f, -170.746f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
+    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 31.8182f, 26.1624f, -170.746f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
 
     // castle fort objects
     const std::string modularCastleTowerPath("assets/models/modular_castle_tower/modular_castle_tower.fbx");
@@ -205,15 +204,15 @@ void MoonlitNightScene::setupScene() {
     this->sceneHelper.loadModelStandard(modularCastleWallGatePath, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.7019, 27.1098f, -170.371f, 0.02f, 0.02f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
 }
 
-Core::WeakPointer<Core::PointLight> MoonlitNightScene::createTorch(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& fire2Atlas,
-                                    Core::Atlas& fire4FlatAtlas, float x, float y, float z, float scale, float lightRadius, float lightIntensity) {
+Core::WeakPointer<Core::PointLight> MoonlitNightScene::createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& fire2Atlas,
+                                                                        Core::Atlas& fire4FlatAtlas, float x, float y, float z, float scale, float lightRadius, float lightIntensity) {
     Core::WeakPointer<Core::Object3D> torchParticleSystemObject = engine->createObject3D();
     coreScene.addObjectToScene(torchParticleSystemObject);
     this->createFire2ParticleSystem(engine, torchParticleSystemObject, fire2Atlas, scale);
     this->createFire4ParticleSystem(engine, torchParticleSystemObject, fire4FlatAtlas, scale);
     Core::WeakPointer<Core::Object3D> torchLightObject = engine->createObject3D();
     torchParticleSystemObject->addChild(torchLightObject);
-    torchLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
+    torchLightObject->getTransform().translate(0.1f, 1.0f, 0.0f);
     torchParticleSystemObject->getTransform().translate(x, y, z);
     torchParticleSystemObject->setName("Torch");
     Core::WeakPointer<Core::PointLight> torchLight = engine->createPointLight<Core::PointLight>(torchLightObject, true, 512, 0.0115f, 0.35f);
@@ -230,24 +229,37 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire2ParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire2ParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire2ParticleMaterial = fire2ParticleRenderer->getMaterial();
     fire2ParticleMaterial->setAtlas(atlas);
+    fire2ParticleMaterial->setUVOffset(-.01f, 0.0f);
     Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 6);
     Core::ConstantParticleEmitter& fire2ConstantEmitter = fire2ParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
     fire2ConstantEmitter.emissionRate = 5;
     fire2ParticleSystem->addParticleSequence(0, 18);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire2ParticleSequences = fire2ParticleSystem->getParticleSequences();
     fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI * 2.0, -Core::Math::PI);
-    fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.5, -.75f);
+   // fire2ParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI * 2.0, -Core::Math::PI);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.0, -1.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.25  * scale, 0.25 * scale), 0.0f, Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.1f, 0.4f, 0.1f, -0.05f, 0.8f, -0.05f, 0.5f, 0.8f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f, 0.0f, 0.05f, 0.0f, 0.0f, 0.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f, 0.4f, 0.05f, -0.025f, 0.8f, -0.025f,  0.5f, 1.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire2ParticleSequences);
     fire2ParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire2ParticleSequences, 0.055f, false);
+
     Core::OpacityInterpolatorOperator& fire2OpacityInterpolatorOperator = fire2ParticleSystem->addParticleStateOperator<Core::OpacityInterpolatorOperator>();
     fire2OpacityInterpolatorOperator.addElement(0.0f, 0.0f);
     fire2OpacityInterpolatorOperator.addElement(0.3f, 0.25f);
     fire2OpacityInterpolatorOperator.addElement(0.3f, 0.5f);
     fire2OpacityInterpolatorOperator.addElement(0.0f, 1.0f);
+
+    Core::SizeInterpolatorOperator& fire2SizeInterpolatorOperator = fire2ParticleSystem->addParticleStateOperator<Core::SizeInterpolatorOperator>(true);
+    fire2SizeInterpolatorOperator.addElement(Core::Vector2r(0.6f, 0.6f), 0.0f);
+    fire2SizeInterpolatorOperator.addElement(Core::Vector2r(1.0f, 1.0f), 0.4f);
+    fire2SizeInterpolatorOperator.addElement(Core::Vector2r(1.0f, 1.0f), 1.0f);
+
+    Core::ColorInterpolatorOperator& fire2ColorInterpolatorOperator = fire2ParticleSystem->addParticleStateOperator<Core::ColorInterpolatorOperator>(true);
+    fire2ColorInterpolatorOperator.addElement(Core::Color(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);
+    fire2ColorInterpolatorOperator.addElement(Core::Color(1.5f, 1.5f, 1.5f, 1.0f), 0.5f);
+    fire2ColorInterpolatorOperator.addElement(Core::Color(1.0f, 1.0f, 1.0f, 1.0f), 1.0f);
+
     fire2ParticleSystem->setSimulateInWorldSpace(true);
     fire2ParticleSystem->start();
 }
@@ -264,11 +276,11 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     fire4FlatParticleSystem->addParticleSequence(0, 16);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire4FlatParticleSequences = fire4FlatParticleSystem->getParticleSequences();
     fire4FlatParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI * 2.0, -Core::Math::PI);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(3.0f, -1.5f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI / 2.0f, -Core::Math::PI / 4.0f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::Math::PI, -Core::Math::PI / 2.0f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), 0.6f * scale, Core::Vector2r(0.0f, 0.0f), 0.4f * scale);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f, 0.0f, 0.1f, 0.0f, 0.0f, 0.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.1f, 0.4f, 0.1f, -0.05f, 0.8f, -0.05f,  0.5f, 1.3f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f, 0.4f, 0.05f, -0.025f, 0.8f, -0.025f,  0.5f, 1.3f);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire4FlatParticleSequences, false);
     fire4FlatParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire4FlatParticleSequences, 0.075f, false, false);
 
@@ -284,6 +296,19 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(1.0f, 1.0f), 0.55f);
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(0.65f, 0.65f), 0.75f);
     fire4FlatSizeInterpolatorOperator.addElement(Core::Vector2r(0.1f, 0.1f), 1.0f);
+
+    Core::ColorInterpolatorOperator& fire4FlatColorInterpolatorOperator = fire4FlatParticleSystem->addParticleStateOperator<Core::ColorInterpolatorOperator>(true);
+    /*fire4FlatColorInterpolatorOperator.addElement(Core::Color(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.3f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.6f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(0.9f, 0.6f, 0.3f, 1.0f), 0.8f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(0.75f, 0.0f, 0.0f, 1.0f), 1.0f);*/
+
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.3f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(2.0f, 2.0f, 2.0f, 1.0f), 0.4);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(0.9f, 0.6f, 0.3f, 1.0f), 0.65f);
+    fire4FlatColorInterpolatorOperator.addElement(Core::Color(0.75f, 0.0f, 0.0f, 1.0f), 1.0f);
 
     fire4FlatParticleSystem->setSimulateInWorldSpace(true);
     fire4FlatParticleSystem->start();
