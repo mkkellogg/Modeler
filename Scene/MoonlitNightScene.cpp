@@ -155,7 +155,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 2);
     torch1Light->setCullingMask(torch1LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.6f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
+    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.5005f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 2
     Core::WeakPointer<Core::PointLight> torch2Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
@@ -163,7 +163,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 2);
     torch2Light->setCullingMask(torch2LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.1816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
+    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.0816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 3
     Core::WeakPointer<Core::PointLight> torch3Light = this->createTorchFlame(engine, coreScene, fire2Atlas, fire4FlatAtlas, 45.4915f, 30.405f, -164.412f, 1.5f, 10.0f, 75.0f);
@@ -178,7 +178,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 4);
     torch4Light->setCullingMask(torch4LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 31.8182f, 26.1624f, -170.746f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
+    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 31.7182f, 26.1624f, -170.746f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
 
     // castle fort objects
     const std::string modularCastleTowerPath("assets/models/modular_castle_tower/modular_castle_tower.fbx");
@@ -212,7 +212,7 @@ Core::WeakPointer<Core::PointLight> MoonlitNightScene::createTorchFlame(Core::We
     this->createFire4ParticleSystem(engine, torchParticleSystemObject, fire4FlatAtlas, scale);
     Core::WeakPointer<Core::Object3D> torchLightObject = engine->createObject3D();
     torchParticleSystemObject->addChild(torchLightObject);
-    torchLightObject->getTransform().translate(0.1f, 1.0f, 0.0f);
+    torchLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
     torchParticleSystemObject->getTransform().translate(x, y, z);
     torchParticleSystemObject->setName("Torch");
     Core::WeakPointer<Core::PointLight> torchLight = engine->createPointLight<Core::PointLight>(torchLightObject, true, 512, 0.0115f, 0.35f);
@@ -229,7 +229,7 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire2ParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire2ParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire2ParticleMaterial = fire2ParticleRenderer->getMaterial();
     fire2ParticleMaterial->setAtlas(atlas);
-    fire2ParticleMaterial->setUVOffset(-.01f, 0.0f);
+    //fire2ParticleMaterial->setUVOffset(-.01f, 0.0f);
     Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 6);
     Core::ConstantParticleEmitter& fire2ConstantEmitter = fire2ParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
     fire2ConstantEmitter.emissionRate = 5;
