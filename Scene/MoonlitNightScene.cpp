@@ -32,6 +32,7 @@
 #include "Core/particles/operator/OpacityInterpolatorOperator.h"
 #include "Core/particles/operator/SizeInterpolatorOperator.h"
 #include "Core/particles/operator/ColorInterpolatorOperator.h"
+#include "Core/particles/util/RandomGenerator.h"
 
 #include <QDir>
 
@@ -131,7 +132,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     texAttributes.Format = Core::TextureFormat::RGBA8;
 
     // Fire 2 atlas
-    std::string fire2TexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_2.png");
+    std::string fire2TexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_2_half.png");
     std::shared_ptr<Core::StandardImage> fire2TextureImage;
     fire2TextureImage = Core::ImageLoader::loadImageU(fire2TexturePath);
     Core::WeakPointer<Core::Texture2D> fire2Texture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
@@ -140,7 +141,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     fire2Atlas.addTileArray(18, 0.0f, 0.0f, 128.0f / 1024.0f, 128.0f / 512.0f);
 
     // Fire 4 flat atlas
-    std::string fire4FlatTexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_4_flat.png");
+    std::string fire4FlatTexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_4_flat_half.png");
     std::shared_ptr<Core::StandardImage> fire4FlatTextureImage;
     fire4FlatTextureImage = Core::ImageLoader::loadImageU(fire4FlatTexturePath);
     Core::WeakPointer<Core::Texture2D> fire4Texture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
@@ -237,10 +238,12 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
     fire2ConstantEmitter.emissionRate = 5;
     fire2ParticleSystem->addParticleSequence(0, 18);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire2ParticleSequences = fire2ParticleSystem->getParticleSequences();
-    fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
-   // fire2ParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI * 2.0, -Core::Math::PI);
-    fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.0, -1.0f);
-    fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.25  * scale, 0.25 * scale), 0.0f, Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f);
+   // fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(Core::RandomGenerator<Core::Real>(0.0f, 0.0f, false));
+    //fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.0, -1.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::RandomGenerator<Core::Real>(1.0f, -1.0f, false));
+   // fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.25  * scale, 0.25 * scale), 0.0f, Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.25  * scale, 0.25 * scale), Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f, 0.0f, false));
     fire2ParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, 0.0f, 0.0f, 0.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f * scale, 0.4f * scale, 0.05f * scale, -0.025f * scale, 0.8f * scale, -0.025f * scale,  0.5f * scale, 1.0f * scale);
     fire2ParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire2ParticleSequences);
@@ -277,12 +280,16 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     fire4FlatConstantEmitter.emissionRate = 5;
     fire4FlatParticleSystem->addParticleSequence(0, 16);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire4FlatParticleSequences = fire4FlatParticleSystem->getParticleSequences();
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI / 2.0f, -Core::Math::PI / 4.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::Math::PI, -Core::Math::PI / 2.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), 0.6f * scale, Core::Vector2r(0.0f, 0.0f), 0.4f * scale);
+    //fire4FlatParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(Core::RandomGenerator<Core::Real>(0.0f, 0.0f, false));
+    //fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::Math::PI / 2.0f, -Core::Math::PI / 4.0f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::RandomGenerator<Core::Real>(Core::Math::PI / 2.0f, -Core::Math::PI / 4.0f, false));
+    //fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::Math::PI, -Core::Math::PI / 2.0f);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::RandomGenerator<Core::Real>(Core::Math::PI, -Core::Math::PI / 2.0f, false));
+    //fire4FlatParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.0, 0.0), 0.4f * scale, Core::Vector2r(0.0f, 0.0f), 0.6f * scale);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.0, 0.0), Core::Vector2r(0.0f, 0.0f), 0.4f * scale, 0.6f * scale, false));
     fire4FlatParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f * scale, 0.0f, 0.1f * scale, 0.0f, 0.0f, 0.0f);
-    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f * scale, 0.4f * scale, 0.05f * scale, -0.025f * scale, 0.8f * scale, -0.025f * scale,  0.5f * scale, 1.3f * scale);
+    fire4FlatParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f * scale, 0.4f * scale, 0.05f * scale, -0.025f * scale, 0.8f * scale, -0.025f * scale,  0.5f * scale, 1.75f * scale);
     fire4FlatParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(fire4FlatParticleSequences, false);
     fire4FlatParticleSystem->addParticleStateOperator<Core::SequenceOperator>(fire4FlatParticleSequences, 0.075f, false, false);
 
