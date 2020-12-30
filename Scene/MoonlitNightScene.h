@@ -23,8 +23,9 @@ private:
     void setupCommonSceneElements();
     void setupUniqueSceneElements();
      void setupBaseLights();
-    Core::WeakPointer<Core::PointLight> createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& fire2Atlas, Core::Atlas& fire4FlatAtlas,
+    Core::WeakPointer<Core::PointLight> createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& fire2Atlas, Core::Atlas& fire4FlatAtlas,
                                                          float x, float y, float z, float scale, float lightRadius, float lightIntensity);
+    void createEmberParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
     void createFire2ParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
     void createFire4ParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
 
