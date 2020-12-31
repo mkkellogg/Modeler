@@ -246,8 +246,8 @@ void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine
     emberParticleMaterial->setAtlas(atlas);
     Core::WeakPointer<Core::ParticleSystem> emberParticleSystem = engine->createParticleSystem(emberParticleSystemObject, 25);
     Core::ConstantParticleEmitter& emberConstantEmitter = emberParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
-    emberConstantEmitter.emissionRate = 2;
-    emberParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(Core::RandomGenerator<Core::Real>(3.0f, 10.0f, false));
+    emberConstantEmitter.emissionRate = 3;
+    emberParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(Core::RandomGenerator<Core::Real>(3.0f, 1.5f, false));
     emberParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.0f, 0.0f), Core::Vector2r(scale * 0.15f, scale  * 0.15f), 0.0f, 0.0f, false));
     emberParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, 0.0f, 0.0f, 0.0f);
 
@@ -262,7 +262,7 @@ void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine
     emberOpacityInterpolatorOperator.addElement(0.9f, 0.5f);
     emberOpacityInterpolatorOperator.addElement(0.0f, 1.0f);
 
-    Core::ColorInterpolatorOperator& emberColorInterpolatorOperator = emberParticleSystem->addParticleStateOperator<Core::ColorInterpolatorOperator>(false);
+    Core::ColorInterpolatorOperator& emberColorInterpolatorOperator = emberParticleSystem->addParticleStateOperator<Core::ColorInterpolatorOperator>(true);
     emberColorInterpolatorOperator.addElement(Core::Color(1.0f, 0.7f, 0.0f, 1.0f), 0.0f);
     emberColorInterpolatorOperator.addElement(Core::Color(1.0f, 0.6f, 0.0f, 1.0f), 0.6f);
     emberColorInterpolatorOperator.addElement(Core::Color(1.0f, 0.4f, 0.0f, 1.0f), 1.0f);
@@ -271,7 +271,7 @@ void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine
     //emberParticleSystem->addParticleStateOperator<Core::AccelerationOperator>(Core::RandomGenerator<Core::Vector3r>(Core::Vector3r(15.0f * scale, 12.0f * scale, 15.0f * scale), Core::Vector3r(-7.5f * scale, -6.0f * scale, -7.5f * scale), 0.0f * scale, 0.0f * scale, false));
 
     //emberParticleSystem->addParticleStateOperator<Core::AccelerationOperator>(Core::SphereRandomGenerator<Core::Vector3r>(Core::Math::TwoPI, 0.0f, Core::Math::TwoPI, 0.0f, 10.0f, 25.0f, 1.0f, 1.0f, 1.0f, 0.0f, 2.0f, 0.0f));
-    emberParticleSystem->addParticleStateOperator<Core::AccelerationOperator>(Core::SphereRandomGenerator<Core::Vector3r>(Core::Math::TwoPI, 0.0f, Core::Math::PI * 0.75f, -Core::Math::PI / 4.0f, 10.0f, 1.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f));
+    emberParticleSystem->addParticleStateOperator<Core::AccelerationOperator>(Core::SphereRandomGenerator<Core::Vector3r>(Core::Math::TwoPI, 0.0f, Core::Math::PI * 0.85f, -Core::Math::PI * .35f, 15.0f, 1.5f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f));
 
     emberParticleSystem->setSimulateInWorldSpace(true);
     emberParticleSystem->start();
