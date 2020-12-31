@@ -326,11 +326,11 @@ void SceneHelper::setupCommonSceneElements(bool excludeCastle, bool physicalTera
 
     // cliffs
     this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0,  55.8991f, 27.178f, -140.469f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 0);
-    this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 0);
-    this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 1);
+    this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 1);
 
     // random trees
-    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 23.9029f, 27.095f, -154.38f, 0.011f, 0.011f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, true, dummyOnLoad, 0);
+    this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 24.2924f, 27.095f, -150.216f, 0.011f, 0.011f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, true, dummyOnLoad, 0);
     this->loadModelStandard(tree3Path, true, true, -1.585f, -0.0929f, 0.1719f, 0, 1, 0, 0, 23.9192f, 24.926f, -160.299f, 0.0075f, 0.0075f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, true, dummyOnLoad, 0);
     this->loadModelStandard(tree3Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 23.817f, 26.264f, -182.373f, 0.005f, 0.005f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, true, dummyOnLoad, 0);
     this->loadModelStandard(tree3Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 18.8396f, 17.9282f, -130.676f, 0.005f, 0.005f, 0.01f, true, 0.0f, 0.85f, true, 4, true, true, true, dummyOnLoad, 0);
