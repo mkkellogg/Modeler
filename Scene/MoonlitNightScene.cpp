@@ -325,6 +325,7 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire4FlatParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire4FlatParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire4FlatParticleMaterial = fire4FlatParticleRenderer->getMaterial();
     fire4FlatParticleMaterial->setAtlas(atlas);
+    fire4FlatParticleMaterial->setInterpolateAtlasFrames(true);
     Core::WeakPointer<Core::ParticleSystem> fire4FlatParticleSystem = engine->createParticleSystem(fire4FlatParticleSystemObject, 20);
     Core::ConstantParticleEmitter& fire4FlatConstantEmitter = fire4FlatParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
     fire4FlatConstantEmitter.emissionRate = 3;
