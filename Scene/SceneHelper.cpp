@@ -226,6 +226,7 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x,
                                 Core::WeakPointer<Core::Object3D> parent = obj->getParent();
                                 Core::UInt32 warriorIndex= 0;
                                 if (parent && parent->getName() == "warrior") {
+                                    renderMaterial->setSkinningEnabled(true);
                                     if (parent->childCount() >=2 && parent->getChild(1) == obj) {
                                         warriorIndex = 1;
                                     }
