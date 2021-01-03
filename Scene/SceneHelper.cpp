@@ -1,8 +1,9 @@
+#include <unordered_map>
+
 #include "SceneHelper.h"
-
 #include "ModelerApp.h"
-
 #include "Core/Engine.h"
+#include "Core/material/Material.h"
 #include "Core/material/StandardPhysicalMaterial.h"
 #include "Core/material/StandardPhysicalMaterialMultiLight.h"
 #include "Core/render/MeshRenderer.h"
@@ -80,6 +81,16 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
     std::function<void(Core::WeakPointer<Core::Object3D>)> onLoaded = [this, overrideLoadedTransform, ex, ey, ez, rx, ry, rz, ra, tx, ty, tz, scaleX, scaleY, scaleZ,
                                                                        singlePassMultiLight, metallic, roughness, transparent, enabledAlphaChannel, doubleSided,
                                                                        customShadowRendering, onLoad, layer](Core::WeakPointer<Core::Object3D> rootObject){
+        //static std::unordered_map<Core::UInt64, Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight>> singlePassMultiLightMap;
+
+        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
+
+        static Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight> multiLightSinglePassPhysicalMaterial;
+        if (!multiLightSinglePassPhysicalMaterial.isValid()) {
+            multiLightSinglePassPhysicalMaterial = engine->createMaterial<Core::StandardPhysicalMaterialMultiLight>();
+        }
+
         Core::Matrix4x4 rotationMatrix;
         rotationMatrix.makeRotationFromEuler(ex, ey, ez);
         if (!overrideLoadedTransform) rotationMatrix.multiply(rootObject->getTransform().getLocalMatrix());
@@ -91,8 +102,6 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
         transform.preTranslate(tx, ty, tz);
         rootObject->getTransform().getLocalMatrix().copy(transform);
 
-        Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
-        Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
         Core::WeakPointer<Core::MeshContainer> firstMeshContainer;
         scene->visitScene(rootObject, [&firstMeshContainer, &engine, singlePassMultiLight, metallic, roughness, transparent,
                                        enabledAlphaChannel, doubleSided, customShadowRendering, layer](Core::WeakPointer<Core::Object3D> obj){
@@ -117,10 +126,12 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                                 physicalMaterial->setRoughness(roughness);
                             }
                             if (singlePassMultiLight) {
-                                Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight> multiLightSinglePassPhysicalMaterial = engine->createMaterial<Core::StandardPhysicalMaterialMultiLight>();
-                                multiLightSinglePassPhysicalMaterial->copyAttributesFromStandardPhysicalMaterial(physicalMaterial);
-                                meshRenderer->setMaterial(multiLightSinglePassPhysicalMaterial);
-                                renderMaterial = physicalMaterial = multiLightSinglePassPhysicalMaterial;
+                                Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight> multiLightSinglePassPhysicalMaterialClone =
+                                        Core::WeakPointer<Core::Material>::dynamicPointerCast<Core::StandardPhysicalMaterialMultiLight>(multiLightSinglePassPhysicalMaterial->clone());
+                                multiLightSinglePassPhysicalMaterialClone->copyAttributesFromStandardPhysicalMaterial(physicalMaterial);
+                                meshRenderer->setMaterial(multiLightSinglePassPhysicalMaterialClone);
+                                renderMaterial = physicalMaterial = multiLightSinglePassPhysicalMaterialClone;
+
                             }
                             if (transparent) {
                                 renderMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
