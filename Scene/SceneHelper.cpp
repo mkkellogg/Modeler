@@ -137,7 +137,7 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                                 renderMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
                                 renderMaterial->setSourceBlendingFactor(Core::RenderState::BlendingFactor::SrcAlpha);
                                 renderMaterial->setDestBlendingFactor(Core::RenderState::BlendingFactor::OneMinusSrcAlpha);
-                                renderMaterial->setRenderQueue(EngineRenderQueue::Transparent);
+                                renderMaterial->setRenderQueue(EngineRenderQueue::AlphaClippedGeometry);
                                 if (enabledAlphaChannel == 1) {
                                     physicalMaterial->setOpacityChannelRedEnabled(true);
                                     physicalMaterial->setOpacityChannelAlphaEnabled(false);
