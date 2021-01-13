@@ -81,8 +81,6 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
     std::function<void(Core::WeakPointer<Core::Object3D>)> onLoaded = [this, overrideLoadedTransform, ex, ey, ez, rx, ry, rz, ra, tx, ty, tz, scaleX, scaleY, scaleZ,
                                                                        singlePassMultiLight, metallic, roughness, transparent, enabledAlphaChannel, doubleSided,
                                                                        customShadowRendering, onLoad, layer](Core::WeakPointer<Core::Object3D> rootObject){
-        //static std::unordered_map<Core::UInt64, Core::WeakPointer<Core::StandardPhysicalMaterialMultiLight>> singlePassMultiLightMap;
-
         Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
         Core::WeakPointer<Core::Scene> scene = engine->getActiveScene();
 
@@ -131,7 +129,6 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                                 multiLightSinglePassPhysicalMaterialClone->copyAttributesFromStandardPhysicalMaterial(physicalMaterial);
                                 meshRenderer->setMaterial(multiLightSinglePassPhysicalMaterialClone);
                                 renderMaterial = physicalMaterial = multiLightSinglePassPhysicalMaterialClone;
-
                             }
                             if (transparent) {
                                 renderMaterial->setBlendingMode(Core::RenderState::BlendingMode::Custom);
@@ -140,6 +137,7 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                                 renderMaterial->setRenderQueue(EngineRenderQueue::Transparent);
                                 if (enabledAlphaChannel == 1) {
                                     physicalMaterial->setOpacityChannelRedEnabled(true);
+
                                     physicalMaterial->setOpacityChannelAlphaEnabled(false);
                                 }
                                 else if (enabledAlphaChannel == 4) {
