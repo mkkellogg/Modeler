@@ -109,7 +109,7 @@ void MoonlitNightScene::setupBaseLights() {
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(1.0f);
+    directionalLight->setIntensity(1.5f);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     Core::Vector3r lightVector(-0.5f, -1.0f, -0.5f);
