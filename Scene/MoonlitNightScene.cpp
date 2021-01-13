@@ -63,6 +63,9 @@ void MoonlitNightScene::load() {
 void MoonlitNightScene::update() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
+    for (unsigned int i = 0; i < this->flickerLights.size(); i++) {
+        this->flickerLights[i].update();
+    }
     this->frameCount++;
 }
 
@@ -162,7 +165,9 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     const std::string fenceEnd5("assets/models/fence_end_5/fence_end_5.fbx");
     const std::string campfire("assets/models/toonlevel/campfire/campfire01.fbx");
     // torch 1
-    Core::WeakPointer<Core::PointLight> torch1Light = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    FlickerLight torch1FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    this->flickerLights.push_back(torch1FlickerLight);
+    Core::WeakPointer<Core::PointLight> torch1Light = torch1FlickerLight.getLight();
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 2);
@@ -170,7 +175,9 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.5005f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 2
-    Core::WeakPointer<Core::PointLight> torch2Light = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    FlickerLight torch2FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    this->flickerLights.push_back(torch2FlickerLight);
+    Core::WeakPointer<Core::PointLight> torch2Light = torch2FlickerLight.getLight();
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 2);
@@ -178,7 +185,9 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.0816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 3
-    Core::WeakPointer<Core::PointLight> torch3Light = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 45.4915f, 28.405f, -164.412f, 2.0f, 10.0f, 75.0f);
+    FlickerLight torch3FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 45.4915f, 28.405f, -164.412f, 2.0f, 10.0f, 75.0f);
+    this->flickerLights.push_back(torch3FlickerLight);
+    Core::WeakPointer<Core::PointLight> torch3Light = torch3FlickerLight.getLight();
     Core::IntMask torch3LightCullingMask = torch3Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 4);
@@ -187,7 +196,9 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,45.4915f, 27.405f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
-    Core::WeakPointer<Core::PointLight> torch4Light = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 75.0f);
+    FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 50.0f);
+    this->flickerLights.push_back(torch4FlickerLight);
+    Core::WeakPointer<Core::PointLight> torch4Light = torch4FlickerLight.getLight();
     Core::IntMask torch4LightCullingMask = torch4Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 4);
@@ -218,8 +229,8 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(modularCastleWallGatePath, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.7019, 27.1098f, -170.371f, 0.02f, 0.02f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
 }
 
-Core::WeakPointer<Core::PointLight> MoonlitNightScene::createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& fire2Atlas,
-                                                                        Core::Atlas& fire4FlatAtlas, float x, float y, float z, float scale, float lightRadius, float lightIntensity) {
+FlickerLight MoonlitNightScene::createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& fire2Atlas,
+                                                 Core::Atlas& fire4FlatAtlas, float x, float y, float z, float scale, float lightRadius, float lightIntensity) {
     Core::WeakPointer<Core::Object3D> torchParticleSystemObject = engine->createObject3D();
     coreScene.addObjectToScene(torchParticleSystemObject);
     this->createEmberParticleSystem(engine, torchParticleSystemObject, emberAtlas, scale);
@@ -230,12 +241,15 @@ Core::WeakPointer<Core::PointLight> MoonlitNightScene::createTorchFlame(Core::We
     torchLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
     torchParticleSystemObject->getTransform().translate(x, y, z);
     torchParticleSystemObject->setName("Torch");
-    Core::WeakPointer<Core::PointLight> torchLight = engine->createPointLight<Core::PointLight>(torchLightObject, true, 512, 0.0115f, 0.35f);
+
+    FlickerLight torchFlickerLight;
+    torchFlickerLight.create(torchLightObject, true, 512, 0.0115f, 0.35f);
+    Core::WeakPointer<Core::PointLight> torchLight =torchFlickerLight.getLight();
     torchLight->setColor(1.0f, 0.6f, 0.1f, 1.0f);
     torchLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     torchLight->setRadius(lightRadius);
-    torchLight->setIntensity(lightIntensity);
-    return torchLight;
+    torchFlickerLight.setIntensity(lightIntensity);
+    return torchFlickerLight;
 }
 
 void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
