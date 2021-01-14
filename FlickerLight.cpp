@@ -4,6 +4,7 @@
 FlickerLight::FlickerLight() {
     this->lastFlickerTime = Core::Time::getTime();
     this->lastIntensityAdjuster = 1.0f;
+    this->nextIntensityAdjuster = 1.0f;
     this->intensity = 1.0f;
 }
 
@@ -13,6 +14,7 @@ FlickerLight::FlickerLight(const FlickerLight& src) {
     this->intensity = src.intensity;
     this->lastFlickerTime = src.lastFlickerTime;
     this->lastIntensityAdjuster = src.lastIntensityAdjuster;
+    this->nextIntensityAdjuster = src.nextIntensityAdjuster;
     this->lastPositionAdjuster = src.lastPositionAdjuster;
 }
 
@@ -23,6 +25,7 @@ FlickerLight& FlickerLight::operator = (const FlickerLight& other) {
     this->intensity = other.intensity;
     this->lastFlickerTime = other.lastFlickerTime;
     this->lastIntensityAdjuster = other.lastIntensityAdjuster;
+    this->nextIntensityAdjuster = other.nextIntensityAdjuster;
     this->lastPositionAdjuster = other.lastPositionAdjuster;
     return *this;
 }
@@ -49,22 +52,32 @@ void FlickerLight::update() {
     Core::Real time = Core::Time::getTime();
     Core::Real elapsedTime = time - this->lastFlickerTime;
 
-    if (elapsedTime > 1.0f / 30.0f) {
+    Core::Real updateIntervalsPerSecond = 8.0f;
+    Core::Real updateIntervalLength = 1.0f / updateIntervalsPerSecond;
+    Core::Real perUpdateIntervalIntensityFluxRange = 2.0f;
+    Core::Real intensityFactorRangeLowerBound = 0.25f;
+    Core::Real intensityFactorRangeUpperBound = 1.5f;
+
+    if (elapsedTime > updateIntervalLength) {
         lastFlickerTime = time;
 
-        Core::Real intensityAdjuster = (Core::Math::random() - 0.5f);
+        Core::Real deltaTime = Core::Time::getDeltaTime();
+        Core::Real intensityDiff = (Core::Math::random() - 0.5f) * 2.0f * perUpdateIntervalIntensityFluxRange * updateIntervalLength;
         Core::Vector3r positionAdjuster(Core::Math::random() - 0.5f, Core::Math::random() - 0.5f, Core::Math::random() - 0.5f);
 
-        Core::Real deltaTime = Core::Time::getDeltaTime();
-        intensityAdjuster *= deltaTime * 220.0f;
-        positionAdjuster.scale(deltaTime * 1.0f);
+        positionAdjuster.scale(deltaTime * 2.0f);
 
-        Core::Real diff = (intensityAdjuster - lastIntensityAdjuster) * 0.05f;
-        intensityAdjuster = Core::Math::clamp(lastIntensityAdjuster + diff, .75f, 1.25f);
+        Core::Real intensityAdjuster = 1.0f + intensityDiff;
+        Core::Real diff = (intensityAdjuster - this->lastIntensityAdjuster);
+        intensityAdjuster = this->lastIntensityAdjuster + diff;
+        //std::cerr << std::to_string(intensityAdjuster) << std::endl;
 
-        this->light->setIntensity(intensityAdjuster * this->intensity);
+        this->lastIntensityAdjuster = this->nextIntensityAdjuster;
+        this->nextIntensityAdjuster = Core::Math::clamp(intensityAdjuster, intensityFactorRangeLowerBound, intensityFactorRangeUpperBound);
 
-        lastIntensityAdjuster = intensityAdjuster;
+        //this->light->setIntensity(this->nextIntensityAdjuster * this->intensity);
+
+
 
         this->owner->getTransform().getLocalMatrix().setIdentity();
         //this->owner->getTransform().translate(campFireLightLocalOffset, true);
@@ -75,5 +88,9 @@ void FlickerLight::update() {
         this->owner->getTransform().translate(positionAdjuster);
 
         this->lastPositionAdjuster = positionAdjuster;
+    } else {
+        Core::Real elapsedT = elapsedTime / updateIntervalLength;
+        Core::Real intensityAdjuster = (1.0f - elapsedT) * this->lastIntensityAdjuster + elapsedT * this->nextIntensityAdjuster;
+        this->light->setIntensity(intensityAdjuster * this->intensity);
     }
 }

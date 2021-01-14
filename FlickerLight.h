@@ -23,6 +23,7 @@ private:
      Core::WeakPointer<Core::PointLight> light;
      Core::Real lastFlickerTime;
      Core::Real lastIntensityAdjuster;
+     Core::Real nextIntensityAdjuster;
      Core::Real intensity;
      Core::Vector3r lastPositionAdjuster;
 };
