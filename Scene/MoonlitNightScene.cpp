@@ -192,8 +192,8 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 4);
     torch3Light->setCullingMask(torch3LightCullingMask);
-    torch3Light->getOwner()->getTransform().translate(0.0f, 1.0f, 0.0f);
-    this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,45.4915f, 27.405f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
+    torch3Light->getOwner()->getParent()->getTransform().translate(0.0f, 2.0f, 0.0f);
+    this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.4915f, 27.2334f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
     FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 50.0f);

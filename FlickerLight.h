@@ -21,7 +21,10 @@ private:
 
      Core::WeakPointer<Core::Object3D> owner;
      Core::WeakPointer<Core::PointLight> light;
-     Core::Real lastFlickerTime;
+
+     Core::Real lastIntensityFlickerTime;
+     Core::Real lastPositionFlickerTime;
+
      Core::Real lastIntensityAdjuster;
      Core::Real nextIntensityAdjuster;
      Core::Real intensity;
