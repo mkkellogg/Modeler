@@ -1,5 +1,5 @@
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QSurfaceFormat>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
         mainWindow.setAttribute(Qt::WA_NoSystemBackground, false);
     }
     mainWindow.resize(mainWindow.sizeHint());
-    int desktopArea = QApplication::desktop()->width() *
-                     QApplication::desktop()->height();
+    int desktopArea = QGuiApplication::primaryScreen()->availableSize().width() *
+                      QGuiApplication::primaryScreen()->availableSize().height();
     int widgetArea = mainWindow.width() * mainWindow.height();
     if (((float)widgetArea / (float)desktopArea) < 0.75f)
         mainWindow.show();

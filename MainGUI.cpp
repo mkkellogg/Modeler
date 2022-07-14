@@ -11,7 +11,7 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QPushButton>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QApplication>
 #include <QMessageBox>
 #include <QGroupBox>
@@ -589,7 +589,7 @@ void MainGUI::expandAllAbove(SceneTreeWidgetItem* item) {
 }
 
 void MainGUI::buildModelImportSettingsDialog() {
-    this->modelImportSettingsDialog = new QDialog(this, 0);
+    this->modelImportSettingsDialog = new QDialog(this);
     this->modelImportSettingsDialog->setWindowTitle("Import settings");
     QString modelImportSettingsDialogStyle = QString("QGroupBox {margin: 10px;}");
     this->modelImportSettingsDialog->setStyleSheet(modelImportSettingsDialogStyle);

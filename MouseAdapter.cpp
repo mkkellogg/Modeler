@@ -4,7 +4,7 @@
 #include "Settings.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
 
 MouseAdapter::MouseAdapter() {
 
@@ -36,8 +36,8 @@ void MouseAdapter::onMouseButtonClicked(ButtonEventCallback callback) {
     this->buttonEventCallbacks[(Core::UInt32)MouseEventType::ButtonClick].push_back(callback);
 }
 
-bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {
-    float dpr = QApplication::desktop()->devicePixelRatio();
+bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {    
+    float dpr = QGuiApplication::primaryScreen()->devicePixelRatio();
     auto eventType = event->type();
     if (eventType == QEvent::MouseButtonPress ||
         eventType == QEvent::MouseButtonRelease ||
@@ -101,7 +101,7 @@ bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {
              MouseEvent event(MouseEventType::WheelScroll);
              QPoint pDelta = wheelEvent->angleDelta();
 
-             event.scrollDelta = (Core::Real)wheelEvent->delta() / 240.0f;
+             event.scrollDelta = (Core::Real)wheelEvent->angleDelta().y() / 240.0f;
              event.buttons = 0;
              Core::WeakPointer<PipedEventAdapter<MouseEvent>> adapterPtr(this->pipedEventAdapter);
              adapterPtr->accept(event);
@@ -114,7 +114,7 @@ bool MouseAdapter::processEvent(QObject* obj, QEvent* event) {
 unsigned int MouseAdapter::getMouseButtonIndex(const Qt::MouseButton& button) {
     if(button == Qt::LeftButton) {return 1;}
     else if(button == Qt::RightButton) {return 2;}
-    else if((button == Qt::MiddleButton) || (button == Qt::MidButton || button == Settings::AltMiddleButton)) {return 3;}
+    else if((button == Qt::MiddleButton) || (button == Qt::MiddleButton || button == Settings::AltMiddleButton)) {return 3;}
     else if(button == Qt::XButton1){return 4;}
     else if(button == Qt::XButton2){return 5;}
     else return 0;

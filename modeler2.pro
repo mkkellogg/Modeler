@@ -1,9 +1,18 @@
 # Set these to the appropriate directories
-CORE_BINARY_DIR=$$PWD/../../Core/build
-ASSIMP_BINARY_DIR=$$PWD/../../assimp/build/bin
+CORE_BINARY_DIR=$$PWD/../Core/build
+ASSIMP_BINARY_DIR=$$PWD/../assimp/build/bin
 #DEVIL_BINARY_DIR=$$PWD/../devil/devil-src/DevIL/build
 
+QT += widgets
+QT += openglwidgets
+
+equals(QT_MAJOR_VERSION, 6) {
+  # qt6
+  QT += core-private
+}
+
 HEADERS       = \
+    FlickerLight.h \
     ModelerApp.h \
     RenderWindow.h \
     OpenGLMouseAdapterWidget.h \
@@ -30,6 +39,7 @@ HEADERS       = \
     Scene/SceneHelper.h \
     Util/FileUtil.h
 SOURCES       = \
+    FlickerLight.cpp \
     Scene/MoonlitNightScene.cpp \
     Scene/SunnySkyScene.cpp \
     Scene/SunriseScene.cpp \
@@ -55,9 +65,6 @@ SOURCES       = \
     Scene/ModelerScene.cpp \
     Scene/SceneHelper.cpp \
     Util/FileUtil.cpp
-
-QT           += widgets
-
 
 DEFINES += GL_GLEXT_PROTOTYPES
 CONFIG += c++11
