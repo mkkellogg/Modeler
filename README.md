@@ -1,12 +1,6 @@
 # Modeler
 Goal: A 3D scene staging tool and physically-based rendering sandbox built on QT widgets. Makes use of my own custom rendering engine (Core), and serves as a great utility to test ongoing feature development in the engine. Still very much a work-in-progress!
 
-## Requirements:
-- Qt version 6.3 or higher
-- Qt creator version 8.0 or higher
-- Asset Import Library version 5.2 or higher
-- DevIL image library version 1.7.8 or higher
-
 ## Current functionality:
 A built-in scene that showcases the current state of the physically-based rendering capabilities of Core will be loaded by default. Additional models can be imported into the scene and repositioned. Modifiable model import settings include scale, normal smoothing threshold, and material type (physically-based or "legacy"). 
 
@@ -17,6 +11,12 @@ A built-in scene that showcases the current state of the physically-based render
 - DevIL image library
 
 Dynamic versions of the above libraries are required.
+
+## Version Requirements:
+- Qt version 6.3 or higher
+- Qt creator version 8.0 or higher
+- Asset Import Library version 5.2 or higher
+- DevIL image library version 1.7.8 or higher
 
 ## External asset dependencies:
 
