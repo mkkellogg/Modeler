@@ -1,10 +1,8 @@
 # Set these to the appropriate directories
-CORE_BINARY_DIR=$$PWD/../Core/build
-ASSIMP_BINARY_DIR=$$PWD/../assimp/build/bin
-#DEVIL_BINARY_DIR=$$PWD/../devil/devil-src/DevIL/build
+CORE_BINARY_DIR=$$PWD/../Core-build
 
 QT += widgets
-QT += openglwidgets
+#QT += openglwidgets
 
 equals(QT_MAJOR_VERSION, 6) {
   # qt6
@@ -74,12 +72,18 @@ DEPENDPATH += $$CORE_BINARY_DIR/include/
 
 LIBS += -L$$CORE_BINARY_DIR/ -lcore
 PRE_TARGETDEPS += $$CORE_BINARY_DIR/libcore.a
+
 # For windows, the follow line may need to be uncommented
 # PRE_TARGETDEPS += $$CORE_BINARY_DIR/core.lib
 
-LIBS += -L$$ASSIMP_BINARY_DIR
-# If you have a custom DevIL location, uncomment the line below
+# If you have a custom Assimp location, uncomment the lines below
+#ASSIMP_BINARY_DIR=$$PWD/../assimp-build/bin
+#LIBS += -L$$ASSIMP_BINARY_DIR
+
+# If you have a custom DevIL location, uncomment the lines below
+#DEVIL_BINARY_DIR=$$PWD/../devil/devil-src/DevIL/build
 #LIBS += -L$$DEVIL_BINARY_DIR/lib/x64/
+
 LIBS += -lassimp
 LIBS += -lIL
 
