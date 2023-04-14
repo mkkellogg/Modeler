@@ -19,18 +19,25 @@
 
 SunnySkyScene::SunnySkyScene(ModelerApp& modelerApp): ModelerScene(modelerApp) {
     this->frameCount = 0;
+    this->envSubType = EnvironmentSubType::Standard;
 }
 
 void SunnySkyScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
-   /* renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(2.0f);
-    renderCamera->setHDRGamma(2.0f);*/
-
-    renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeReinhard();
-    renderCamera->setHDRGamma(2.0f);
+    switch (this->envSubType) {
+        case EnvironmentSubType::Standard:
+            renderCamera->setHDREnabled(true);
+            //renderCamera->setHDRToneMapTypeReinhard();
+            renderCamera->setHDRToneMapTypeExposure(2.0f);
+            renderCamera->setHDRGamma(2.0f);
+        break;
+        case EnvironmentSubType::Alps:
+            renderCamera->setHDREnabled(true);
+            renderCamera->setHDRToneMapTypeExposure(3.0f);
+            renderCamera->setHDRGamma(2.2);
+        break;
+    }
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
     cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
@@ -57,8 +64,18 @@ void SunnySkyScene::setupSkyboxes() {
     skyboxTextureAttributes.MipLevels = 2;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
 
-    Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-7_flipped.png", false);
-    renderCamera->getSkybox().build(skyTexture, true);
+    Core::WeakPointer<Core::CubeTexture> skyTexture;
+    switch (this->envSubType) {
+        case EnvironmentSubType::Standard:
+            skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/puresky1_4k.hdr", false);
+            renderCamera->getSkybox().build(skyTexture, true, 2.0f);
+        break;
+        case EnvironmentSubType::Alps:
+            skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/alps_field_4k.hdr", true, Core::Math::PI * -0.85f);
+            renderCamera->getSkybox().build(skyTexture, true, 3.0f);
+        break;
+    }
+
     renderCamera->setSkyboxEnabled(true);
 }
 
@@ -81,10 +98,30 @@ void SunnySkyScene::setupLights() {
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(4.0f);
+    switch (this->envSubType) {
+        case EnvironmentSubType::Standard:
+            directionalLight->setIntensity(5.0f);
+        break;
+        case EnvironmentSubType::Alps:
+            directionalLight->setIntensity(5.0f);
+        break;
+    }
+
     directionalLight->setColor(1.0, 1.0, 0.75, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
-    Core::Vector3r lightVector(-0.6f, -1.0f, -0.4);
+
+
+    Core::Vector3r lightVector;
+    Core::WeakPointer<Core::CubeTexture> skyTexture;
+    switch (this->envSubType) {
+        case EnvironmentSubType::Standard:
+            lightVector.set(-0.6f, -1.0f, -0.4);
+        break;
+        case EnvironmentSubType::Alps:
+            lightVector.set(0.9f, -1.3f, 0.1);
+        break;
+    }
+
     Core::Vector3r offsetVector = lightVector;
     offsetVector = offsetVector * -1000.0f;
     this->directionalLightObject->getTransform().translate(offsetVector, Core::TransformationSpace::World);

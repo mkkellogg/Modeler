@@ -32,13 +32,13 @@ void GestureAdapter::onMouseEvent(MouseAdapter::MouseEvent event) {
     PointerState& pointerState = pointerStates[pointerIndex];
     switch(event.getType()){
         case MouseAdapter::MouseEventType::ButtonPress:
-                pointerState.active = true;
-                pointerState.startPosition = event.position;
-                pointerState.position = event.position;
+            pointerState.active = true;
+            pointerState.startPosition = event.position;
+            pointerState.position = event.position;
         break;
         case MouseAdapter::MouseEventType::ButtonRelease:
-                pointerState.active = false;
-                pointerState.position = event.position;
+            pointerState.active = false;
+            pointerState.position = event.position;
         break;
         case MouseAdapter::MouseEventType::MouseMove:
         {

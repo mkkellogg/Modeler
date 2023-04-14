@@ -25,8 +25,8 @@ void SunsetScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
     renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(3.0f);
-    renderCamera->setHDRGamma(2.2f);
+    renderCamera->setHDRToneMapTypeExposure(2.0f);
+    renderCamera->setHDRGamma(2.0f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
     cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
@@ -48,7 +48,7 @@ void SunsetScene::setupSkyboxes() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
     Core::WeakPointer<Core::Engine> engine = this->modelerApp.getEngine();
     Core::WeakPointer<Core::CubeTexture> hdrSkyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/Sky-4.hdr", true, Core::Math::PI * -0.85f);
-    renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.7f);
+    renderCamera->getSkybox().build(hdrSkyboxTexture, true, 2.0f);
     renderCamera->setSkyboxEnabled(true);
 }
 
@@ -70,9 +70,9 @@ void SunsetScene::setupLights() {
     this->directionalLightObject = engine->createObject3D();
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
-    Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(3.0f);
-    directionalLight->setColor(1.0f, .75f, .1f, 1.0f);
+    Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0015);
+    directionalLight->setIntensity(3.5f);
+    directionalLight->setColor(1.0f, .85f, .1f, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     directionalLight->setFaceCullingEnabled(false);
 

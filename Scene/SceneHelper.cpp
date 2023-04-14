@@ -137,7 +137,6 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
                                 renderMaterial->setRenderQueue(EngineRenderQueue::AlphaClippedGeometry);
                                 if (enabledAlphaChannel == 1) {
                                     physicalMaterial->setOpacityChannelRedEnabled(true);
-
                                     physicalMaterial->setOpacityChannelAlphaEnabled(false);
                                 }
                                 else if (enabledAlphaChannel == 4) {
@@ -163,7 +162,7 @@ void SceneHelper::loadModelStandard(const std::string& path, bool usePhysicalMat
         onLoad(rootObject);
     };
 
-    this->modelerApp.loadModel(path, 1.0f, 80 * Core::Math::DegreesToRads, true, true, usePhysicalMaterial, castShadows, onLoaded);
+    this->modelerApp.loadModel(path, 1.0f, 85 * Core::Math::DegreesToRads, true, true, usePhysicalMaterial, castShadows, onLoaded);
 }
 
 void SceneHelper::loadTerrain(bool usePhysicalMaterial, float rotation) {
@@ -266,7 +265,7 @@ void SceneHelper::loadWarrior(bool usePhysicalMaterial, float rotation, float x,
         animationPlayer->play(animation);
     };
 
-    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 80 * Core::Math::DegreesToRads, false, false, usePhysicalMaterial, true, onLoaded);
+    this->modelerApp.loadModel("assets/models/toonwarrior/character/warrior.fbx", 4.0f, 90 * Core::Math::DegreesToRads, false, false, usePhysicalMaterial, true, onLoaded);
 }
 
 void SceneHelper::createBasePlatform() {
@@ -335,9 +334,9 @@ void SceneHelper::setupCommonSceneElements(bool excludeCastle, bool physicalTera
 
 
     // cliffs
-    this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0,  55.8991f, 27.178f, -140.469f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 0);
-    this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 1);
-    this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, true, 1, true, true, true, dummyOnLoad, 1);
+    this->loadModelStandard(stone4Path, true, false, 0.0f, 2.0f, 0.0f, 0, 1, 0, 0,  55.8991f, 27.178f, -140.469f, 0.015f, 0.025f, 0.01f, true, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 0);
+    this->loadModelStandard(cliff1Path, true, false, -0.2f, 0.0f, 0.0f, 0, 1, 0, 0, 54.098, 4.426f, -121.042f, 0.01f, 0.01f, 0.01f, true, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 1);
+    this->loadModelStandard(cliff1Path, true, true, -1.64f, 0.10983f, -.284439f, 0, 1, 0, 0, 29.1575, 13.3392f, -127.239f, 0.008f, 0.012f, 0.0065f, true, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 1);
 
     // random trees
     this->loadModelStandard(tree1Path, true, false, 0.0f, 0.174f, 0.0f, 0, 1, 0, 0, 24.2924f, 27.095f, -150.216f, 0.011f, 0.011f, 0.015f, true, 0.0f, 0.85f, true, 4, true, true, true, dummyOnLoad, 0);

@@ -13,6 +13,12 @@
 class SunnySkyScene : public ModelerScene
 {
 public:
+
+    enum class EnvironmentSubType {
+        Standard = 0,
+        Alps = 1
+    };
+
     SunnySkyScene(ModelerApp& modelerApp);
     void load() override;
     void update() override;
@@ -23,6 +29,7 @@ private:
     void setupLights();
 
     unsigned int frameCount;
+    EnvironmentSubType envSubType;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
     Core::WeakPointer<Core::Object3D> directionalLightObject;
     Core::WeakPointer<Core::Object3D>  pointLightObject;

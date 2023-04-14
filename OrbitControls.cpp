@@ -89,7 +89,7 @@ void OrbitControls::handleGesture(GestureAdapter::GestureEvent event) {
             }
         }
         else if (eventPointer == GestureAdapter::GesturePointer::Tertiary) {
-            Core::Real ndcZ = eventPointer == GestureAdapter::GesturePointer::Tertiary ? 0.5f : 0.0f;
+            Core::Real ndcZ = 0.5f;
 
             Core::Point3r worldStartP = this->targetCamera->unProject(eventStartX, eventStartY, ndcZ);
             Core::Point3r worldEndP = this->targetCamera->unProject(eventEndX, eventEndY, ndcZ);

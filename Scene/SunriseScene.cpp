@@ -25,8 +25,8 @@ void SunriseScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
     renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(2.0f);
-    renderCamera->setHDRGamma(2.0f);
+    renderCamera->setHDRToneMapTypeExposure(3.0f);
+    renderCamera->setHDRGamma(2.2f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
     cameraObj->getTransform().translate(-20, 15, -30, Core::TransformationSpace::World);
@@ -54,7 +54,7 @@ void SunriseScene::setupSkyboxes() {
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
 
     Core::WeakPointer<Core::CubeTexture> skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/8k10pack/sky-6_flipped.png", false, -2.9f);
-    renderCamera->getSkybox().build(skyTexture, true);
+    renderCamera->getSkybox().build(skyTexture, true, 3.0f);
     renderCamera->setSkyboxEnabled(true);
 }
 

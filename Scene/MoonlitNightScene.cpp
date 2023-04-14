@@ -46,7 +46,7 @@ void MoonlitNightScene::load() {
     Core::WeakPointer<Core::Camera> renderCamera = this->modelerApp.getRenderCamera();
 
     renderCamera->setHDREnabled(true);
-    renderCamera->setHDRToneMapTypeExposure(2.0f);
+    renderCamera->setHDRToneMapTypeExposure(1.5f);
     renderCamera->setHDRGamma(1.5f);
 
     Core::WeakPointer<Core::Object3D> cameraObj = renderCamera->getOwner();
@@ -78,16 +78,17 @@ void MoonlitNightScene::setupSkyboxes() {
     skyboxTextureAttributes.MipLevels = 2;
     Core::WeakPointer<Core::CubeTexture> skyboxTexture = engine->createCubeTexture(skyboxTextureAttributes);
 
-    std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_north.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_south.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_up.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_down.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_west.png", true));
-    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_east.png", true));
-    skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);
+   /* std::vector<std::shared_ptr<Core::StandardImage>> skyboxImages;
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_north.png", true, true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_south.png", true, true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_up.png", true, true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_down.png", true, true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_west.png", true, true));
+    skyboxImages.push_back(Core::ImageLoader::loadImageU("assets/skyboxes/moonlit_night/nightsky_east.png", true, true));
+    skyboxTexture->buildFromImages(skyboxImages[0], skyboxImages[1], skyboxImages[2], skyboxImages[3], skyboxImages[4], skyboxImages[5]);*/
 
-    renderCamera->getSkybox().build(skyboxTexture, true);
+    skyboxTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/puresky_night1_4k.hdr", true, Core::Math::PI * -2.05f);
+    renderCamera->getSkybox().build(skyboxTexture, true, 1.5f);
     renderCamera->setSkyboxEnabled(true);
 }
 
@@ -112,7 +113,7 @@ void MoonlitNightScene::setupBaseLights() {
     this->directionalLightObject->setName("Directonal light");
     coreScene.addObjectToScene(directionalLightObject);
     Core::WeakPointer<Core::DirectionalLight> directionalLight = engine->createDirectionalLight<Core::DirectionalLight>(directionalLightObject, 3, true, 4096, 0.0001, 0.0005);
-    directionalLight->setIntensity(1.5f);
+    directionalLight->setIntensity(2.5f);
     directionalLight->setColor(1.0, 1.0, 1.0, 1.0f);
     directionalLight->setShadowSoftness(Core::ShadowLight::Softness::VerySoft);
     Core::Vector3r lightVector(-0.5f, -1.0f, -0.5f);
@@ -138,7 +139,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
 
     // Ember atlas
     std::string emberTexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/particle_glow_05.png");
-    std::shared_ptr<Core::StandardImage> emberTextureImage = Core::ImageLoader::loadImageU(emberTexturePath);
+    std::shared_ptr<Core::StandardImage> emberTextureImage = Core::ImageLoader::loadImageU(emberTexturePath, false, true);
     Core::WeakPointer<Core::Texture2D> emberTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     emberTexture->buildFromImage(emberTextureImage);
     Core::Atlas emberAtlas(emberTexture);
@@ -147,7 +148,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     // Fire 2 atlas
     std::string fire2TexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_2_half.png");
     std::shared_ptr<Core::StandardImage> fire2TextureImage;
-    fire2TextureImage = Core::ImageLoader::loadImageU(fire2TexturePath);
+    fire2TextureImage = Core::ImageLoader::loadImageU(fire2TexturePath, false, true);
     Core::WeakPointer<Core::Texture2D> fire2Texture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     fire2Texture->buildFromImage(fire2TextureImage);
     Core::Atlas fire2Atlas(fire2Texture);
@@ -156,16 +157,17 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     // Fire 4 flat atlas
     std::string fire4FlatTexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_4_flat_half.png");
     std::shared_ptr<Core::StandardImage> fire4FlatTextureImage;
-    fire4FlatTextureImage = Core::ImageLoader::loadImageU(fire4FlatTexturePath);
+    fire4FlatTextureImage = Core::ImageLoader::loadImageU(fire4FlatTexturePath, false, true);
     Core::WeakPointer<Core::Texture2D> fire4Texture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     fire4Texture->buildFromImage(fire4FlatTextureImage);
     Core::Atlas fire4FlatAtlas(fire4Texture);
     fire4FlatAtlas.addTileArray(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
 
+    Core::Real torchIntensity = 180.0f;
     const std::string fenceEnd5("assets/models/fence_end_5/fence_end_5.fbx");
     const std::string campfire("assets/models/toonlevel/campfire/campfire01.fbx");
     // torch 1
-    FlickerLight torch1FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    FlickerLight torch1FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 14.0f, torchIntensity);
     this->flickerLights.push_back(torch1FlickerLight);
     Core::WeakPointer<Core::PointLight> torch1Light = torch1FlickerLight.getLight();
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
@@ -175,7 +177,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.5005f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 2
-    FlickerLight torch2FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 12.0f, 50.0f);
+    FlickerLight torch2FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 14.0f, torchIntensity);
     this->flickerLights.push_back(torch2FlickerLight);
     Core::WeakPointer<Core::PointLight> torch2Light = torch2FlickerLight.getLight();
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
@@ -184,8 +186,8 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     torch2Light->setCullingMask(torch2LightCullingMask);
     this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.0816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
-    // torch 3
-    FlickerLight torch3FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 45.4915f, 28.405f, -164.412f, 2.0f, 10.0f, 75.0f);
+    // campfire
+    FlickerLight torch3FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 45.4915f, 28.405f, -164.412f, 2.0f, 10.0f, 230.0f);
     this->flickerLights.push_back(torch3FlickerLight);
     Core::WeakPointer<Core::PointLight> torch3Light = torch3FlickerLight.getLight();
     Core::IntMask torch3LightCullingMask = torch3Light->getCullingMask();
@@ -196,7 +198,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.4915f, 27.2334f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
-    FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 10.0f, 50.0f);
+    FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 14.0f, torchIntensity);
     this->flickerLights.push_back(torch4FlickerLight);
     Core::WeakPointer<Core::PointLight> torch4Light = torch4FlickerLight.getLight();
     Core::IntMask torch4LightCullingMask = torch4Light->getCullingMask();
