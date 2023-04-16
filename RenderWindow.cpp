@@ -51,7 +51,7 @@ void RenderWindow::cleanup()
 void RenderWindow::start() {
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(mainLoop()));
-    timer->start(10);
+    timer->start(1);
 }
 
 void RenderWindow::mainLoop() {

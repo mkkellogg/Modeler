@@ -67,7 +67,7 @@ void SunnySkyScene::setupSkyboxes() {
     Core::WeakPointer<Core::CubeTexture> skyTexture;
     switch (this->envSubType) {
         case EnvironmentSubType::Standard:
-            skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/puresky1_4k.hdr", false);
+            skyTexture = Core::TextureUtils::loadFromEquirectangularImage("assets/skyboxes/HDR/puresky1_4k.hdr", true);
             renderCamera->getSkybox().build(skyTexture, true, 2.0f);
         break;
         case EnvironmentSubType::Alps:

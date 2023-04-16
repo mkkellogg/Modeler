@@ -209,7 +209,7 @@ void ModelerApp::engineReady(Core::WeakPointer<Core::Engine> engine) {
     engine->getGraphicsSystem()->setClearColor(Core::Color(0, 0, 0, 0));
     this->setupRenderCamera();
 
-    this->loadScene(SceneID::MoonlitNight);
+    this->loadScene(SceneID::SunnySky);
 
     this->transformWidget.init(this->renderCamera);
     this->setupHighlightMaterials();
@@ -377,6 +377,7 @@ void ModelerApp::preRenderCallback() {
 
 void ModelerApp::postRenderCallback() {
     this->renderOutline();
+    this->updateFPS();
 }
 
 void ModelerApp::renderOutline() {
@@ -579,5 +580,27 @@ void ModelerApp::renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>
         Core::WeakPointer<Core::Object3D> originalParent = saveParents[object->getID()];
         if (originalParent.isValid()) originalParent->addChild(object);
         object->getTransform().getLocalMatrix().copy(object->getTransform().getTempMatrix());
+    }
+}
+
+void ModelerApp::updateFPS() {
+    const static Core::Real updateInterval = 1.0f;
+    static Core::Real lastCallTime;
+    static Core::UInt32 framesSinceLastCall;
+    static Core::Bool initialized = false;
+    if (!initialized) {
+        lastCallTime = Core::Time::getRealTimeSinceStartup();
+        framesSinceLastCall = 0;
+        initialized = true;
+    } else {
+        framesSinceLastCall++;
+        Core::Real currentTime = Core::Time::getRealTimeSinceStartup();
+        Core::Real agDelta = currentTime - lastCallTime;
+        if (agDelta > updateInterval) {
+            Core::Real fps = (Core::Real)framesSinceLastCall / agDelta;
+            std::cout << "FPS: " << fps << std::endl;
+            lastCallTime = Core::Time::getRealTimeSinceStartup();
+            framesSinceLastCall = 0;
+        }
     }
 }

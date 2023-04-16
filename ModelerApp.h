@@ -76,6 +76,7 @@ private:
     void postRenderCallback();
     void renderOutline();
     void renderOnce(const std::vector<Core::WeakPointer<Core::Object3D>>& objects, Core::WeakPointer<Core::Camera> camera);
+    void updateFPS();
 
     RenderWindow* renderWindow;
     bool engineIsReady = false;
