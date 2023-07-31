@@ -36,3 +36,6 @@ To install Qt and Qt Creator on Linux:
      
      sudo apt install qt5-default
 
+If your distro does not have `qt5-default` you can try:
+
+      sudo apt-get install qtbase5-dev qt5-qmake
