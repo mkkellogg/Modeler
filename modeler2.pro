@@ -1,5 +1,5 @@
 # Set these to the appropriate directories
-CORE_BINARY_DIR=$$PWD/../Core-build
+CORE_BINARY_DIR=$$PWD/../../Core/build
 
 QT += widgets
 #QT += openglwidgets

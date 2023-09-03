@@ -167,7 +167,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     const std::string fenceEnd5("assets/models/fence_end_5/fence_end_5.fbx");
     const std::string campfire("assets/models/toonlevel/campfire/campfire01.fbx");
     // torch 1
-    FlickerLight torch1FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 40.4505, 32.3185f, -141.762f, 1.0f, 14.0f, torchIntensity);
+    FlickerLight torch1FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 40.4505, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity);
     this->flickerLights.push_back(torch1FlickerLight);
     Core::WeakPointer<Core::PointLight> torch1Light = torch1FlickerLight.getLight();
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
@@ -177,7 +177,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.5005f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 2
-    FlickerLight torch2FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.3185f, -141.762f, 1.0f, 14.0f, torchIntensity);
+    FlickerLight torch2FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 51.0316f, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity);
     this->flickerLights.push_back(torch2FlickerLight);
     Core::WeakPointer<Core::PointLight> torch2Light = torch2FlickerLight.getLight();
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
@@ -198,7 +198,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.4915f, 27.2334f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
-    FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 31.113f, -170.746f, 1.0f, 14.0f, torchIntensity);
+    FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, fire2Atlas, fire4FlatAtlas, 31.6682f, 30.9f, -170.746f, 1.0f, 14.0f, torchIntensity);
     this->flickerLights.push_back(torch4FlickerLight);
     Core::WeakPointer<Core::PointLight> torch4Light = torch4FlickerLight.getLight();
     Core::IntMask torch4LightCullingMask = torch4Light->getCullingMask();
@@ -299,14 +299,16 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> fire2ParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(fire2ParticleSystemObject);
     Core::WeakPointer<Core::ParticleStandardMaterial> fire2ParticleMaterial = fire2ParticleRenderer->getMaterial();
     fire2ParticleMaterial->setAtlas(atlas);
-    Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 6);
+    fire2ParticleMaterial->setInterpolateAtlasFrames(true);
+    Core::WeakPointer<Core::ParticleSystem> fire2ParticleSystem = engine->createParticleSystem(fire2ParticleSystemObject, 50);
     Core::ConstantParticleEmitter& fire2ConstantEmitter = fire2ParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
-    fire2ConstantEmitter.emissionRate = 5;
+    fire2ConstantEmitter.emissionRate = 10;
     fire2ParticleSystem->addParticleSequence(0, 18);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire2ParticleSequences = fire2ParticleSystem->getParticleSequences();
    // fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(Core::RandomGenerator<Core::Real>(0.0f, 0.0f, false));
     //fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(1.0, -1.0f);
+    fire2ParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::RandomGenerator<Core::Real>(Core::Math::PI / 2.0f, -Core::Math::PI / 2.0f, false));
     fire2ParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::RandomGenerator<Core::Real>(1.0f, -1.0f, false));
    // fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::Vector2r(0.25  * scale, 0.25 * scale), 0.0f, Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f);
     fire2ParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.25  * scale, 0.25 * scale), Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f, 0.0f, false));
@@ -317,8 +319,8 @@ void MoonlitNightScene::createFire2ParticleSystem(Core::WeakPointer<Core::Engine
 
     Core::OpacityInterpolatorOperator& fire2OpacityInterpolatorOperator = fire2ParticleSystem->addParticleStateOperator<Core::OpacityInterpolatorOperator>();
     fire2OpacityInterpolatorOperator.addElement(0.0f, 0.0f);
-    fire2OpacityInterpolatorOperator.addElement(0.3f, 0.25f);
-    fire2OpacityInterpolatorOperator.addElement(0.3f, 0.5f);
+    fire2OpacityInterpolatorOperator.addElement(0.35f, 0.25f);
+    fire2OpacityInterpolatorOperator.addElement(0.35f, 0.5f);
     fire2OpacityInterpolatorOperator.addElement(0.0f, 1.0f);
 
     Core::SizeInterpolatorOperator& fire2SizeInterpolatorOperator = fire2ParticleSystem->addParticleStateOperator<Core::SizeInterpolatorOperator>(true);
@@ -344,7 +346,7 @@ void MoonlitNightScene::createFire4ParticleSystem(Core::WeakPointer<Core::Engine
     fire4FlatParticleMaterial->setInterpolateAtlasFrames(true);
     Core::WeakPointer<Core::ParticleSystem> fire4FlatParticleSystem = engine->createParticleSystem(fire4FlatParticleSystemObject, 20);
     Core::ConstantParticleEmitter& fire4FlatConstantEmitter = fire4FlatParticleSystem->setEmitter<Core::ConstantParticleEmitter>();
-    fire4FlatConstantEmitter.emissionRate = 3;
+    fire4FlatConstantEmitter.emissionRate = 5;
     fire4FlatParticleSystem->addParticleSequence(0, 16);
     Core::WeakPointer<Core::ParticleSequenceGroup> fire4FlatParticleSequences = fire4FlatParticleSystem->getParticleSequences();
     //fire4FlatParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(0.0f, 0.0f);
