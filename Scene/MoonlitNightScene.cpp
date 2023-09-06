@@ -164,27 +164,26 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     brightFlameAtlas.addTileArray(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
 
     Core::Real torchIntensity = 180.0f;
-    const std::string fenceEnd5("assets/models/fence_end_5/fence_end_5.fbx");
+    const std::string torchPost("assets/models/cartoonTorch/cartoonTorch.fbx");
     const std::string campfire("assets/models/toonlevel/campfire/campfire01.fbx");
+
     // torch 1
-    FlickerLight torch1FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 40.4505, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity);
+    FlickerLight torch1FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 40.4505, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity, 4);
     this->flickerLights.push_back(torch1FlickerLight);
     Core::WeakPointer<Core::PointLight> torch1Light = torch1FlickerLight.getLight();
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 2);
     torch1Light->setCullingMask(torch1LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0,  40.5005f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // torch 2
-    FlickerLight torch2FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 51.0316f, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity);
+    FlickerLight torch2FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 51.0816f, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity, 4);
     this->flickerLights.push_back(torch2FlickerLight);
     Core::WeakPointer<Core::PointLight> torch2Light = torch2FlickerLight.getLight();
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 2);
     torch2Light->setCullingMask(torch2LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 51.0816f, 27.4293f, -141.762f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 4);
 
     // campfire
     FlickerLight torch3FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 45.4915f, 28.405f, -164.412f, 2.0f, 10.0f, 230.0f);
@@ -198,14 +197,14 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.4915f, 27.2334f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
-    FlickerLight torch4FlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 31.6682f, 30.9f, -170.746f, 1.0f, 14.0f, torchIntensity);
+    FlickerLight torch4FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 31.6682f, 30.9f, -170.746f, 1.0f, 14.0f, torchIntensity, 2);
+
     this->flickerLights.push_back(torch4FlickerLight);
     Core::WeakPointer<Core::PointLight> torch4Light = torch4FlickerLight.getLight();
     Core::IntMask torch4LightCullingMask = torch4Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 4);
     torch4Light->setCullingMask(torch4LightCullingMask);
-    this->sceneHelper.loadModelStandard(fenceEnd5, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 31.7182f, 26.1624f, -170.746f, 0.005f, 0.005f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
 
     // castle fort objects
     const std::string modularCastleTowerPath("assets/models/modular_castle_tower/modular_castle_tower.fbx");
@@ -231,13 +230,23 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     this->sceneHelper.loadModelStandard(modularCastleWallGatePath, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.7019, 27.1098f, -170.371f, 0.02f, 0.02f, 0.02f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, 2);
 }
 
+FlickerLight MoonlitNightScene::createTorchWithFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& baseFlameAtlas,
+                                                    Core::Atlas& brightFlameAtlas, float x, float y, float z, float scale, float lightRadius, float lightIntensity, int torchPostLayer) {
+    const std::string torchPost("assets/models/cartoonTorch/cartoonTorch.fbx");
+    std::function<void(Core::WeakPointer<Core::Object3D>)> dummyOnLoad = [](Core::WeakPointer<Core::Object3D> root){};
+    FlickerLight torchFlickerLight = this->createTorchFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, x, y, z, scale, lightRadius, lightIntensity);
+    this->sceneHelper.loadModelStandard(torchPost, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, x, y - 5.6367f, z, 0.1f, 0.1f, 0.1f, false, 0.0f, 0.85f, false, 0, false, false, true, dummyOnLoad, torchPostLayer);
+    return torchFlickerLight;
+}
+
 FlickerLight MoonlitNightScene::createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& baseFlameAtlas,
                                                  Core::Atlas& brightFlameAtlas, float x, float y, float z, float scale, float lightRadius, float lightIntensity) {
     Core::WeakPointer<Core::Object3D> torchParticleSystemObject = engine->createObject3D();
     coreScene.addObjectToScene(torchParticleSystemObject);
-    this->createEmberParticleSystem(engine, torchParticleSystemObject, emberAtlas, scale);
-    this->createBaseFlameParticleSystem(engine, torchParticleSystemObject, baseFlameAtlas, scale);
-    this->createBrightFlameParticleSystem(engine, torchParticleSystemObject, brightFlameAtlas, scale);
+    Core::WeakPointer<Core::Object3D> emberObject =this->createEmberParticleSystem(engine, torchParticleSystemObject, emberAtlas, scale);
+    Core::WeakPointer<Core::Object3D> baseFlameObject =this->createBaseFlameParticleSystem(engine, torchParticleSystemObject, baseFlameAtlas, scale);
+    Core::WeakPointer<Core::Object3D> brightFlameObject = this->createBrightFlameParticleSystem(engine, torchParticleSystemObject, brightFlameAtlas, scale);
+    brightFlameObject->getTransform().translate(0.05f, 0.0f, 0.05f);
     Core::WeakPointer<Core::Object3D> torchLightObject = engine->createObject3D();
     torchParticleSystemObject->addChild(torchLightObject);
     torchLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
@@ -254,7 +263,7 @@ FlickerLight MoonlitNightScene::createTorchFlame(Core::WeakPointer<Core::Engine>
     return torchFlickerLight;
 }
 
-void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
+Core::WeakPointer<Core::Object3D> MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
     Core::WeakPointer<Core::Object3D> emberParticleSystemObject = engine->createObject3D();
     parent->addChild(emberParticleSystemObject);
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> emberParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(emberParticleSystemObject);
@@ -266,7 +275,7 @@ void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine
 
     emberParticleSystem->addParticleStateInitializer<Core::LifetimeInitializer>(Core::RandomGenerator<Core::Real>(3.0f, 1.5f, false));
     emberParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.0f, 0.0f), Core::Vector2r(scale * 0.15f, scale  * 0.15f), 0.0f, 0.0f, false));
-    emberParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, 0.0f, 0.0f, 0.0f);
+    emberParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, -0.025f * scale, 0.0f, -0.025f * scale);
     emberParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.4f * scale, 0.5f * scale, 0.4f * scale, -0.2f * scale, 0.8f * scale, -0.2f * scale, 0.6f * scale, 0.8f * scale);
 
     Core::OpacityInterpolatorOperator& emberOpacityInterpolatorOperator = emberParticleSystem->addParticleStateOperator<Core::OpacityInterpolatorOperator>();
@@ -284,9 +293,11 @@ void MoonlitNightScene::createEmberParticleSystem(Core::WeakPointer<Core::Engine
 
     emberParticleSystem->setSimulateInWorldSpace(true);
     emberParticleSystem->start();
+
+    return emberParticleSystemObject;
 }
 
-void MoonlitNightScene::createBaseFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
+Core::WeakPointer<Core::Object3D> MoonlitNightScene::createBaseFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
     Core::WeakPointer<Core::Object3D> baseFlameParticleSystemObject = engine->createObject3D();
     parent->addChild(baseFlameParticleSystemObject);
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> baseFlameParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(baseFlameParticleSystemObject);
@@ -304,7 +315,7 @@ void MoonlitNightScene::createBaseFlameParticleSystem(Core::WeakPointer<Core::En
     baseFlameParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::RandomGenerator<Core::Real>(Core::Math::PI / 2.0f, -Core::Math::PI / 2.0f, false));
     baseFlameParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::RandomGenerator<Core::Real>(1.0f, -1.0f, false));
     baseFlameParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.25  * scale, 0.25 * scale), Core::Vector2r(0.5f * scale, 0.5f * scale), 0.0f, 0.0f, false));
-    baseFlameParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, 0.0f, 0.0f, 0.0f);
+    baseFlameParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.05f * scale, 0.0f, 0.05f * scale, -0.025f * scale, 0.0f, -0.025f * scale);
     baseFlameParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.05f * scale, 0.4f * scale, 0.05f * scale, -0.025f * scale, 0.8f * scale, -0.025f * scale,  0.35f * scale, 0.5f * scale);
     baseFlameParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(baseFlameParticleSequences);
 
@@ -330,9 +341,11 @@ void MoonlitNightScene::createBaseFlameParticleSystem(Core::WeakPointer<Core::En
 
     baseFlameParticleSystem->setSimulateInWorldSpace(true);
     baseFlameParticleSystem->start();
+
+    return baseFlameParticleSystemObject;
 }
 
-void MoonlitNightScene::createBrightFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
+Core::WeakPointer<Core::Object3D> MoonlitNightScene::createBrightFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale) {
     Core::WeakPointer<Core::Object3D> brightFlameParticleSystemObject = engine->createObject3D();
     parent->addChild(brightFlameParticleSystemObject);
     Core::WeakPointer<Core::ParticleSystemAnimatedSpriteRenderer> brightFlameParticleRenderer = engine->createRenderer<Core::ParticleSystemAnimatedSpriteRenderer, Core::ParticleSystem>(brightFlameParticleSystemObject);
@@ -350,7 +363,7 @@ void MoonlitNightScene::createBrightFlameParticleSystem(Core::WeakPointer<Core::
     brightFlameParticleSystem->addParticleStateInitializer<Core::RotationInitializer>(Core::RandomGenerator<Core::Real>(Core::Math::PI, -Core::Math::PI / 2.0, false));
     brightFlameParticleSystem->addParticleStateInitializer<Core::RotationalSpeedInitializer>(Core::RandomGenerator<Core::Real>(Core::Math::PI / 2.0f, -Core::Math::PI / 4.0f, false));
     brightFlameParticleSystem->addParticleStateInitializer<Core::SizeInitializer>(Core::RandomGenerator<Core::Vector2r>(Core::Vector2r(0.0, 0.0), Core::Vector2r(0.0f, 0.0f), 0.2f * scale, 0.65f * scale, false));
-    brightFlameParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f * scale, 0.0f, 0.1f * scale, 0.0f, 0.0f, 0.0f);
+    brightFlameParticleSystem->addParticleStateInitializer<Core::BoxPositionInitializer>(0.1f * scale, 0.0f, 0.1f * scale, -0.05f * scale, 0.0f, -0.05f * scale);
     brightFlameParticleSystem->addParticleStateInitializer<Core::RandomVelocityInitializer>(0.02f * scale, 0.4f * scale, 0.02f * scale, -0.01f * scale, 0.4f * scale, -0.01f * scale,  0.1f * scale, .2f * scale);
     brightFlameParticleSystem->addParticleStateInitializer<Core::SequenceInitializer>(brightFlameParticleSequences, false);
     brightFlameParticleSystem->addParticleStateOperator<Core::SequenceOperator>(brightFlameParticleSequences, 0.1f, false, false);
@@ -379,4 +392,6 @@ void MoonlitNightScene::createBrightFlameParticleSystem(Core::WeakPointer<Core::
 
     brightFlameParticleSystem->setSimulateInWorldSpace(true);
     brightFlameParticleSystem->start();
+
+    return brightFlameParticleSystemObject;
 }

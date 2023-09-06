@@ -25,12 +25,14 @@ private:
     void setupSkyboxes();
     void setupCommonSceneElements();
     void setupUniqueSceneElements();
-     void setupBaseLights();
+    void setupBaseLights();
+    FlickerLight createTorchWithFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& baseFlameAtlas, Core::Atlas& brightFLame,
+                                      float x, float y, float z, float scale, float lightRadius, float lightIntensity, int torchPostLayer);
     FlickerLight createTorchFlame(Core::WeakPointer<Core::Engine> engine, CoreScene& coreScene, Core::Atlas& emberAtlas, Core::Atlas& baseFlameAtlas, Core::Atlas& brightFLame,
                                   float x, float y, float z, float scale, float lightRadius, float lightIntensity);
-    void createEmberParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
-    void createBaseFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
-    void createBrightFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
+    Core::WeakPointer<Core::Object3D>  createEmberParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
+    Core::WeakPointer<Core::Object3D>  createBaseFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
+    Core::WeakPointer<Core::Object3D>  createBrightFlameParticleSystem(Core::WeakPointer<Core::Engine> engine, Core::WeakPointer<Core::Object3D> parent, Core::Atlas& atlas, float scale = 1.0f);
 
     unsigned int frameCount;
     Core::WeakPointer<Core::Object3D> ambientLightObject;
