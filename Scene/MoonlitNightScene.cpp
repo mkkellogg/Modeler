@@ -168,21 +168,23 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     const std::string campfire("assets/models/toonlevel/campfire/campfire01.fbx");
 
     // torch 1
-    FlickerLight torch1FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 40.4505, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity, 4);
+    FlickerLight torch1FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 40.4505, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity, 6);
     this->flickerLights.push_back(torch1FlickerLight);
     Core::WeakPointer<Core::PointLight> torch1Light = torch1FlickerLight.getLight();
     Core::IntMask torch1LightCullingMask = torch1Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 2);
+    Core::IntMaskUtil::clearBit(&torch1LightCullingMask, 6);
     torch1Light->setCullingMask(torch1LightCullingMask);
 
     // torch 2
-    FlickerLight torch2FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 51.0816f, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity, 4);
+    FlickerLight torch2FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 51.0816f, 32.0f, -141.762f, 1.0f, 14.0f, torchIntensity, 6);
     this->flickerLights.push_back(torch2FlickerLight);
     Core::WeakPointer<Core::PointLight> torch2Light = torch2FlickerLight.getLight();
     Core::IntMask torch2LightCullingMask = torch2Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 2);
+    Core::IntMaskUtil::clearBit(&torch2LightCullingMask, 6);
     torch2Light->setCullingMask(torch2LightCullingMask);
 
     // campfire
@@ -192,18 +194,19 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::IntMask torch3LightCullingMask = torch3Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 1);
     Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 4);
+    Core::IntMaskUtil::clearBit(&torch3LightCullingMask, 6);
     torch3Light->setCullingMask(torch3LightCullingMask);
     torch3Light->getOwner()->getParent()->getTransform().translate(0.0f, 2.0f, 0.0f);
     this->sceneHelper.loadModelStandard(campfire, true, false, 0.0f, 0.0f, 0.0f, 0, 1, 0, 0, 45.4915f, 27.2334f, -164.412f, 0.5f, 0.5f, 0.5f, false, 0.0f, 0.85f, false, 0, false, false, false, dummyOnLoad, 2);
 
     // torch 4
-    FlickerLight torch4FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 31.6682f, 30.9f, -170.746f, 1.0f, 14.0f, torchIntensity, 2);
-
+    FlickerLight torch4FlickerLight = this->createTorchWithFlame(engine, coreScene, emberAtlas, baseFlameAtlas, brightFlameAtlas, 31.6682f, 30.9f, -169.04f, 1.0f, 14.0f, torchIntensity, 7);
     this->flickerLights.push_back(torch4FlickerLight);
     Core::WeakPointer<Core::PointLight> torch4Light = torch4FlickerLight.getLight();
     Core::IntMask torch4LightCullingMask = torch4Light->getCullingMask();
     Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 1);
-    Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 4);
+    Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 7);
+    Core::IntMaskUtil::clearBit(&torch4LightCullingMask, 6);
     torch4Light->setCullingMask(torch4LightCullingMask);
 
     // castle fort objects
@@ -246,7 +249,7 @@ FlickerLight MoonlitNightScene::createTorchFlame(Core::WeakPointer<Core::Engine>
     Core::WeakPointer<Core::Object3D> emberObject =this->createEmberParticleSystem(engine, torchParticleSystemObject, emberAtlas, scale);
     Core::WeakPointer<Core::Object3D> baseFlameObject =this->createBaseFlameParticleSystem(engine, torchParticleSystemObject, baseFlameAtlas, scale);
     Core::WeakPointer<Core::Object3D> brightFlameObject = this->createBrightFlameParticleSystem(engine, torchParticleSystemObject, brightFlameAtlas, scale);
-    brightFlameObject->getTransform().translate(0.05f, 0.0f, 0.05f);
+    //brightFlameObject->getTransform().translate(0.05f, 0.0f, 0.05f);
     Core::WeakPointer<Core::Object3D> torchLightObject = engine->createObject3D();
     torchParticleSystemObject->addChild(torchLightObject);
     torchLightObject->getTransform().translate(0.0f, 1.0f, 0.0f);
