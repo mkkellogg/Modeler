@@ -143,7 +143,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::WeakPointer<Core::Texture2D> emberTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     emberTexture->buildFromImage(emberTextureImage);
     Core::Atlas emberAtlas(emberTexture);
-    emberAtlas.addTileArray(1, 0.0f, 0.0f, 1.0f, 1.0f);
+    emberAtlas.addFrameSet(1, 0.0f, 0.0f, 1.0f, 1.0f);
 
     // Base flame atlas
     std::string baseFlameTexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_2_half.png");
@@ -152,7 +152,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::WeakPointer<Core::Texture2D> baseFlameTexture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     baseFlameTexture->buildFromImage(baseFlameTextureImage);
     Core::Atlas baseFlameAtlas(baseFlameTexture);
-    baseFlameAtlas.addTileArray(18, 0.0f, 0.0f, 128.0f / 1024.0f, 128.0f / 512.0f);
+    baseFlameAtlas.addFrameSet(18, 0.0f, 0.0f, 128.0f / 1024.0f, 128.0f / 512.0f);
 
     // Bright flame atlas
     std::string brightFlameTexturePath = fileSystem->fixupPathForLocalFilesystem("assets/textures/fire_particle_4_flat_half.png");
@@ -161,7 +161,7 @@ void MoonlitNightScene::setupUniqueSceneElements() {
     Core::WeakPointer<Core::Texture2D> fire4Texture = Core::Engine::instance()->getGraphicsSystem()->createTexture2D(texAttributes);
     fire4Texture->buildFromImage(brightFlameTextureImage);
     Core::Atlas brightFlameAtlas(fire4Texture);
-    brightFlameAtlas.addTileArray(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
+    brightFlameAtlas.addFrameSet(16, 0.0f, 0.0f, 212.0f / 1024.0f, 256.0f / 1024.0f);
 
     Core::Real torchIntensity = 180.0f;
     const std::string torchPost("assets/models/cartoonTorch/cartoonTorch.fbx");
